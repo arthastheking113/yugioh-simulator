@@ -1,0 +1,317 @@
+﻿* {
+    -webkit-overflow-scrolling: touch;
+}
+
+.bmodal[b-oz84vff6up] {
+    z-index: 2000 !important;
+}
+
+.rz-dialog-wrapper {
+    z-index: 2001 !important;
+}
+
+.zoom {
+    transition-duration: 500ms !important;
+}
+
+.zoom:hover {
+    transform: scale(1.04) !important;
+}
+
+.neon-light-effect {
+    overflow: hidden;
+    position: relative;
+
+    background-repeat: no-repeat;
+    background-position: -340px -120px, 0 0;
+
+    background-image: -webkit-linear-gradient(top left,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.2) 37%,
+            rgba(255, 255, 255, 0.8) 45%,
+            rgba(255, 255, 255, 0.0) 50%);
+    background-image: -moz-linear-gradient(0 0,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.2) 37%,
+            rgba(255, 255, 255, 0.8) 45%,
+            rgba(255, 255, 255, 0.0) 50%);
+    background-image: -o-linear-gradient(0 0,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.2) 37%,
+            rgba(255, 255, 255, 0.8) 45%,
+            rgba(255, 255, 255, 0.0) 50%);
+    background-image: linear-gradient(0 0,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.2) 37%,
+            rgba(255, 255, 255, 0.8) 45%,
+            rgba(255, 255, 255, 0.0) 50%);
+
+    -moz-background-size: 250% 250%, 100% 100%;
+    background-size: 250% 250%, 100% 100%;
+
+    -webkit-transition: background-position 0s ease;
+    -moz-transition: background-position 0s ease;
+    -o-transition: background-position 0s ease;
+    transition: background-position 0s ease;
+}
+
+.neon-light-effect:hover {
+    background-position: 0 0, 0 0;
+
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-duration: 0.5s;
+    transition-duration: 0.5s;
+}
+
+
+.neon-light-effect span {
+    position: absolute;
+    display: block;
+}
+
+
+
+
+.neon-light-effect span:nth-child(1) {
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #f3f3f3);
+}
+
+
+
+.neon-light-effect:hover span:nth-child(1) {
+    left: 100%;
+    transition: 0.5s;
+}
+
+.neon-light-effect span:nth-child(2) {
+    top: -100%;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, #f3f3f3);
+}
+
+.neon-light-effect:hover span:nth-child(2) {
+    top: 100%;
+    transition: 0.5s;
+    transition-delay: 0.15s;
+}
+
+
+
+.neon-light-effect span:nth-child(3) {
+    bottom: 0;
+    right: 100%;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(270deg, transparent, #f3f3f3);
+}
+
+.neon-light-effect:hover span:nth-child(3) {
+    right: -100%;
+    transition: 0.3s;
+    transition-delay: 0.15s;
+}
+
+
+
+.neon-light-effect span:nth-child(4) {
+    bottom: 100%;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(360deg, transparent, #f3f3f3);
+}
+
+.neon-light-effect:hover span:nth-child(4) {
+    bottom: -100%;
+    transition: 0.3s;
+    /*transition-delay: 0.1s;*/
+}
+
+.shining-img {
+    position: relative;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.shining-img:after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    opacity: 0;
+    transform: rotate(30deg);
+
+    background: rgba(255, 255, 255, 0.13);
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0.13) 0%,
+            rgba(255, 255, 255, 0.13) 77%,
+            rgba(255, 255, 255, 0.5) 92%,
+            rgba(255, 255, 255, 0.0) 100%);
+}
+
+/* Hover state - trigger effect */
+.shining-img:hover:after {
+    opacity: 1;
+    left: 130%;
+    transition-property: left, top, opacity;
+    transition-duration: 0.7s, 0.7s, 0.15s;
+    transition-timing-function: ease;
+}
+
+/* Active state */
+.shining-img:active:after {
+    opacity: 0;
+}
+
+.tooltip-special .tooltiptext-special-deck {
+    background-color: #191c22 !important;
+}
+
+.rz-html-editor-dropdown {
+    color: black !important;
+}
+
+.rz-colorpicker,
+.rz-lookup-search input,
+.rz-spinner,
+.rz-calendar .rz-inputtext,
+.rz-multiselect,
+.rz-dropdown,
+.mask,
+.rz-textarea,
+.rz-textbox {
+    background-color: unset;
+}
+
+.rz-tick-text {
+    fill: rgb(255 255 255) !important;
+}
+
+.rz-axis .rz-axis-title {
+    fill: rgb(255 255 255) !important;
+}
+
+.caption {
+    background-color: #0b09089e !important;
+}
+
+.rz-spinner input[type='number'],
+.rz-spinner input[type='text'] {
+    color: #ffffff !important;
+    background-color: #002140 !important;
+}
+
+input,
+select,
+textarea {
+    color: #ffffff !important;
+    background-color: #002140;
+    border-color: white !important;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.rz-multiselect .rz-placeholder,
+.rz-dropdown .rz-placeholder {
+    color: #ffffff !important;
+    background-color: #001528 !important;
+}
+
+.rz-multiselect-label-container,
+.rz-dropdown-label {
+    color: #ffffff;
+    background-color: #001528 !important;
+}
+
+.rz-colorpicker,
+.rz-lookup-search input,
+.rz-spinner,
+.rz-calendar .rz-inputtext,
+.rz-multiselect,
+.rz-dropdown,
+.mask,
+.rz-textarea,
+.rz-textbox {
+    background-color: #011d38 !important;
+}
+
+.rz-multiselect-trigger .rzi-chevron-down:before,
+.rz-dropdown-trigger .rzi-chevron-down:before {
+    color: white !important;
+}
+
+.rz-cell-filter .rz-cell-filter-label>input {
+    background-color: white !important;
+}
+
+.rz-button .rz-button-text,
+.rz-paginator-element .rz-button-text {
+    color: white !important;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: #002140;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    background-color: #002140;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: #002140;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+    background-color: #479cc8;
+}
+
+.rz-dialog-mask {
+    pointer-events: none !important;
+}
+
+.tooltip-special .tooltiptext-special-card {
+    border: 2px solid #1c3662;
+    border-radius: 2px;
+}
+
+div.deck-view-frame {
+    position: relative;
+}
+
+div.deck-view-content-link {}
+
+div.deck-view-content {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    width: 50%;
+    transition: visibility 0.3s, opacity 0.3s linear;
+}
+
+.modal-content {
+    background-color: #002140 !important;
+}
+
+.product-title>a {
+    color: #ffffff !important;
+}
+
+.tooltip-special:hover .tooltiptext-special-card {
+    visibility: unset !important;
+    opacity: unset !important;
+}
