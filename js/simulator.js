@@ -35,13 +35,8 @@ var currentDeck = joinMainExtraDeck(playtest.main, playtest.extra);
 
 var encode = window.btoa(JSON.stringify(getExportReadyDeck(currentDeck)));
 
-$(document).on("click", "#submitdeck", function () {
-    $('.import').dialog("close");
-    let code = window.atob($('.codeimport').val());
-    importDeck(JSON.parse(code));
-})
 
-
+// Select card in deck
 $(document).on("click", "#deckmenu img", function () {
     let id = $(this).attr('id');
 
@@ -103,16 +98,7 @@ function joinMainExtraDeck(main, extra) {
     return joined;
 }
 
-function importDeck(deck) {
-    refreshDeck(deck);
-    shuffleDeck(decklist);
-    $('#hand').empty();
-    handleSkill(Phase.DRAW);
-    if ($('#deckmenu').dialog('isOpen')) {
-        openDeck(deck);
-    }
-    currentDeck = deck;
-}
+
 
 /*
     * This is the starting function for the playtest area.
