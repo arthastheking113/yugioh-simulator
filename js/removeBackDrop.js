@@ -1,4 +1,5 @@
 ﻿function removeBackDrop() {
+    return;
     let model = document.getElementsByClassName("modal-backdrop fade show")[0];
     model.remove();
 
