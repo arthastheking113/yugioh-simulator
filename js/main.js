@@ -12,17 +12,17 @@ var boardData = {
             "name": "Hazy Flame Cerbereus",
             id: "card2",
             "amount": 1,
-            "switchState": "defense"
+            // "switchState": "defense"
         }, {
             "name": "Hazy Flame Cerbereus",
             id: "card3",
             "amount": 1,
-            "switchState": "defense"
+            // "switchState": "defense"
         }, {
             "name": "Hazy Flame Sphynx",
             id: "card4",
             "amount": 1,
-            "switchState": "defense"
+            // "switchState": "defense"
         }, {
             "name": "Hazy Flame Sphynx",
             id: "card5",
@@ -87,32 +87,33 @@ var boardData = {
             "name": "Mausoleum of the Emperor",
             id: "card20",
             "amount": 1
-        }, {
-            "name": "Mausoleum of the Emperor",
-            id: "card21",
-            "amount": 1,
-            "position": "extra_deck",
-        }, {
-            "name": "Mausoleum of the Emperor",
-            id: "card22",
-            "amount": 1,
-            "position": "extra_deck",
-        }, {
-            "name": "Mausoleum of the Emperor",
-            id: "card23",
-            "amount": 1,
-            "position": "extra_deck",
-        }, {
-            "name": "Mausoleum of the Emperor",
-            id: "card24",
-            "amount": 1,
-            "position": "extra_deck",
-        }, {
-            "name": "Mausoleum of the Emperor",
-            id: "card25",
-            "amount": 1,
-            "position": "extra_deck",
-        }
+        }, 
+        // {
+        //     "name": "Mausoleum of the Emperor",
+        //     id: "card21",
+        //     "amount": 1,
+        //     "position": "exdeck",
+        // }, {
+        //     "name": "Mausoleum of the Emperor",
+        //     id: "card22",
+        //     "amount": 1,
+        //     "position": "exdeck",
+        // }, {
+        //     "name": "Mausoleum of the Emperor",
+        //     id: "card23",
+        //     "amount": 1,
+        //     "position": "exdeck",
+        // }, {
+        //     "name": "Mausoleum of the Emperor",
+        //     id: "card24",
+        //     "amount": 1,
+        //     "position": "exdeck",
+        // }, {
+        //     "name": "Mausoleum of the Emperor",
+        //     id: "card25",
+        //     "amount": 1,
+        //     "position": "exdeck",
+        // }
     ],
     // "extra": [],
     "notes": [{
@@ -158,6 +159,12 @@ function toolsEvent(){
         // }).join('') );
     })
     
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const isDebug = urlParams.get('debug');
+if( isDebug ){
+    $('body').addClass( 'devMode' );
 }
 $(document).ready(function () {
     toolsEvent();

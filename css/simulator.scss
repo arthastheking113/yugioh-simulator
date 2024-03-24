@@ -25,6 +25,8 @@
 
 .ddescription{
     display: none !important;
+    font-family: MONOSPACE;
+    font-style: normal;
 }
 .devMode .ddescription {
     display: block !important;
@@ -32,7 +34,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 10000;
+    //z-index: 10000;
     width: 100%;
     height: 100%;
 }
@@ -73,6 +75,23 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             position: relative;
+            text-align: center;
+            
+            .card{
+                display: inline-flex;
+            }
+            .collection-count{
+                position: absolute; 
+                top: 0;
+                 left: 0;
+                width: 100%; 
+                height: 100%;
+               display: flex;
+               justify-content: space-around;
+               align-items: center;
+                font-weight: 600;
+                font-size: 30px;
+            }
             &.desk{
                 height: 200px;
             }
@@ -84,6 +103,32 @@
 
 .card {
     cursor: pointer;
+    width: 70px;
+    background-color: transparent;
+
+    .back-image{
+        display: none;
+    }
+    .front-image{
+        display: inline-block;
+    }
+    &.flipped {
+        .back-image{
+            display: block;
+        }
+        .front-image{
+            display: none;
+        }
+    }
+    
+    &.defense{
+        width: 102px;
+        img{
+            transform: rotate(-90deg);
+            position: relative;
+            left: 17px;
+        }
+    }
 }
 
 #hand {
@@ -106,17 +151,6 @@
             max-width: 100px;
             height: 102px;
             width: auto;
-            .card{
-                width: 70px;
-                background-color: transparent;
-    
-                &.defense{
-                    width: 102px;
-                    img{
-                        transform: rotate(-90deg);
-                    }
-                }
-            }
         }
     }
 
@@ -128,18 +162,6 @@
         max-width: 102px;
         height: 102px;
         width: auto;
-
-        .hand-card {
-            .hand-card-img {
-                width: auto;
-                height: 102px;
-
-                &.state-defend {
-                    transform: rotate(90deg);
-                }
-            }
-
-        }
     }
 }
 .collection-menu {
@@ -162,4 +184,37 @@
     .input {
         margin: 1rem;
     }
+}
+body .ui-dialog .menu-dialog {
+    padding: 0;
+    .menu-dialog-inner {
+      .menu-list {
+        padding: 0;
+        list-style: none;
+        margin: 0;
+        // border-top: 1px solid #ccc;
+        li a{
+            padding: 0.1em 0.2em;
+            border-bottom: 1px solid #ccc;
+            display: block;
+            font-size: 11px;
+            // width: 100px;
+            &:hover {
+                background-color: #eee;
+            }
+        }
+        li:last-child a{
+            border: none;
+        }
+      }
+    }
+  }
+.hidden{
+    display: none !important;
+}
+body .ui-dialog-card-menu{
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 2px 2px 0 0;
+
 }

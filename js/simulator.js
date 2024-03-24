@@ -8,6 +8,7 @@ var board;
                 id: 0,
                 name: 'card',
                 order: 1,
+                collection_order: 1,
                 canMoveHand : true,
                 canMoveSummon : true,
                 canMoveExDeck : true,
@@ -24,16 +25,65 @@ var board;
             this.options = options;
             this.order = order;
             this.Board = Board;
+            this.itemBefore = {};
             this.init();
         }
         init(){
             this.drawHtml(this.options);
+            this.cardEvents();
+        }
+        cardEvents(){
+            var _card = this;
+            // console.log(this.html );
+
+            this.html.hover( function( e ) {
+                // console.log('mousein', e);
+                var _board = _card.getBoard();
+                var cardMenu = _board.cardMenu.setCard(_card);
+                // console.log( cardMenu );
+
+                cardMenu.show();
+            }, function( e ) { 
+                // console.log('mouseout');
+
+                var _board = _card.getBoard();
+                var cardMenu = _board.cardMenu;
+                cardMenu.hide();
+                // console.log( cardMenu );
+            });
         }
         // validate
         canMoveTo( newPosition ){
-            newPosition = newPosition|| 'hand'; // hand / deck / extra_deck / graveyard / summon / st / banish 
+            var _board = this.getBoard();
+            newPosition = newPosition|| 'hand'; // hand / deck / exdeck / graveyard / summon / st / banish 
             //1
-            return true;
+            var allow = false;
+            switch( newPosition ){
+                case 'hand':
+                case 'deck':
+                case 'graveyard':
+                case 'banish':
+                    allow = true;
+                    break;
+                case'summon':
+                case'st':
+                    allow = true;
+                    var summonElm = _board.getFreeSummon();
+                    if( !summonElm.length ){
+                        allow = false;
+                    }
+                break;
+                case 'exdeck':
+                    if( this.canMoveExDeck ){
+                        allow = true;
+                    }
+                    break;
+                default:
+                    allow = false;
+                
+            }
+
+            return allow;
         }
         canFlip( newState ) {
             newState = newState|| 'normal'; // normal / flipped 
@@ -55,17 +105,25 @@ var board;
 
         // Switch state
         beforeMove( newPosition ){
+            this.itemBefore = {...this};
             return true;
         }
         afterMove(newPosition){
-            console.log( 'afterMove', newPosition );
+            // console.log( 'afterMove', newPosition );
+
+            // Draw old collection was moved from
+            if( this.position !=  this.itemBefore.position ){
+                var collection = this.getBoard().getCollectionByPosition( this.itemBefore.position );
+                     collection && collection.drawOnBoard();
+            }
             return true;
         }
-        moveTo( newPosition, animation, duration ) {
-            if(!['hand', 'deck', 'extra_deck', 'graveyard','summon','st', 'banish'].includes( newPosition ) ) return false;
+        moveTo( newPosition, isTop, animation, duration ) {
+            if(!['hand', 'deck', 'exdeck', 'graveyard','summon','st', 'banish'].includes( newPosition ) ) return false;
 
             var _card = this;
             var result = false;
+            if( typeof isTop == 'undefined' ) isTop = true;
             var oldPosition = _card.position;
             if( ! _card.beforeMove( newPosition ) ) return false;
 
@@ -81,10 +139,46 @@ var board;
                 result = true;
                 var to = this.getNewOffset( newPosition );
                 if( animation )this.doAnimation ( to, animation, duration );
-                // 1
+                var newOrder = 0;
+                var collection = 0;
+                collection = this.getBoard().getCollectionByPosition( newPosition);
+                var items = [];
+                if( collection ){
+                    if( isTop ) {
+                        if( collection ){
+                            items = collection.getCollectionItems();
+                            let last = items.length ? items[ items.length - 1 ]['collection_order'] : 0;
+                            newOrder = last + 1;
+                            _card.collection_order = newOrder;
+                        }
+                    } else {
+                        _card.collection_order = newOrder;
+                    }
+                } else {
+                    _card.collection_order = newOrder;
+                }
                 // set new position here
                 this.position = newPosition;
-                this.appendToBoard();
+
+                // reorder collection
+                items = collection ? collection.getCollectionItems() : [];
+                if( items.length ){
+                    $.each( items, function ( i, item ){
+                        item.collection_order = i+1;
+                    });
+                }
+
+                if( newPosition != 'summon' ){
+                    this.switchState = 'attack';
+                    _card.updateHtml();
+                }
+                if( newPosition != 'hand' ){
+                    // this.flipState = 'normal';
+                    _card.updateHtml();
+                }
+                if( ! this.appendToBoard() ){
+                    return false;
+                }
             }
             //1
             // Nếu oldPosition là hand thì xóa thẻ div cha
@@ -105,6 +199,7 @@ var board;
                 result = true;
                 if( animation )this.doAnimation ( newState, animation, duration );
                 // 1
+                console.log( newState, this.html );
                 this.flipState = newState;
                 // set new state here
                 this.html.removeClass('normal flipped').addClass(newState);
@@ -169,8 +264,8 @@ var board;
                 }
             });
 
-            cardElement.append(`<img src="${backImageSrc}" width="70" height="102" class="back-image" style="display: ${_card.flipState == 'normal' ? 'none' : 'block'}"/>`);
-            cardElement.append(`<img src="${frontImageSrc}" width="70" height="102" class="front-image"  style="display: ${_card.flipState == 'normal' ? 'block' : 'none'}"/>`);
+            cardElement.append(`<img src="${backImageSrc}" width="70" height="102" class="back-image"/>`);
+            cardElement.append(`<img src="${frontImageSrc}" width="70" height="102" class="front-image""/>`);
 
             this.html = cardElement;
 
@@ -198,16 +293,13 @@ var board;
                 'switchState',
                 'position',
             ];
-            cardElement.removeClass('normal flipped attack defense deck extra_deck graveyard banish summon st hand');
+            cardElement.removeClass('normal flipped attack defense deck exdeck graveyard banish summon st hand');
             states.forEach( function( stateName ) {
                 if (_card[stateName]) {
                     cardElement.addClass(_card[stateName]);
                     cardElement.data( stateName, _card[stateName] );
                 }
             });
-
-            cardElement.find('.back-image').toggle( _card.flipState != 'normal' );
-            cardElement.find('.front-image').toggle( _card.flipState == 'normal' );
 
         }
         appendToBoard(){
@@ -218,18 +310,30 @@ var board;
             // console.log( position );
             switch(position){
                 case 'deck':
-                case 'extra_deck':
+                case 'exdeck':
                 case 'graveyard':
                 case 'banish':
                     var collection = _board.getCollectionByPosition(position);
                     collection && collection.appendCard( _card );
-                    
+                    collection && collection.drawOnBoard();
                 break;
 
                 case'summon':
+                    var summonElm = _board.getFreeSummon();
+                    if( !summonElm.length ){
+                        return false;
+                    }
+                    _card.updateHtml();
+                    _card.html.appendTo( summonElm );
                     
                     break;
                 case'st':
+                    var stElm = _board.getFreeST();
+                    if( !stElm.length ){
+                        return false;
+                    }
+                    _card.updateHtml();
+                    _card.html.appendTo( stElm );
                     
                 break;
 
@@ -291,13 +395,37 @@ var board;
                 collection.showDialog();
             } );
 
-            this.menuElm.on('click', '.card', function(){
-                var _cardElm = $(this);
-                console.log( _cardElm );
+            this.menuElm.on('click', '.card img', function(){
+                var _cardElm = $(this).closest('.card');
+                // console.log( _cardElm );
                 var _cardID = _cardElm.data('id');
                 var _card = _board.getItemById( _cardID );
                 _card.moveTo('hand');
             } );
+        }
+        getCards(){
+            return this.getBoard().getItemsByPosition(this.collection_position);
+        }
+        getTopCard(){
+            var cards = this.getCards();
+            cards.sort((a,b) => {
+                return a.collection_order < b.collection_order;
+            });
+            return cards.length > 0 ? cards[ cards.length - 1] : false;
+        }
+        drawOnBoard(){
+            var cards = this.getCards();
+
+            // count cards
+            this.elm.find('.card').remove();
+            this.elm.find('.collection-count').children().first().empty().text( cards.length );
+
+            // TODO: check and draw top card with status;
+            if( cards.length > 0 ){
+                var topCard = this.getTopCard();
+                // temporarily flip items
+                this.elm.prepend(  topCard.html.clone().attr('id', '') ); 
+            }
         }
         drawDialog(){
             // if( this.menuElm.length ){
@@ -347,12 +475,8 @@ var board;
                 card.position = this.collection_position;
                 card.updateHtml();
             }
-            // console.log(this.menuElm.find('.collection-container'), card.html);
-            // .append( card.html );
-            // var _handCardContainer = $('<div class="hand-card-container" />');
-            //     hand.append( _handCardContainer );
             card.html.appendTo(this.menuElm.find('.collection-container'));
-
+            return true;
         }
 
     }
@@ -375,8 +499,8 @@ var board;
             this.exDeckElm = this.elm.find('#extra-deck-slot');
             this.handElm = this.elm.find('#hand-board');
             this.graveyardElm = this.elm.find('#graveyard-slot');
-            this.summonElm = this.elm.find('#summon-slot');
-            this.stElm = this.elm.find('#st-slot');
+            // this.summonElm = this.elm.find('#summon-slot');
+            // this.stElm = this.elm.find('#st-slot');
             this.banishElm = this.elm.find('#banish-slot');
 
             this.deckMenuElm = $('#deckmenu');
@@ -384,11 +508,16 @@ var board;
             this.graveyardMenuElm = $('#graveyardmenu');
             this.banishMenuElm = $('#banishmenu');
 
+            this.cardManuElm = $('#cardMenu');
+            this.collectionMenuElm = $('#collectionMenu');
+
             this.initItems( this.orgitems );
             this.initDeck();
             this.initExDeck();
             this.initGraveyard();
             this.initBanish();
+
+            this.initMenus();
 
 
             
@@ -417,6 +546,11 @@ var board;
         initBanish(){
             this.banish = new Collection( this, 'banish', this.banishElm, this.banishMenuElm, this.options);
         }
+        initMenus(){
+            // var _board = this;
+            this.cardMenu = new CardMenu( this.cardManuElm );
+            this.collectionMenu = new CollectionMenu( this.collectionMenuElm );
+        }
 
         events(){
             return true;
@@ -444,6 +578,7 @@ var board;
             // var shuffledArr = items.sort(() => Math.random() - 0.5);
             items.sort(() => Math.random() - 0.5);
             $.each( items, function( index, item ) {
+                _board.updateItem( item.id, 'collection_order', index+1 );
                 _board.updateItem( item.id, 'order', index+1 );
             });
         }
@@ -483,7 +618,7 @@ var board;
 
         }
         getExtraDeckItems(){
-            return this.getItemsByPosition('extra_deck');
+            return this.getItemsByPosition('exdeck');
 
         }
         getGraveyardItems(){
@@ -511,6 +646,26 @@ var board;
                 return this[key];
             }
             return defaultValue||undefined;
+        }
+        getFreeSummon(){
+            var _free = [];
+            $.each( this.elm.find('.summon-slot'), function (i, el ){
+                var _el = $(el);
+                if( (!_free.length) && (!_el.find('.card').length) ){
+                    _free = _el;
+                }
+            });
+            return _free;
+        }
+        getFreeST(){
+            var _free = [];
+            $.each( this.elm.find('.st-slot'), function (i, el ){
+                var _el = $(el);
+                if( (!_free.length) && (!_el.find('.card').length) ){
+                    _free = _el;
+                }
+            });
+            return _free;
         }
         set( key, value ){
             this[key] = value;
@@ -573,8 +728,9 @@ var board;
                     // console.log( deck)
                 break;
                 
-                case 'extra_deck':
+                case 'exdeck':
                     collection = this.exdeck;
+                    // console.log(collection);
                 break;
 
                 case 'graveyard':
