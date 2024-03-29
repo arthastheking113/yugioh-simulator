@@ -7,7 +7,7 @@ var boardData = {
         {
             "name": "Hazy Flame Cerbereus",
             id: "card1",
-            "amount": 1
+            "amount": 1,
         }, {
             "name": "Hazy Flame Cerbereus",
             id: "card2",
@@ -87,33 +87,80 @@ var boardData = {
             "name": "Mausoleum of the Emperor",
             id: "card20",
             "amount": 1
-        }, 
-        // {
-        //     "name": "Mausoleum of the Emperor",
-        //     id: "card21",
-        //     "amount": 1,
-        //     "position": "exdeck",
-        // }, {
-        //     "name": "Mausoleum of the Emperor",
-        //     id: "card22",
-        //     "amount": 1,
-        //     "position": "exdeck",
-        // }, {
-        //     "name": "Mausoleum of the Emperor",
-        //     id: "card23",
-        //     "amount": 1,
-        //     "position": "exdeck",
-        // }, {
-        //     "name": "Mausoleum of the Emperor",
-        //     id: "card24",
-        //     "amount": 1,
-        //     "position": "exdeck",
-        // }, {
-        //     "name": "Mausoleum of the Emperor",
-        //     id: "card25",
-        //     "amount": 1,
-        //     "position": "exdeck",
-        // }
+        }, {
+            "name": "Dark Magician",
+            id: "card21",
+            "amount": 1,
+            imageURL: 'https://ygovietnamcdn.azureedge.net/storage/Card/46986414.jpg',
+        }, {
+            "name": "Dragon Spirit of White",
+            id: "card45467446",
+            "amount": 1,
+            imageURL: 'https://ygovietnamcdn.azureedge.net/storage/Card/45467446.jpg',
+        }, {
+            "name": "Dark Magical Circle",
+            "id": "card47222536",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/47222536.jpg"
+        }, {
+            "name": "Black Luster Soldier",
+            "id": "card5405694",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/5405694.jpg"
+        }, {
+            "name": "Compulsory Evacuation Device",
+            "id": "card94192409",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/94192409.jpg"
+        }, {
+            "name": "Blue-Eyes Ultimate Dragon",
+            "id": "card23995346",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/23995346.jpg",
+            "isExtra": 1
+        }, {
+            "name": "Dark Cavalry",
+            "id": "card73452089",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/73452089.jpg",
+            "isExtra": 1
+        }, {
+            "name": "Rose Spectre of Dunn",
+            "id": "card32485271",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/32485271.jpg",
+            "isExtra": 1
+        }, {
+            "name": "The Great Double Casted Caster",
+            "id": "card83340560",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/83340560.jpg",
+            "isExtra": 1
+        }, {
+            "name": "Imduk the World Chalice Dragon",
+            "id": "card31226177",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/31226177.jpg",
+            "isExtra": 1
+        }, {
+            "name": "Knightmare Phoenix",
+            "id": "card2857636",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/2857636.jpg",
+            "isExtra": 1
+        }, {
+            "name": "Ebon Illusion Magician",
+            "id": "card96471335",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/96471335.jpg",
+            "isExtra": 1
+        }, {
+            "name": "Number 11: Big Eye",
+            "id": "card80117527",
+            "amount": 1,
+            "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/80117527.jpg",
+            "isExtra": 1
+        }
     ],
     // "extra": [],
     "notes": [{
@@ -122,7 +169,7 @@ var boardData = {
     "url": "/top-decks/january-2018/hazy-flame-br/420-hazyyyyy-by-dbgxoso/"
 };
 
-function toolsEvent(){
+function toolsEvent() {
     $('.dice').click(function () {
         let die = [
             'asset/dice1.png',
@@ -138,33 +185,33 @@ function toolsEvent(){
     });
 
     $('.coin').click(function () {
-        return (Math.floor(Math.random() * 2) == 0) ? 
-            $('#results').hide().html(`<img width="60px" src="asset/coin.png"/>`).fadeIn() : 
+        return (Math.floor(Math.random() * 2) == 0) ?
+            $('#results').hide().html(`<img width="60px" src="asset/coin.png"/>`).fadeIn() :
             $('#results').hide().html(`<img width="60px" src="asset/N2dFEVu.png"/>`).fadeIn();
     });
 
     $('#deal').click(function () {
-        if( typeof board == 'undefined') return false;
-        board.deckToHand( 1, 'top');
+        if (typeof board == 'undefined') return false;
+        board.deckToHand(1, 'top');
     })
     $('#new').click(function () {
         location.reload();
     })
     $('#shuffle').click(function () {
-        if( typeof board == 'undefined') return false;
+        if (typeof board == 'undefined') return false;
         board.shuffleCards();
         // console.log( board.items.map(function (item) { 
         //     console.log( item.id, item.name );
         //     return OK;
         // }).join('') );
     })
-    
+
 }
 
 const urlParams = new URLSearchParams(window.location.search);
 const isDebug = urlParams.get('debug');
-if( isDebug ){
-    $('body').addClass( 'devMode' );
+if (isDebug) {
+    $('body').addClass('devMode');
 }
 $(document).ready(function () {
     toolsEvent();

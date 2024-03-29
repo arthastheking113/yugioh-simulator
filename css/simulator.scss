@@ -1,3 +1,4 @@
+$white-color: #efefef;
 .game-board {
     display: inline-block;
 }
@@ -39,16 +40,69 @@
     height: 100%;
 }
 
+
+.play-board-container{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 80px;
+    #log-message{
+        height: 604px;
+        resize: none !important;
+        display: block;
+        position: relative;
+        min-width: 300px;
+        border: 1px solid $white-color;
+        border-radius: 4px;
+        padding: 10px;
+        padding-bottom: 25px;
+        font-size: 12px;
+        color: $white-color;
+        overflow: hidden;
+        white-space: pre-wrap;
+        overflow: auto;
+
+        .log-step{
+            max-width: 350px;
+        }
+    }
+    .log-message-container{
+        .card-key{
+            color: #b4b4ed
+        }
+        .new-state{
+            color: #f7a5a5;
+        }
+        .log-card-name{
+            color: red;
+        }
+    }
+    .log-message-header{
+        display: flex;
+        justify-content: space-between;
+        padding: 0 15px;
+        align-items: flex-end;
+        margin-bottom: 15px;
+        .log-title{
+            margin: 0;
+        }
+    }
+}
+
 #playtest {
-    border: 1px solid white;
+    border: 1px solid $white-color;
     background-color: #000016;
     background-image: url('../asset/bk_layer_a.png');
     background-size: cover;
     // width: 750px;
-    margin: 20px auto;
+    // margin: 20px auto;
     padding: 1rem;
     position: relative;
     display: inline-block;
+    border-radius: 4px;
+
 
     .game-board{
         display: flex;
@@ -68,7 +122,7 @@
             visibility: hidden;
         }
 
-        .card-slot{
+        .holder-slot{
             height: 102px;
             width: 102px;
             display: block;
@@ -106,11 +160,20 @@
     width: 70px;
     background-color: transparent;
 
+    .card-img{
+        max-width: 70px;
+        max-height: 102px;
+        height: auto;
+    }
+
     .back-image{
         display: none;
     }
     .front-image{
         display: inline-block;
+    }
+    .card-name{
+        display: none;
     }
     &.flipped {
         .back-image{
@@ -126,7 +189,7 @@
         img{
             transform: rotate(-90deg);
             position: relative;
-            left: 17px;
+            left: 14px;
         }
     }
 }
@@ -212,9 +275,18 @@ body .ui-dialog .menu-dialog {
 .hidden{
     display: none !important;
 }
-body .ui-dialog-card-menu{
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 2px 2px 0 0;
+
+// Dialog
+body {
+
+    .ui-dialog-card-menu{
+        padding: 0;
+        border: 1px solid #ccc;
+        border-radius: 2px 2px 0 0;
+
+    }
+    .ui-widget-overlay{
+        background-color: #00001680;
+    }
 
 }

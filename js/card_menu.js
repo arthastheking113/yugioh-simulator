@@ -9,6 +9,7 @@ class MenuBase {
     init(){
         this.drawHtml(this.options);
         this.createDialog();
+        this.events();
     }
     drawHtml(){
 
@@ -37,7 +38,7 @@ class MenuBase {
                 of: '#playtest'
             },
             // hide: { effect: "explode", duration: 1000 },
-            show: { effect: "blind", duration: 50 },
+            // show: { effect: "blind", duration: 50 },
         });
     }
     show(){
@@ -50,7 +51,9 @@ class MenuBase {
     }
     afterShow(){
         // This is an abstract function
-
+    }
+    events(){
+        // This is an abstract function
     }
     hide(){
         this.beforeHide();
@@ -71,18 +74,26 @@ class MenuBase {
 class CardMenu extends MenuBase {
     constructor(element, options) {
         super(element, options);
-        this.events();
     }
     beforeShow() {
         var card = this.getCard();
         var cardElm = card.html;
         // cardElm.addClass('card-hover');
         this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+
         this.element.dialog('option', 'position', {
             my: "center bottom",
             at: "center top",
             of: '#' + cardElm.attr('id')
         });
+
+        if( ['deck', 'exdeck', 'graveyard', 'banish'].includes( card.position ) && card.collection_order <= 10 ){
+            this.element.dialog('option', 'position', {
+                my: "center top",
+                at: "center bottom",
+                of: '#' + cardElm.attr('id')
+            });
+        }
 
     }
     setCard( card ) {
@@ -112,6 +123,8 @@ class CardMenu extends MenuBase {
         (pos == 'summon') && ul.find(`a[data-position="this"]`).show();
         (pos == 'summon') && ul.find(`a[data-position="this"]`).filter(`[data-switch-state="${card.switchState}"]`).hide();
 
+        card.isExtra && ul.find(`a[data-position="deck"]`).hide();
+        (!card.isExtra) && ul.find(`a[data-position="exdeck"]`).hide();
         var stElm = _board.getFreeST();
         if( !stElm.length ){
             ul.find(`a[data-position="st"]`).hide();
@@ -127,6 +140,11 @@ class CardMenu extends MenuBase {
         ul.append(`
             <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,normal">Banish</a></li>
         `);
+
+        ul.append(`
+            <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,flipped">Banish FD</a></li>
+        `);
+        
         ul.append(`
             <li class="menuItem"><a href="javascript:void(0)" data-position="deck" data-switch-state="" data-target="deck,bottom">To B Deck</a></li>
         `);
@@ -134,7 +152,7 @@ class CardMenu extends MenuBase {
             <li class="menuItem"><a href="javascript:void(0)" data-position="deck" data-switch-state="" data-target="deck">To Top Deck</a></li>
         `);
         ul.append(`
-            <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,flipped">Banish FD</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="exdeck" data-switch-state="" data-target="exdeck">To Ex Deck</a></li>
         `);
         ul.append(`
             <li class="menuItem"><a href="javascript:void(0)" data-position="graveyard" data-switch-state="" data-target="graveyard">To Graveyard</a></li>
@@ -164,6 +182,7 @@ class CardMenu extends MenuBase {
 
             target = target.split(',');
             var newPosition = target[0];
+            var isTop = true;
             if( newPosition != 'this' && !card.canMoveTo( newPosition ) ){
                 return false;
             }
@@ -180,13 +199,17 @@ class CardMenu extends MenuBase {
                     case 'normal':
                         card.flip(newState);
                         break;
+                    case 'bottom':
+                        isTop = false; // false: bottom
+                    break;
+
                 }
             }else{
                 card.attack();
                 card.flip('normal');
             }
             menu.dialog.dialog('close');
-            card.moveTo(newPosition);
+            card.moveTo(newPosition, isTop);
         });
     }
 }
@@ -197,13 +220,95 @@ class CollectionMenu extends MenuBase {
     setCollection( collection ) {
         this.collection = collection;
         this.updateMenu();
+        return this;
+    }
+    getCollection() {
+        return this.collection;
+    }
+    beforeShow() {
+        var collection = this.getCollection();
+        var collectionElm = collection.elm;
+        this.element.dialog('option', 'appendTo', '#' + collectionElm.attr('id'));
+        this.element.dialog('option', 'position', {
+            my: "center bottom",
+            at: "center top",
+            of: '#' + collectionElm.attr('id')
+        });
     }
     updateMenu(){
-
+        // Foe Extra deck: Hide all, only show "View" item
     }
     drawHtml(){
         //List actions: View, Banish FD, Banish T., Mill, Shuffle, Draw
+        var ul = this.element.find('ul');
+        ul.empty();
+        // View, Banish FD, Banish T., Mill, Shuffle, Draw
+        ul.append(`
+            <li class="menuItem"><a href="javascript:void(0)" data-position="this" data-switch-state="" data-target="this,open">View</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,normal">Banish</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,flipped">Banish FD</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="graveyard" data-switch-state="" data-target="graveyard">Mill</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="this" data-switch-state="" data-target="this,shuffle">Shuffle</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="hand" data-switch-state="" data-target="hand">Draw</a></li>
+        `);
 
     }
 
+    events(){
+        var menu = this;
+        this.element.on('click','ul li a', function(){
+            var _this = this;
+            var collection = menu.getCollection();
+            var curPosition = collection.getPosition();
+            var card = collection.getTopCard();
+            var target = $(this).data('target');
+
+            target = target.split(',');
+            var newPosition = target[0];
+
+            if( newPosition != 'this'){
+                if( !card.canMoveTo( newPosition ) ){
+                    return false;
+                }else{
+                    card.moveTo(newPosition);
+                    if( target[1] ){
+                        let newState = target[1];
+                        switch( newState ){
+                            case 'def':
+                                card.defense();
+                                break;
+                            case 'atk':
+                                card.attack();
+                                break;
+                            case 'flipped':
+                            case 'normal':
+                                card.flip(newState);
+                                break;
+                        }
+                    }
+                }
+            }
+            else {
+                if( target[1] ){
+                    let newState = target[1];
+
+                    switch( newState ){
+                        case'shuffle':
+                            collection.shuffleCollectionCards()
+                        break;
+                        case 'open':
+                            collection.showCollection();
+                        break;
+                    }
+                }else{
+
+                    collection.showCollection();
+                }
+            }
+            menu.dialog.dialog('close');
+            return true;
+
+        });
+
+    }
 }

@@ -1,6 +1,229 @@
 var board;
 // (function ($) {
 	'use strict';
+    class PlayLog{
+        constructor(options){
+            var _default = {
+                'Board': {},
+                'elm': $('.log-message-container'),
+                'name': 'PlayLog',
+                'options': {},
+                'initItems': {},
+            };
+            $.extend(this, _default, options);
+            this.init();
+        }
+        init(){
+            this.steps = [];
+            this.pointer = 0;
+            this.isRePlaying = false;
+            this.replaytimeout = 0;
+            this.messageElm = this.elm.find('#log-message');
+            this.overlay = $('<div class="replay-overlay"></div>').css({
+                position: 'fixed',
+                width: '100vw',
+                height: '100vh',
+                top: 0,
+                left: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                zIndex: 99,
+                display: 'none',
+            });
+            $('body').find('.replay-overlay').remove();
+            $('body').append(this.overlay);
+            this.messageElm.empty();
+            this.events();
+
+        }
+        events(){
+            var playLog = this;
+            this.elm.find('.replay-button').off('click').on('click', function(){
+                playLog.replay();
+            });
+        }
+        async setInitItems(items){
+            this.initItems = items;
+        }
+        async addStep(action, id, data, oldData ){
+            if( this.isRePlaying ) return false;
+            var message = '';
+            var board = this.Board;
+            var card = board.getItemById( id );
+
+
+            switch( action ){
+                case 'init':
+                    message += oldData;
+                    id = undefined;
+                    oldData = undefined;
+                break;
+                case 'update':
+                    $.each( data, function(key, value){
+                        switch( key ){
+                            case 'position':
+                                // console.log( 'position: ' + value );
+                                var collection = board.getCollectionByPosition( value );
+                                let posName = value;
+                                if( collection ){
+                                    posName = collection.getName();
+                                };
+                                message += `<p class="log-step" data-possition="${value}"> <span class="card-key">Move</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${posName}</span> </p>`;
+
+                            break;
+                            case 'flipState':
+                                message += `<p class="log-step" data-flipState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                                
+                            break;
+                            break;
+                            case 'switchState':
+                                message += `<p class="log-step" data-flipState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                                
+                            break;
+                            default: 
+                                message += `<p class="log-step" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            break;
+                        }
+                    });
+                break;
+                case 'shuffle':
+                    message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Cards</span> </p>`;
+                    id = undefined;
+                    oldData = undefined;
+                break;
+
+            }
+            this.steps.push({
+                action: action,
+                id: id, 
+                data: data,
+                oldData: oldData||{},
+                message: message||'',
+            });
+            this.messageElm.append( message );
+            this.messageElm.stop().animate({scrollTop: this.messageElm.height()}, 300);
+            return true;
+        }
+        // get next step
+        step(){
+            let isLast = this.isLastStep();
+            let step = this.steps[this.pointer++] || 0;
+            if( !step ) return false;
+            step['isLastStep'] = isLast;
+            return step;
+        }
+        isFirstStep() {
+            return this.pointer == 0;
+        }
+        isLastStep(){
+            return this.pointer == this.steps.length - 1;
+        }
+        // replay
+        replay(){
+            this.pointer = 0;
+            this.isRePlaying = true;
+            this.addOverlay();
+            // const waitTime = this.options.waitTime || 500;
+            this.playStep();
+        }
+        addOverlay(){
+            $('.replay-overlay').fadeIn('300');
+        }
+        playStep(){
+            let step = this.step();
+            let log = this;
+            if(!step ) {
+                this.writeEnd();
+                this.stopReplay();
+                return false;
+            }
+            let waitTime = this.options.waitTime || 500;
+            let action = step.action || 'update';
+            let data = step.data;
+            let oldData = step.oldData;
+            let board = this.Board;
+            switch (action) {
+                case 'update': 
+                    // var card = board.getItemById( step.id );
+                    $.each(data, function( key, value ){
+                        log.writeStep(step.message || `Update ${key} to ${value}` );
+                        board.updateItem( step.id, key, value );
+                    });
+                break;
+                case 'shuffle':
+                    log.writeStep(step.message || ` Shuffle Cards` );
+                    // Update from data to cards
+                    $.each(data, function( index, item ){
+                        // var card = board.getItemById( item.id );
+                        $.each( ['collection_order', 'order'], function( i, k ){
+                            board.updateItem( item.id, k, item[k] );
+                        });
+                    });
+                break;
+                case 'init':
+                    // var initData = {...data};
+                    var initData = [];
+                    $.each( data , function( i, item ) {
+                        // Copy the properties from the item to initData: amount, collection_order, flipState, id, isExtra, name, order, position, switchState, imageURL
+                        initData.push({
+                            id: item.id,
+                            amount: item.amount,
+                            collection_order: item.collection_order,
+                            flipState: item.flipState,
+                            isExtra: item.isExtra,
+                            name: item.name,
+                            order: item.order,
+                            position: item.position=='hand' ? 'deck' : item.position,
+                            switchState: item.switchState,
+                            imageURL: item.imageURL,
+                        });
+                    });
+                    // console.log( initData );
+                    this.messageElm.empty();
+                    board.emptyBoard();
+                    board.setItems( initData );
+                    log.writeStep(`<p class="highlight-log">START REPLAY</p>` );
+                    log.writeStep(step.message || `Initialized board` );
+
+                break;
+
+            }
+            this.replaytimeout = setTimeout(function(){
+                log.playStep();
+            }, waitTime);
+
+            
+            // if( this.isLastStep() ){
+            //     this.writeEnd();
+            // }
+        }
+
+        // write step
+        writeStep( message){
+            this.messageElm.append(`<p>${message}</p>`);
+            this.messageElm.stop().animate({scrollTop: this.messageElm.height()}, 300);
+
+        }
+        writeEnd(){
+            this.writeStep(`<p class="highlight-log">COMPLETE REPLAY!!</p>` );
+
+        }
+        // stop replay
+        stopReplay(){
+            this.pointer = 0;
+            this.isRePlaying = false;
+            clearTimeout(this.replaytimeout);
+            this.removeOverlay();
+        }
+        removeOverlay(){
+            $('.replay-overlay').fadeOut('300');
+        }
+        // reset
+        reset(){
+            this.pointer = 0;
+            this.isRePlaying = false;
+            this.messageElm.empty();
+        }
+    }
     class Card {
         constructor (Board, item, order, options){
             // this.item = item;
@@ -19,8 +242,12 @@ var board;
                 flipState: 'normal',
                 switchState: 'attack',
                 position: 'deck',
+                isExtra: 0,
             };
             $.extend( this, _default, item);
+            this.isExtra && ( this.position = 'exdeck'); // if isExtra card then draw it in the extra deck
+            this.isExtra && ( this.canMoveDeck = 0);
+            this.canMoveExDeck = this.isExtra;
             // console.log( this );
             this.options = options;
             this.order = order;
@@ -37,19 +264,16 @@ var board;
             // console.log(this.html );
 
             this.html.hover( function( e ) {
-                // console.log('mousein', e);
                 var _board = _card.getBoard();
                 var cardMenu = _board.cardMenu.setCard(_card);
-                // console.log( cardMenu );
 
                 cardMenu.show();
             }, function( e ) { 
                 // console.log('mouseout');
-
                 var _board = _card.getBoard();
                 var cardMenu = _board.cardMenu;
+                cardMenu.element.dialog('option', 'appendTo', 'body');
                 cardMenu.hide();
-                // console.log( cardMenu );
             });
         }
         // validate
@@ -111,10 +335,15 @@ var board;
         afterMove(newPosition){
             // console.log( 'afterMove', newPosition );
 
+            this.getBoard().writelog( 'update', this.id, {
+                position: this.position,
+            }, {
+                position: this.itemBefore.position
+            } );
             // Draw old collection was moved from
             if( this.position !=  this.itemBefore.position ){
                 var collection = this.getBoard().getCollectionByPosition( this.itemBefore.position );
-                     collection && collection.drawOnBoard();
+                    collection && collection.drawOnBoard();
             }
             return true;
         }
@@ -133,22 +362,19 @@ var board;
             if( oldPosition == 'hand' ){
                 willRemove = _card.html.parent();
             }
-            if( this.canMoveTo ( newPosition) ) {
-
+            if( _card.canMoveTo ( newPosition) ) {
                 // 1
                 result = true;
-                var to = this.getNewOffset( newPosition );
-                if( animation )this.doAnimation ( to, animation, duration );
+                var to = _card.getNewOffset( newPosition );
+                if( animation )_card.doAnimation ( to, animation, duration );
                 var newOrder = 0;
-                var collection = 0;
-                collection = this.getBoard().getCollectionByPosition( newPosition);
+                var newCollection = _card.getBoard().getCollectionByPosition( newPosition);
                 var items = [];
-                if( collection ){
+                if( newCollection ){
                     if( isTop ) {
-                        if( collection ){
-                            items = collection.getCollectionItems();
-                            let last = items.length ? items[ items.length - 1 ]['collection_order'] : 0;
-                            newOrder = last + 1;
+                        if( newCollection ){
+                            let last = newCollection.getTopCard();
+                            newOrder = last ? last.collection_order + 2 : 1;
                             _card.collection_order = newOrder;
                         }
                     } else {
@@ -158,27 +384,27 @@ var board;
                     _card.collection_order = newOrder;
                 }
                 // set new position here
-                this.position = newPosition;
+                _card.position = newPosition;
 
-                // reorder collection
-                items = collection ? collection.getCollectionItems() : [];
-                if( items.length ){
-                    $.each( items, function ( i, item ){
-                        item.collection_order = i+1;
-                    });
+                // reorder newCollection
+                if( newCollection ){
+                    items = newCollection ? newCollection.getCollectionItems() : [];
                 }
+                
 
                 if( newPosition != 'summon' ){
-                    this.switchState = 'attack';
+                    _card.switchState = 'attack';
                     _card.updateHtml();
                 }
                 if( newPosition != 'hand' ){
-                    // this.flipState = 'normal';
+                    // _card.flipState = 'normal';
                     _card.updateHtml();
                 }
-                if( ! this.appendToBoard() ){
+                if( ! _card.appendToBoard() ){
+                    console.warn('Append failed');
                     return false;
                 }
+
             }
             //1
             // Nếu oldPosition là hand thì xóa thẻ div cha
@@ -199,12 +425,21 @@ var board;
                 result = true;
                 if( animation )this.doAnimation ( newState, animation, duration );
                 // 1
-                console.log( newState, this.html );
+                // console.log( newState, this.html );
+                var oldFlipState = this.flipState;
                 this.flipState = newState;
                 // set new state here
                 this.html.removeClass('normal flipped').addClass(newState);
 
+                var collection = this.getBoard().getCollectionByPosition( this.get('position') );
+                collection && collection.drawOnBoard();
+                console.log( this.name, this.flipState, collection );
             }
+            this.getBoard().writelog( 'update', this.id, {
+                flipState: newState,
+            }, {
+                flipState: oldFlipState
+            } );
             return result;
 
         }
@@ -224,10 +459,17 @@ var board;
                 result = true;
                 if( animation ) this.doAnimation ( newState, animation, duration );
                 // 1
+                var oldSwitchState = this.switchState;
                 this.switchState = newState;
                 // set new state here
                 this.html.removeClass('attack defense').addClass(newState);
             }
+
+            this.getBoard().writelog( 'update', this.id, {
+                switchState: newState,
+            }, {
+                switchState: oldSwitchState
+            } );
             return result;
         }
 
@@ -235,9 +477,9 @@ var board;
         drawHtml( ) {
             var _card = this;
             var backImageSrc = this.options.imgPath + this.options.backImageSrc;
-            var frontImageSrc = this.options.imgPath + 'card/' + this.name + '.jpeg';
+            var frontImageSrc = this.imageURL || (this.options.imgPath + 'card/' + this.name + '.jpeg');
             var cardId = this.id;
-            var cardElement = $(`<div id="card-${cardId}" class="card card-id-${cardId}" data-id="${cardId}" />`);
+            var cardElement = $(`<div id="card-${cardId}" class="card card-id-${cardId}" data-id="${cardId}" title="${_card.name}"/>`);
             var moveOptions = [
                 'canMoveHand',
                 'canMoveSummon',
@@ -264,8 +506,9 @@ var board;
                 }
             });
 
-            cardElement.append(`<img src="${backImageSrc}" width="70" height="102" class="back-image"/>`);
-            cardElement.append(`<img src="${frontImageSrc}" width="70" height="102" class="front-image""/>`);
+            cardElement.append(`<span class="card-name">${_card.name}</span>`);
+            cardElement.append(`<img src="${backImageSrc}" width="70" height="102" class="card-img back-image"/>`);
+            cardElement.append(`<img src="${frontImageSrc}" width="70" height="102" class="card-img front-image""/>`);
 
             this.html = cardElement;
 
@@ -337,20 +580,17 @@ var board;
                     
                 break;
 
-                case 'hand': //default is hand
+                case 'hand':
                 hand.append( $('<div class="hand-card-container" />').append( _card.html ) );
-                // var _handCardContainer = $('<div class="hand-card-container" />');
-                // hand.append( _handCardContainer );
-                // _card.html.appendTo(_handCardContainer);
-
-                // _card.html.appendTo( _card.getBoard().getHandElm() );
                 break;
-                // default:
+                default:
+                    return false;
 
             }
             hand.find('.hand-card-container').filter( function( index, container ) {
                 return $(container).is(':empty');
             }).remove();
+            return true;
         }
 
         // get / set
@@ -365,16 +605,17 @@ var board;
     }
 
     // Desk, ExDeck, Graveyar, Banish
-    //1
-    // Thiếu: Hiển thị 2 phần: board & dialog ( đang làm dialog)
     class Collection{
-        constructor ( Board, name, elm, menuElm, options){
-            this.Board = Board;
-            this.name = name;
-            this.collection_position = name;
-            this.elm = elm;
-            this.menuElm = menuElm;
-            this.options = options;
+        constructor ( options ) { // Board, name, elm, menuElm, options){
+            var _default = {
+                'Board': {},
+                'name': '',
+                'elm': '',
+                'menuElm': '', // Đây là dialog, đặt tên nhầm
+                'options': {},
+                'collection_position': '',
+            };
+            $.extend(this, _default, options);
             this.init();
         }
         init(){
@@ -391,7 +632,7 @@ var board;
         events(){
             var collection = this;
             var _board = collection.getBoard();
-            this.elm.on('click', function(){
+            this.elm.on('click', '.card img, .collection-count', function(){
                 collection.showDialog();
             } );
 
@@ -402,20 +643,37 @@ var board;
                 var _card = _board.getItemById( _cardID );
                 _card.moveTo('hand');
             } );
+
+            // Current, only Deck and extra deck have menu
+            // but exDeck have only 1 item show skip it
+            if( collection.getPosition() == 'deck' ){
+                this.elm.hover( function( e ) {
+                    var _board = collection.getBoard();
+                    var collectionMenu = _board.collectionMenu.setCollection(collection);
+
+                    collectionMenu.show();
+                }, function( e ) { 
+                    // console.log('mouseout');
+                    var _board = collection.getBoard();
+                    var collectionMenu = _board.collectionMenu;
+                    collectionMenu.element.dialog('option', 'appendTo', 'body');
+                    collectionMenu.hide();
+                });
+            }
         }
         getCards(){
             return this.getBoard().getItemsByPosition(this.collection_position);
         }
         getTopCard(){
             var cards = this.getCards();
-            cards.sort((a,b) => {
-                return a.collection_order < b.collection_order;
-            });
-            return cards.length > 0 ? cards[ cards.length - 1] : false;
+            let card = cards.length ? cards[cards.length-1] : false;
+            return card;
         }
+
+        // Draw the last card of collection on the board
+        // Draw a clone of card.html, do not draw card.html
         drawOnBoard(){
             var cards = this.getCards();
-
             // count cards
             this.elm.find('.card').remove();
             this.elm.find('.collection-count').children().first().empty().text( cards.length );
@@ -423,7 +681,6 @@ var board;
             // TODO: check and draw top card with status;
             if( cards.length > 0 ){
                 var topCard = this.getTopCard();
-                // temporarily flip items
                 this.elm.prepend(  topCard.html.clone().attr('id', '') ); 
             }
         }
@@ -437,16 +694,24 @@ var board;
                     autoOpen: false,
                     modal: true, // Overlay mode
                     open: function (event, ui) {
-                        // $(this).closest(".ui-dialog")
-                            // .find(".ui-dialog-titlebar-close")
-                            // .removeClass("ui-dialog-titlebar-close")
-                            // .html("<span class='ui-button-icon-primary ui-icon ui-icon-closethick'></span>")
+                        var _dialog = $(this);
+                        $('.ui-widget-overlay').unbind('click').bind('click', function(e) {
+                            _dialog.dialog('close');
+                        });
+                    },
+                    close: function( event, ui ) {
+                        $('.ui-widget-overlay').unbind('click');
+
                     },
                     position: {
                         my: "top center",
                         at: "top center",
                         of: '#playtest'
-                    }
+                    },
+                    classes: {
+                        'ui-dialog-titlebar' : 'collection-titlebar',
+                        'ui-dialog' : 'ui-dialog-collection-menu',
+                    },
                 });
                 // this.menuElm = dialog;
             // console.log( this.menuElm );
@@ -468,15 +733,42 @@ var board;
         getBoard(){
             return this.Board;
         }
+        getName(){
+            return this.name;
+        }
+        getPosition(){
+            return this.collection_position;
+        }
 
         // add / remove card
         appendCard( card, reDraw ){
-            if( reDraw || 0 ){
+            // if( reDraw || 0 ){
                 card.position = this.collection_position;
                 card.updateHtml();
-            }
-            card.html.appendTo(this.menuElm.find('.collection-container'));
+            // }
+            this.reDraw();
+
+            // card.html.appendTo(this.menuElm.find('.collection-container'));
             return true;
+        }
+        reDraw(){
+            var collection = this;
+            var cards = collection.getCards();
+            cards.forEach(card => {
+                card.html.appendTo(this.menuElm.find('.collection-container') );
+            });
+            return true;
+        }
+        shuffleCollectionCards(){
+            var _board = this.getBoard();
+            var collection = this;
+            var items = collection.getCards();
+            // var shuffledArr = items.sort(() => Math.random() - 0.5);
+            items.sort(() => Math.random() - 0.5);
+            $.each( items, function( index, item ) {
+                _board.updateItem( item.id, 'collection_order', index+1 );
+            });
+            if( this.playlog ) this.writelog('shuffle', undefined, {...this.items});
         }
 
     }
@@ -523,11 +815,33 @@ var board;
             
             this.shuffleCards();
             this.events();
+            this.playlog = new PlayLog({
+                'Board': this,
+                'name': 'PlayLog',
+                'elm': $('.log-message-container'),
+                'options': this.options,
+                'initItems': {... this.getItems() }
+            });
 
+            this.writelog('init',undefined, {... this.getItems() }, `<p> Initialized board with ${this.items.length} cards</p>`);
+
+        }
+        // Remove all Item and HTML elements
+        emptyBoard(){
+            var board = this;
+            this.items = [];
+            this.elm.find('.card').remove();
+            $.each( ['deckMenuElm','exDeckMenuElm','graveyardMenuElm','banishMenuElm', 'cardManuElm','collectionMenuElm'], function(index, elm){
+                board[elm].find('.collection-container').empty();
+            });
+
+                
+                // $('.collection-count').children().first().empty().text( 0 );
         }
         initItems( ){
             var _board = this;
             this.items = [];
+            // console.log( JSON.stringify(this.orgitems ));
             this.orgitems.forEach( function( item ){
                 if( _board.validateBeforeAddItem( item ) ){
                     _board.addItem( item );
@@ -535,16 +849,50 @@ var board;
             });
         }
         initDeck(){
-            this.deck = new Collection( this, 'deck', this.deckElm, this.deckMenuElm,this.options);
+            // this.deck = new Collection( this, 'deck', this.deckElm, this.deckMenuElm,this.options);
+            this.deck = new Collection({
+                'Board': this,
+                'name': 'Deck',
+                'elm': this.deckElm,
+                'menuElm': this.deckMenuElm,
+                'options': this.options,
+                'collection_position': 'deck',
+            });
         }
         initExDeck(){
-            this.exdeck = new Collection( this, 'exdeck', this.exDeckElm, this.exDeckMenuElm, this.options);
+            // this.exdeck = new Collection( this, 'exdeck', this.exDeckElm, this.exDeckMenuElm, this.options);
+            this.exdeck = new Collection({
+                'Board': this,
+                'name': 'Extra Deck',
+                'elm': this.exDeckElm,
+                'menuElm': this.exDeckMenuElm,
+                'options': this.options,
+                'collection_position': 'exdeck',
+            });
         }
         initGraveyard(){
-            this.graveyard = new Collection( this, 'graveyard', this.graveyardElm, this.graveyardMenuElm, this.options);
+            // this.graveyard = new Collection( this, 'graveyard', this.graveyardElm, this.graveyardMenuElm, this.options);
+            this.graveyard = new Collection({
+                'Board': this,
+                'name': 'Graveyard',
+                'elm': this.graveyardElm,
+                'menuElm': this.graveyardMenuElm,
+                'options': this.options,
+                'collection_position': 'graveyard',
+            });
+            
         }
         initBanish(){
-            this.banish = new Collection( this, 'banish', this.banishElm, this.banishMenuElm, this.options);
+            // this.banish = new Collection( this, 'banish', this.banishElm, this.banishMenuElm, this.options);
+            this.banish = new Collection({
+                'Board': this,
+                'name': 'Banish',
+                'elm': this.banishElm,
+                'menuElm': this.banishMenuElm,
+                'options': this.options,
+                'collection_position': 'banish',
+            });
+            
         }
         initMenus(){
             // var _board = this;
@@ -553,6 +901,7 @@ var board;
         }
 
         events(){
+
             return true;
         }
         // Add, update, remove
@@ -581,6 +930,7 @@ var board;
                 _board.updateItem( item.id, 'collection_order', index+1 );
                 _board.updateItem( item.id, 'order', index+1 );
             });
+            if( this.playlog ) this.writelog('shuffle', undefined, {...this.items});
         }
 
         // Move
@@ -609,17 +959,26 @@ var board;
             return this.getItemsByPosition(collection_position);
         }
         getItemsByPosition(position){
-            return this.items.filter( function( item ){
+            var items = this.items.filter( function( item ){
                 return item.position == position;
             });
+            items.sort(function (a, b) { 
+                return a.collection_order > b.collection_order ? 1 : -1; 
+            });
+            items.forEach(function (item, index){
+                item.collection_order = index+1;
+            } );
+            return items;
         }
         getDeckItems(){
             return this.getItemsByPosition('deck');
 
         }
+        getExDeckItems(){
+            return this.getItemsByPosition('exdeck');
+        }
         getExtraDeckItems(){
             return this.getItemsByPosition('exdeck');
-
         }
         getGraveyardItems(){
             return this.getItemsByPosition('graveyard');
@@ -657,6 +1016,14 @@ var board;
             });
             return _free;
         }
+
+        writelog( action, id, data, oldData ){
+            return this.playlog.addStep( action, id, data, oldData||{} );
+        }
+
+        set( key, value ){
+            this[key] = value;
+        }
         getFreeST(){
             var _free = [];
             $.each( this.elm.find('.st-slot'), function (i, el ){
@@ -666,9 +1033,6 @@ var board;
                 }
             });
             return _free;
-        }
-        set( key, value ){
-            this[key] = value;
         }
 
         getItemById(id){
@@ -762,7 +1126,10 @@ var board;
     }
 
     $(document).ready(function() {
-        board = new Board( $('#playtest'), boardData, {} );
+        const isDebug = urlParams.get('debug');
+        board = new Board( $('#playtest'), boardData, {
+            isDebug: isDebug,
+        } );
         console.log(board);
 
     });

@@ -39,15 +39,62 @@
     height: 100%;
 }
 
+.play-board-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 80px;
+}
+.play-board-container #log-message {
+    height: 604px;
+    resize: none !important;
+    display: block;
+    position: relative;
+    min-width: 300px;
+    border: 1px solid #efefef;
+    border-radius: 4px;
+    padding: 10px;
+    padding-bottom: 25px;
+    font-size: 12px;
+    color: #efefef;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow: auto;
+}
+.play-board-container #log-message .log-step {
+    max-width: 350px;
+}
+.play-board-container .log-message-container .card-key {
+    color: #b4b4ed;
+}
+.play-board-container .log-message-container .new-state {
+    color: #f7a5a5;
+}
+.play-board-container .log-message-container .log-card-name {
+    color: red;
+}
+.play-board-container .log-message-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px;
+    align-items: flex-end;
+    margin-bottom: 15px;
+}
+.play-board-container .log-message-header .log-title {
+    margin: 0;
+}
+
 #playtest {
-    border: 1px solid white;
+    border: 1px solid #efefef;
     background-color: #000016;
     background-image: url("../asset/bk_layer_a.png");
     background-size: cover;
-    margin: 20px auto;
     padding: 1rem;
     position: relative;
     display: inline-block;
+    border-radius: 4px;
 }
 #playtest .game-board {
     display: flex;
@@ -65,7 +112,7 @@
 #playtest .card-slot-row .no-card-slot {
     visibility: hidden;
 }
-#playtest .card-slot-row .card-slot {
+#playtest .card-slot-row .holder-slot {
     height: 102px;
     width: 102px;
     display: block;
@@ -74,10 +121,10 @@
     position: relative;
     text-align: center;
 }
-#playtest .card-slot-row .card-slot .card {
+#playtest .card-slot-row .holder-slot .card {
     display: inline-flex;
 }
-#playtest .card-slot-row .card-slot .collection-count {
+#playtest .card-slot-row .holder-slot .collection-count {
     position: absolute;
     top: 0;
     left: 0;
@@ -89,7 +136,7 @@
     font-weight: 600;
     font-size: 30px;
 }
-#playtest .card-slot-row .card-slot.desk {
+#playtest .card-slot-row .holder-slot.desk {
     height: 200px;
 }
 
@@ -98,11 +145,19 @@
     width: 70px;
     background-color: transparent;
 }
+.card .card-img {
+    max-width: 70px;
+    max-height: 102px;
+    height: auto;
+}
 .card .back-image {
     display: none;
 }
 .card .front-image {
     display: inline-block;
+}
+.card .card-name {
+    display: none;
 }
 .card.flipped .back-image {
     display: block;
@@ -116,7 +171,7 @@
 .card.defense img {
     transform: rotate(-90deg);
     position: relative;
-    left: 17px;
+    left: 14px;
 }
 
 #hand .hand-board {
@@ -196,5 +251,7 @@ body .ui-dialog-card-menu {
     padding: 0;
     border: 1px solid #ccc;
     border-radius: 2px 2px 0 0;
-    position: fixed;
+}
+body .ui-widget-overlay {
+    background-color: rgba(0, 0, 22, 0.5019607843);
 }
