@@ -70,13 +70,13 @@ var board;
                                 message += `<p class="log-step" data-possition="${value}"> <span class="card-key">Move</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${posName}</span> </p>`;
 
                             break;
-                            case 'flipState':
-                                message += `<p class="log-step" data-flipState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            case 'foldState':
+                                message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                                 
                             break;
                             break;
                             case 'switchState':
-                                message += `<p class="log-step" data-flipState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                                message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                                 
                             break;
                             default: 
@@ -85,8 +85,27 @@ var board;
                         }
                     });
                 break;
+
+                case 'target':
+                    message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
+                break;
+
+                case 'declare':
+                    console.warn(message);
+                    message += `<p class="log-step"> Declared effect of <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
+                break;
+
+                case 'reveal':
+                    message += `<p class="log-step"> Reveal card <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
+                break;
+
                 case 'shuffle':
                     message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Cards</span> </p>`;
+                    id = undefined;
+                    oldData = undefined;
+
+                case 'shuffle_deck':
+                    message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Deck</span> </p>`;
                     id = undefined;
                     oldData = undefined;
                 break;
@@ -158,17 +177,29 @@ var board;
                             board.updateItem( item.id, k, item[k] );
                         });
                     });
+                case 'shuffle_deck':
+                    var position = 'deck';
+                    log.writeStep(step.message || ` Shuffle Deck` );
+                    // Update from data to cards
+                    $.each(data, function( index, item ){
+                        // var card = board.getItemById( item.id );
+                        $.each( ['collection_order', 'order'], function( i, k ){
+                            board.updateItem( item.id, k, item[k] );
+                        });
+                    });
+                    var deck = board.getCollectionByPosition(position);
+                    deck.reDraw();
                 break;
                 case 'init':
                     // var initData = {...data};
                     var initData = [];
                     $.each( data , function( i, item ) {
-                        // Copy the properties from the item to initData: amount, collection_order, flipState, id, isExtra, name, order, position, switchState, imageURL
+                        // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
                         initData.push({
                             id: item.id,
                             amount: item.amount,
                             collection_order: item.collection_order,
-                            flipState: item.flipState,
+                            foldState: item.foldState,
                             isExtra: item.isExtra,
                             name: item.name,
                             order: item.order,
@@ -239,15 +270,15 @@ var board;
                 canMoveST : true,
                 canMoveBanish : true,
                 canMoveGraveyard : true,
-                flipState: 'normal',
+                foldState: 'normal',
                 switchState: 'attack',
                 position: 'deck',
                 isExtra: 0,
             };
             $.extend( this, _default, item);
             this.isExtra && ( this.position = 'exdeck'); // if isExtra card then draw it in the extra deck
-            this.isExtra && ( this.canMoveDeck = 0);
-            this.canMoveExDeck = this.isExtra;
+            // this.isExtra && ( this.canMoveDeck = 0);
+            // this.canMoveExDeck = this.isExtra;
             // console.log( this );
             this.options = options;
             this.order = order;
@@ -310,7 +341,7 @@ var board;
             return allow;
         }
         canFlip( newState ) {
-            newState = newState|| 'normal'; // normal / flipped 
+            newState = newState|| 'normal'; // normal / fold 
 
             //1 
             return true;
@@ -347,10 +378,13 @@ var board;
             }
             return true;
         }
-        moveTo( newPosition, isTop, animation, duration ) {
+
+        // Biến order chỉ dùng cho summon và ST
+        moveTo( newPosition, isTop, order, animation, duration ) {
             if(!['hand', 'deck', 'exdeck', 'graveyard','summon','st', 'banish'].includes( newPosition ) ) return false;
 
             var _card = this;
+            var _board = _card.getBoard();
             var result = false;
             if( typeof isTop == 'undefined' ) isTop = true;
             var oldPosition = _card.position;
@@ -383,7 +417,30 @@ var board;
                 } else {
                     _card.collection_order = newOrder;
                 }
+                if( ['summon', 'st'].includes(newPosition) ){
+                    order = order || 1;
+                    var _continue = 1;
+                    var _stop = 10;
+                    while ( _continue && _stop) {
+                         var _slot = _board.elm.find('.card-slot.' + newPosition + order + '-slot');
+                        if(  ! _slot.find('.card').length ) {
+                            _continue = 0;
+                            _card.collection_order = order;
+                        }
+
+                        order--;
+                        _stop --;
+                        if( order == 0 ) order = 5;
+                    }
+                    if( !_stop ) {
+                        console.warn('No Space left');
+                        return false;
+                    }
+                }
                 // set new position here
+                if( _card.itemBefore.position == 'banish' ){
+                    _card.fold('normal');
+                }
                 _card.position = newPosition;
 
                 // reorder newCollection
@@ -397,7 +454,7 @@ var board;
                     _card.updateHtml();
                 }
                 if( newPosition != 'hand' ){
-                    // _card.flipState = 'normal';
+                    // _card.foldState = 'normal';
                     _card.updateHtml();
                 }
                 if( ! _card.appendToBoard() ){
@@ -415,30 +472,32 @@ var board;
             return result;
         }
 
-        // flip state: normal / flipped
-        flip( newState, animation, duration ) {
-            if( !['normal', 'flipped'].includes( newState ) ) return false;
+        // fold state: normal / fold
+        fold( newState, animation, duration ) {
+            if( !['normal', 'fold'].includes( newState ) ) return false;
             var result = false;
-            if( this.canFlip ( newState ) ) {
+            if( this.canFlip ( newState ) && this.foldState !=newState ) {
 
                 // 1
-                result = true;
                 if( animation )this.doAnimation ( newState, animation, duration );
                 // 1
                 // console.log( newState, this.html );
-                var oldFlipState = this.flipState;
-                this.flipState = newState;
+                var oldFlipState = this.foldState;
+                this.foldState = newState;
                 // set new state here
-                this.html.removeClass('normal flipped').addClass(newState);
+                this.html.removeClass('normal fold').addClass(newState);
+                result = true;
 
                 var collection = this.getBoard().getCollectionByPosition( this.get('position') );
                 collection && collection.drawOnBoard();
-                console.log( this.name, this.flipState, collection );
+                // console.log( this.name, this.foldState, collection );
+            } else {
+                // console.warn( 'Failed to update foldState to ' + newState );
             }
-            this.getBoard().writelog( 'update', this.id, {
-                flipState: newState,
+            result &&  this.getBoard().writelog( 'update', this.id, {
+                foldState: newState,
             }, {
-                flipState: oldFlipState
+                foldState: oldFlipState
             } );
             return result;
 
@@ -472,6 +531,27 @@ var board;
             } );
             return result;
         }
+        target(){
+            this.getBoard().writelog( 'target', this.id, {});
+        }
+        
+        declare(){
+            this.getBoard().writelog( 'declare', this.id, {});
+        }
+        reveal(){
+            this.getBoard().writelog( 'reveal', this.id, {
+                collection_position: this.collection_position
+            });
+            if( this.position === 'hand'){
+                //1 
+                // Move card to center of Hand
+            }
+            if( this.position === 'exdeck'){
+                //1 // Show image as full screen
+                // then move to the Top of the extra deck
+            }
+
+        }
 
         // Draw
         drawHtml( ) {
@@ -495,7 +575,7 @@ var board;
                 }
             });
             var states = [
-                'flipState',
+                'foldState',
                 'switchState',
                 'position',
             ];
@@ -532,11 +612,11 @@ var board;
                 }
             });
             var states = [
-                'flipState',
+                'foldState',
                 'switchState',
                 'position',
             ];
-            cardElement.removeClass('normal flipped attack defense deck exdeck graveyard banish summon st hand');
+            cardElement.removeClass('normal fold attack defense deck exdeck graveyard banish summon st hand');
             states.forEach( function( stateName ) {
                 if (_card[stateName]) {
                     cardElement.addClass(_card[stateName]);
@@ -562,7 +642,8 @@ var board;
                 break;
 
                 case'summon':
-                    var summonElm = _board.getFreeSummon();
+                    // var summonElm = _board.getFreeSummon();
+                    var summonElm = _board.getCardSlot(_card.id);
                     if( !summonElm.length ){
                         return false;
                     }
@@ -571,7 +652,8 @@ var board;
                     
                     break;
                 case'st':
-                    var stElm = _board.getFreeST();
+                    // var stElm = _board.getFreeST();
+                    var stElm = _board.getCardSlot(_card.id);
                     if( !stElm.length ){
                         return false;
                     }
@@ -632,17 +714,18 @@ var board;
         events(){
             var collection = this;
             var _board = collection.getBoard();
-            this.elm.on('click', '.card img, .collection-count', function(){
+            this.elm.on('click', '.card img, .collection-count, .ddescription', function(){
                 collection.showDialog();
             } );
 
-            this.menuElm.on('click', '.card img', function(){
-                var _cardElm = $(this).closest('.card');
-                // console.log( _cardElm );
-                var _cardID = _cardElm.data('id');
-                var _card = _board.getItemById( _cardID );
-                _card.moveTo('hand');
-            } );
+            // Remove the event when click on card
+            // this.menuElm.on('click', '.card img', function(){
+            //     var _cardElm = $(this).closest('.card');
+            //     // console.log( _cardElm );
+            //     var _cardID = _cardElm.data('id');
+            //     var _card = _board.getItemById( _cardID );
+            //     _card.moveTo('hand');
+            // } );
 
             // Current, only Deck and extra deck have menu
             // but exDeck have only 1 item show skip it
@@ -755,7 +838,7 @@ var board;
             var collection = this;
             var cards = collection.getCards();
             cards.forEach(card => {
-                card.html.appendTo(this.menuElm.find('.collection-container') );
+                card.html.prependTo(this.menuElm.find('.collection-container') );
             });
             return true;
         }
@@ -768,7 +851,10 @@ var board;
             $.each( items, function( index, item ) {
                 _board.updateItem( item.id, 'collection_order', index+1 );
             });
-            if( this.playlog ) this.writelog('shuffle', undefined, {...this.items});
+            this.reDraw();
+            // console.log( collection, collection.getCards(), target );
+            
+            if( _board.playlog ) _board.writelog('shuffle_deck', undefined, {...items});
         }
 
     }
@@ -800,7 +886,7 @@ var board;
             this.graveyardMenuElm = $('#graveyardmenu');
             this.banishMenuElm = $('#banishmenu');
 
-            this.cardManuElm = $('#cardMenu');
+            this.cardMenuElm = $('#cardMenu');
             this.collectionMenuElm = $('#collectionMenu');
 
             this.initItems( this.orgitems );
@@ -831,7 +917,7 @@ var board;
             var board = this;
             this.items = [];
             this.elm.find('.card').remove();
-            $.each( ['deckMenuElm','exDeckMenuElm','graveyardMenuElm','banishMenuElm', 'cardManuElm','collectionMenuElm'], function(index, elm){
+            $.each( ['deckMenuElm','exDeckMenuElm','graveyardMenuElm','banishMenuElm', 'cardMenuElm','collectionMenuElm'], function(index, elm){
                 board[elm].find('.collection-container').empty();
             });
 
@@ -896,14 +982,70 @@ var board;
         }
         initMenus(){
             // var _board = this;
-            this.cardMenu = new CardMenu( this.cardManuElm );
+            this.cardMenu = new CardMenu( this.cardMenuElm );
             this.collectionMenu = new CollectionMenu( this.collectionMenuElm );
         }
 
+        // START Events
         events(){
+            this.removeHighlight();
+            this.selectOrderEvent();
 
             return true;
         }
+        removeHighlight(){
+            var board = this;
+            board.elm.on('click', function( e ){
+                var willRemove = false;
+                var _elm = $(e.target);
+                if(  _elm.closest('.ui-dialog').length ) {
+                    return;
+                }
+                if(  _elm.closest('.card-slot.highlight').length ) {
+                    return;
+                }
+                if(  _elm.closest('.ui-dialog').length ) {
+                    return;
+                }
+                willRemove = true;
+
+                var highlightElms = board.elm.find('.card-slot.highlight');
+                if( highlightElms ){
+                    $.each( highlightElms, function( index, highlight){
+                        // console.warn('remove highlighting' + this.classes)
+                        $(highlight).removeClass( 'highlight');
+                    });
+                    board.setWaitingActions(false);
+                }
+            });
+        }
+        selectOrderEvent(){
+            var board = this;
+            this.elm.on('click', '.highlight', function( e ){
+                var _this = $(this);
+                var isSS = _this.hasClass( 'summon-slot');
+                var isST = _this.hasClass( 'st-slot');
+                var order = _this.data( 'order' );
+                var waitingActions = board.getWaitingActions();
+                if( order ){
+                    board.updateCardbyAction( 
+                        waitingActions.card, 
+                        waitingActions.newPosition, 
+                        order, 
+                        waitingActions.newState, waitingActions.isFD
+                    );
+                }
+                var highlightElms = board.elm.find('.card-slot.highlight');
+                if( highlightElms ){
+                    $.each( highlightElms, function( index, highlight){
+                        // console.warn('remove highlighting' + this.classes)
+                        $(highlight).removeClass( 'highlight');
+                    });
+                    board.setWaitingActions(false);
+                }
+            });
+        }
+        // END Events
         // Add, update, remove
         validateBeforeAddItem( item ){
             return true;
@@ -934,8 +1076,8 @@ var board;
         }
 
         // Move
-        moveCard( card, to ){
-            card.moveTo( to );
+        moveCard( card, to, isTop ){
+            card.moveTo( to, isTop );
         }
         deckToHand( count, from ) {
             var _board = this;
@@ -1021,6 +1163,64 @@ var board;
             return this.playlog.addStep( action, id, data, oldData||{} );
         }
 
+        // this is private function. do not call from outside
+        updateCardbyAction(card, newPosition, order, newState, isFD){
+            var isTop = true;
+            if( newState ){
+                switch( newState ){
+                    case 'def':
+                        card.defense();
+                        break;
+                    case 'atk':
+                        card.attack();
+                        break;
+                    case 'fold':
+                    case 'normal':
+                        card.fold(newState);
+                    break;
+                    case 'target':
+                        card.target();
+                    break;
+
+                    case 'declare':
+                        card.declare();
+                    break;
+
+                    case 'reveal':
+                        card.reveal();
+                    break;
+
+                    case 'active':
+                        newPosition = 'st';
+                        order = 5;
+                        card.fold('normal');
+
+
+                }
+            } else{
+                card.attack();
+                card.fold('normal');
+            }
+            if( isFD ){
+                switch( isFD ){
+                    case 'bottom':
+                        isTop = false;
+                    break;
+                    case 'fold':
+                    case 'normal':
+                        card.fold(newState);
+                    case 'toendST': 
+                    
+                }
+            }
+            if( newPosition != 'this' && newPosition != card.position){
+                card.moveTo(newPosition, isTop, order);
+            }
+            return true;
+        }
+        setWaitingActions(data){
+            this.waitingActions = data;
+        }
         set( key, value ){
             this[key] = value;
         }
@@ -1033,6 +1233,31 @@ var board;
                 }
             });
             return _free;
+        }
+
+        // Check SS / ST board free only one slot
+        // return order of free slot if true
+        // return false if wrong
+        isSTFreeOne(){
+            var frees = [];
+            $.each( this.elm.find('.st-slot'), function (i, el ){
+                var _el = $(el);
+                if( !_el.find('.card').length ){
+                    frees.push( _el.data( 'order' ) );
+                }
+            });
+            return frees.length == 1 ? frees[0] : false;
+        }
+        
+        isSSFreeOne(){
+            var frees = [];
+            $.each( this.elm.find('.summon-slot'), function (i, el ){
+                var _el = $(el);
+                if( !_el.find('.card').length ){
+                    frees.push( _el.data( 'order' ) );
+                }
+            });
+            return frees.length == 1 ? frees[0] : false;
         }
 
         getItemById(id){
@@ -1120,6 +1345,47 @@ var board;
         getExDeckMenuElm() {
             return this.exDeckMenuElm;
         }
+        getWaitingActions(){
+            return this.waitingActions || false;
+        }
+        getCardSlot(cardId){
+            var board = this;
+            var card = this.getItemById(cardId);
+            var order = card.get('collection_order');
+            var position = card.get('position');
+            if( ['summon', 'st'].includes(position) ){
+                var elm = board.elm.find('.card-slot.' + position + order + '-slot');
+                console.log(elm, ('.card-slot.' + position + order + '.slot'));
+                return elm;
+            }
+            return false;
+        }
+        selectOrder(position, callback) {
+            var waitingActions= this.getWaitingActions();
+            if( waitingActions.newPosition ) {
+                let newPosition = waitingActions.newPosition;
+                let cardHolders = this.highlightCardHolders(newPosition);
+                return cardHolders;
+            }
+            return false;
+        }
+        highlightCardHolders(position){
+            var cardHolderElms = this.getCardHolder(position);
+            this.elm.find('.card-slot ').removeClass('highlight');
+            
+            // Highlight when slot is empty
+            if(! cardHolderElms.find('.card').length ){
+                cardHolderElms.addClass('highlight');
+            }
+            return cardHolderElms;
+
+        }
+        getCardHolder(position){
+            return this.elm.find('.' + position + '-slot.card-slot ')
+        }
+
+
+
 
 
         
