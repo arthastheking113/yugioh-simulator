@@ -149,6 +149,16 @@ $white-color: #efefef;
             &.desk{
                 height: 200px;
             }
+            &.card-slot.highlight {
+                animation: moving-border 4s ease infinite;
+                border-style: solid;
+                border-width: 1px;
+                // border-image-source: 
+                border-image: linear-gradient(45deg,red,blue) 10;
+                border-image-slice: 1;
+                border-image-outset: 0;
+                border-image-repeat: stretch;
+            }
         }
 
 
@@ -175,7 +185,7 @@ $white-color: #efefef;
     .card-name{
         display: none;
     }
-    &.flipped {
+    &.fold {
         .back-image{
             display: block;
         }
@@ -290,3 +300,19 @@ body {
     }
 
 }
+  @keyframes moving-border {
+    0% {
+        border-image: linear-gradient(45deg,red,blue) 10;
+
+    }
+    50% {
+        border-image: linear-gradient(45deg,blue,  red) 10;
+        
+
+    }
+0% {
+        border-image: linear-gradient(45deg, red,blue) 10;
+
+        
+    }
+  }

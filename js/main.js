@@ -4,6 +4,17 @@ var boardData = {
     "created": "2018-01-18",
     "skill": "Beatdown!",
     "main": [
+        /**
+         * Template for the card
+         * {
+          "name": "Hazy Flame Sphynx",
+            id: "card6",
+            "amount": 1,
+            isST: 1,
+            isSpell: 1,
+            imageURL: 'assets/images/HFSphynx.jpeg'
+        }
+         */
         {
             "name": "Hazy Flame Cerbereus",
             id: "card1",
@@ -17,20 +28,22 @@ var boardData = {
             "name": "Hazy Flame Cerbereus",
             id: "card3",
             "amount": 1,
-            // "switchState": "defense"
         }, {
             "name": "Hazy Flame Sphynx",
             id: "card4",
             "amount": 1,
-            // "switchState": "defense"
+            isST: 1,
         }, {
             "name": "Hazy Flame Sphynx",
             id: "card5",
-            "amount": 1
+            "amount": 1,
+            isST: 1,
         }, {
             "name": "Hazy Flame Sphynx",
             id: "card6",
-            "amount": 1
+            "amount": 1,
+            isST: 1,
+            isSpell: 1
         }, {
             "name": "Chow Len the Prophet",
             id: "card7",
@@ -160,6 +173,43 @@ var boardData = {
             "amount": 1,
             "imageURL": "https://ygovietnamcdn.azureedge.net/storage/Card/80117527.jpg",
             "isExtra": 1
+        }, {
+            "name": "Hazy Flame Peryton",
+            id: "card131",
+            "amount": 1
+        }, {
+            "name": "Sphere Kuriboh",
+            id: "card141",
+            "amount": 1
+        }, {
+            "name": "Anti-Magic Arrows",
+            id: "card151",
+            "amount": 1
+        }, {
+            "name": "Anti-Magic Arrows",
+            id: "card161",
+            "amount": 1
+        }, {
+            "name": "Anti-Magic Arrows",
+            id: "card171",
+            "amount": 1
+        }, {
+            "name": "Mausoleum of the Emperor",
+            id: "card181",
+            "amount": 1
+        }, {
+            "name": "Mausoleum of the Emperor",
+            id: "card191",
+            "amount": 1
+        }, {
+            "name": "Mausoleum of the Emperor",
+            id: "card201",
+            "amount": 1
+        }, {
+            "name": "Dark Magician",
+            id: "card211",
+            "amount": 1,
+            imageURL: 'https://ygovietnamcdn.azureedge.net/storage/Card/46986414.jpg',
         }
     ],
     // "extra": [],

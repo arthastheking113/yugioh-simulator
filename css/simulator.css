@@ -139,6 +139,16 @@
 #playtest .card-slot-row .holder-slot.desk {
     height: 200px;
 }
+#playtest .card-slot-row .holder-slot.card-slot.highlight {
+    animation: moving-border 4s ease infinite;
+    border-style: solid;
+    border-width: 1px;
+    -o-border-image: linear-gradient(45deg, red, blue) 10;
+       border-image: linear-gradient(45deg, red, blue) 10;
+    border-image-slice: 1;
+    border-image-outset: 0;
+    border-image-repeat: stretch;
+}
 
 .card {
     cursor: pointer;
@@ -159,10 +169,10 @@
 .card .card-name {
     display: none;
 }
-.card.flipped .back-image {
+.card.fold .back-image {
     display: block;
 }
-.card.flipped .front-image {
+.card.fold .front-image {
     display: none;
 }
 .card.defense {
@@ -254,4 +264,19 @@ body .ui-dialog-card-menu {
 }
 body .ui-widget-overlay {
     background-color: rgba(0, 0, 22, 0.5019607843);
+}
+
+@keyframes moving-border {
+    0% {
+        -o-border-image: linear-gradient(45deg, red, blue) 10;
+           border-image: linear-gradient(45deg, red, blue) 10;
+    }
+    50% {
+        -o-border-image: linear-gradient(45deg, blue, red) 10;
+           border-image: linear-gradient(45deg, blue, red) 10;
+    }
+    0% {
+        -o-border-image: linear-gradient(45deg, red, blue) 10;
+           border-image: linear-gradient(45deg, red, blue) 10;
+    }
 }
