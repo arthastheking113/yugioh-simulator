@@ -57,7 +57,7 @@
 ### Summon from extra deck to extra monster zone
 - Monster in Extra Deck can be Summon to the top 2 slots/zones on the board.
 
-![image](issue-image/extra-monster-zone.png)
+![image](issue-image/extra-monster-zone.PNG)
 
 ### Cannot Summon/Set/SS ATK/SS DEF monster if there is monster on board
 - When there is a monster on board, cannot summon a different monster.
