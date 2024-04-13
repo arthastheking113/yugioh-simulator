@@ -85,6 +85,9 @@
 .play-board-container .log-message-header .log-title {
     margin: 0;
 }
+.play-board-container .log-message-header .replay-button {
+    color: greenyellow;
+}
 
 #playtest {
     border: 1px solid #efefef;

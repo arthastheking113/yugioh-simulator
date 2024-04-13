@@ -372,7 +372,7 @@ class CardMenu extends MenuBase {
         <!-- 'active' , only Spell card -->
 
             <li class="menuItem">
-                <a href="javascript:void(0)" data-condition="isST" id="set" data-target="st,normal">
+                <a href="javascript:void(0)" data-condition="isST" id="active" data-target="st,normal">
                     Active
                 </a>
             </li>
@@ -458,33 +458,71 @@ class CardMenu extends MenuBase {
                     isFD = 'fold';
                 }
             }
+            if(newPosition == 'this' && newState == 'move'){
+                order =false;
+                var free = board.isSS_STFreeOne();
+                if( free ){
+                    order = free.data( 'order' );
+                    newPosition = free.data( 'position' );
+                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+                }else{
+                    //select the new order
+                    board.setWaitingActions({
+                        card: card,
+                        newPosition: false,
+                        newState: newState,
+                        isFD: isFD
+                    });
+                    board.selectOrder(true);
+                    return 'waiting for select order';
+                }
+
+            }
+
             if( ( card.position != newPosition ) && ( ( newPosition == 'summon') || ( newPosition == 'st') ) ){
                 // Close the collection dialog if it is already open
                 if( ['deck', 'exdeck', 'banish', 'graveyard'].includes(card.position) ){
                     var collection = board.getCollectionByPosition(card.position);
-                    console.log(collection);
+                    // console.log(collection);
                     collection && collection.menuElm.dialog('close');
                 }
 
                 // check order
                 order =false;
-                order = ( newPosition == 'st' ) ? board.isSTFreeOne() : board.isSSFreeOne();
-
-                // If have last slot then put the card in the last slot
-                if( order ) {
-                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
-                    
-                // Else  User select a slot then put the card in the selected slot
+                if( card.isMonster && newPosition == 'summon' ){
+                    order = board.isExSSFreeOne();
+                    if( order ) {
+                        return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+                    }else{
+                        //select the new order
+                        board.setWaitingActions({
+                            card: card,
+                            newPosition: newPosition,
+                            newState: newState,
+                            isFD: isFD
+                        });
+                        board.selectOrder(true);
+                        return 'waiting for select order';
+                    }
                 }else{
-                    //select the new order
-                    board.setWaitingActions({
-                        card: card,
-                        newPosition: newPosition,
-                        newState: newState,
-                        isFD: isFD
-                    });
-                    board.selectOrder(newPosition );
-                    return 'waiting for select order';
+                    order = ( newPosition == 'st' ) ? board.isSTFreeOne() : board.isSSFreeOne();
+
+                    // If have last slot then put the card in the last slot
+                    if( order ) {
+                        return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+                        
+                    // Else  User select a slot then put the card in the selected slot
+                    }else{
+                        //select the new order
+                        board.setWaitingActions({
+                            card: card,
+                            newPosition: newPosition,
+                            newState: newState,
+                            isFD: isFD
+                        });
+                        board.selectOrder(newPosition );
+                        return 'waiting for select order';
+                    }
                 }
 
             }
@@ -546,7 +584,7 @@ class CollectionMenu extends MenuBase {
             var curPosition = collection.getPosition();
             var card = collection.getTopCard();
             var target = $(this).data('target');
-            console.log( collection, collection.getCards(), target );
+            // console.log( collection, collection.getCards(), target );
 
             target = target.split(',');
             var newPosition = target[0];

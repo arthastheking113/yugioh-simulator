@@ -16,6 +16,7 @@ var board;
         init(){
             this.steps = [];
             this.pointer = 0;
+            this.isStarted = false;
             this.isRePlaying = false;
             this.replaytimeout = 0;
             this.messageElm = this.elm.find('#log-message');
@@ -37,14 +38,47 @@ var board;
         }
         events(){
             var playLog = this;
-            this.elm.find('.replay-button').off('click').on('click', function(){
+            playLog.elm.find('.start-record-button').removeClass('hidden');
+
+            playLog.elm.find('.replay-button').off('click').on('click', function(){
+                
+                // Switch button
+                playLog.elm.find('.replay-button').addClass('hidden');
+                playLog.elm.find('.start-record-button').addClass('hidden');
+                playLog.elm.find('.stop-record-button').addClass('hidden');
+
                 playLog.replay();
+                playLog.elm.find('.start-record-button').removeClass('hidden');
+            });
+            
+            playLog.elm.find('.start-record-button').off('click').on('click', function(){
+                var data = playLog.getBoard().getItems();
+                playLog.addStep('startRecord',undefined, {... data }, {});
+
+               // Switch button
+                playLog.elm.find('.replay-button').addClass('hidden');
+                playLog.elm.find('.start-record-button').addClass('hidden');
+                playLog.elm.find('.stop-record-button').removeClass('hidden');
+
+
+            });
+            
+            playLog.elm.find('.stop-record-button').off('click').on('click', function(){
+                var data = playLog.getBoard().getItems();
+                playLog.addStep('stopRecord', undefined, {... data }, {});
+
+                // Switch button
+                playLog.elm.find('.replay-button').removeClass('hidden');
+                playLog.elm.find('.start-record-button').addClass('hidden');
+                playLog.elm.find('.stop-record-button').addClass('hidden');
+                
             });
         }
         async setInitItems(items){
             this.initItems = items;
         }
         async addStep(action, id, data, oldData ){
+            // if(( !this.isStarted) && (action != 'startRecord') ) return false;
             if( this.isRePlaying ) return false;
             var message = '';
             var board = this.Board;
@@ -52,16 +86,57 @@ var board;
 
 
             switch( action ){
-                case 'init':
+                case 'init': // Sự kiện này đã bị bỏ, sẽ remove ở version sau
+                    console.warn( ' This function is deprecated');
                     message += oldData;
                     id = undefined;
                     oldData = undefined;
                 break;
+
+                case 'startRecord':
+                    message += `<p>Init state</p>`;
+                    this.messageElm.empty();
+                    id = undefined;
+                    oldData = undefined;
+                    this.isStarted = true;
+                    this.steps = [];
+                    var initData = [];
+                    $.each( data , function( i, item ) {
+                        // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
+                        initData.push({
+                            id: item.id,
+                            itemBefore: {},
+                            isMonster: item.isMonster||false,
+                            isST: item.isST||false,
+                            isSpell: item.isSpell||false,
+                            isTrap: item.isTrap||false,
+                            amount: item.amount,
+                            collection_order: item.collection_order,
+                            foldState: item.foldState,
+                            isExtra: item.isExtra,
+                            name: item.name,
+                            order: item.order,
+                            position: item.position,
+                            switchState: item.switchState,
+                            imageURL: item.imageURL,
+                        });
+                    });
+                    data = initData;
+                break;
+                
+                case 'stopRecord':
+                    message += `<p> Stop Record</p>`;
+                    id = undefined;
+                    oldData = undefined;
+                    this.isStarted = false;
+                break;
+
                 case 'update':
                     $.each( data, function(key, value){
                         switch( key ){
                             case 'position':
                                 // console.log( 'position: ' + value );
+                                // console.warn( 'position: ' + value, data );
                                 var collection = board.getCollectionByPosition( value );
                                 let posName = value;
                                 if( collection ){
@@ -91,7 +166,6 @@ var board;
                 break;
 
                 case 'declare':
-                    console.warn(message);
                     message += `<p class="log-step"> Declared effect of <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
                 break;
 
@@ -111,15 +185,18 @@ var board;
                 break;
 
             }
-            this.steps.push({
-                action: action,
-                id: id, 
-                data: data,
-                oldData: oldData||{},
-                message: message||'',
-            });
+
+            if(( this.isStarted) || (action == 'startRecord') ){
+                this.steps.push({
+                    action: action,
+                    id: id, 
+                    data: {...data},
+                    oldData: oldData||{},
+                    message: message||'',
+                });
+            }
             this.messageElm.append( message );
-            this.messageElm.stop().animate({scrollTop: this.messageElm.height()}, 300);
+            this.messageElm.stop().animate({scrollTop: 999999}, 300);
             return true;
         }
         // get next step
@@ -190,7 +267,8 @@ var board;
                     var deck = board.getCollectionByPosition(position);
                     deck.reDraw();
                 break;
-                case 'init':
+                case 'init': // Function này đã bị bỏ, sẽ remove ở version sau
+                    console.warn( ' This function is deprecated');
                     // var initData = {...data};
                     var initData = [];
                     $.each( data , function( i, item ) {
@@ -217,6 +295,44 @@ var board;
 
                 break;
 
+                case 'startRecord':
+                    initData = {...data};
+                    // var initData = [];
+                    // $.each( data , function( i, item ) {
+                    //     // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
+                    //     initData.push({
+                    //         id: item.id,
+                    //         itemBefore: {},
+                    //         isMonster: item.isMonster||false,
+                    //         isST: item.isST||false,
+                    //         isSpell: item.isSpell||false,
+                    //         isTrap: item.isTrap||false,
+                    //         amount: item.amount,
+                    //         collection_order: item.collection_order,
+                    //         foldState: item.foldState,
+                    //         isExtra: item.isExtra,
+                    //         name: item.name,
+                    //         order: item.order,
+                    //         position: item.position=='hand' ? 'deck' : item.position,
+                    //         switchState: item.switchState,
+                    //         imageURL: item.imageURL,
+                    //     });
+                    // });
+                    this.messageElm.empty();
+                    board.emptyBoard();
+                    sleep( 2000, 'wait 2s' );
+
+                    console.log(initData);
+                    initData && board.setItems( initData );
+                    log.writeStep(`<p class="highlight-log">START REPLAY</p>` );
+                    log.writeStep(step.message || `Initialized board` );
+                    // debugger;
+                break;
+                
+                case 'stopRecord':
+                    log.writeStep(step.message || `` );
+                break;
+
             }
             this.replaytimeout = setTimeout(function(){
                 log.playStep();
@@ -231,7 +347,7 @@ var board;
         // write step
         writeStep( message){
             this.messageElm.append(`<p>${message}</p>`);
-            this.messageElm.stop().animate({scrollTop: this.messageElm.height()}, 300);
+            this.messageElm.stop().animate({scrollTop: 99999}, 300);
 
         }
         writeEnd(){
@@ -253,6 +369,10 @@ var board;
             this.pointer = 0;
             this.isRePlaying = false;
             this.messageElm.empty();
+        }
+
+        getBoard(){
+            return this.Board;
         }
     }
     class Card {
@@ -368,8 +488,10 @@ var board;
 
             this.getBoard().writelog( 'update', this.id, {
                 position: this.position,
+                collection_order: this.collection_order,
             }, {
-                position: this.itemBefore.position
+                position: this.itemBefore.position,
+                collection_order: this.itemBefore.collection_order,
             } );
             // Draw old collection was moved from
             if( this.position !=  this.itemBefore.position ){
@@ -422,7 +544,7 @@ var board;
                     var _continue = 1;
                     var _stop = 10;
                     while ( _continue && _stop) {
-                         var _slot = _board.elm.find('.card-slot.' + newPosition + order + '-slot');
+                         var _slot = _board.elm.find('.card-slot[data-order="' + order + '"]');
                         if(  ! _slot.find('.card').length ) {
                             _continue = 0;
                             _card.collection_order = order;
@@ -560,20 +682,20 @@ var board;
             var frontImageSrc = this.imageURL || (this.options.imgPath + 'card/' + this.name + '.jpeg');
             var cardId = this.id;
             var cardElement = $(`<div id="card-${cardId}" class="card card-id-${cardId}" data-id="${cardId}" title="${_card.name}"/>`);
-            var moveOptions = [
-                'canMoveHand',
-                'canMoveSummon',
-                'canMoveExDeck',
-                'canMoveDeck',
-                'canMoveST',
-                'canMoveBanish',
-                'canMoveGraveyard',
-            ];
-            moveOptions.forEach( function( moveOption ) {
-                if (_card[moveOption] || 1 ) {
-                    cardElement.addClass(moveOption);
-                }
-            });
+            // var moveOptions = [
+            //     'canMoveHand',
+            //     'canMoveSummon',
+            //     'canMoveExDeck',
+            //     'canMoveDeck',
+            //     'canMoveST',
+            //     'canMoveBanish',
+            //     'canMoveGraveyard',
+            // ];
+            // moveOptions.forEach( function( moveOption ) {
+            //     if (_card[moveOption] || 1 ) {
+            //         cardElement.addClass(moveOption);
+            //     }
+            // });
             var states = [
                 'foldState',
                 'switchState',
@@ -861,8 +983,7 @@ var board;
     class Board{
         constructor (elm, data, options){
             this.elm = elm;
-            this.orgitems = data.main;
-            // this.extra = data.extra;
+            this.orgitems = data;
             var defaultOptions = {
                 backImageSrc: 'back_card.png',
                 imgPath: 'asset/'
@@ -909,7 +1030,7 @@ var board;
                 'initItems': {... this.getItems() }
             });
 
-            this.writelog('init',undefined, {... this.getItems() }, `<p> Initialized board with ${this.items.length} cards</p>`);
+            // this.writelog('init',undefined, {... this.getItems() }, `<p> Initialized board with ${this.items.length} cards</p>`);
 
         }
         // Remove all Item and HTML elements
@@ -1023,7 +1144,7 @@ var board;
             var board = this;
             this.elm.on('click', '.highlight', function( e ){
                 var _this = $(this);
-                var isSS = _this.hasClass( 'summon-slot');
+                // var isSS = _this.hasClass( 'summon-slot');
                 var isST = _this.hasClass( 'st-slot');
                 var order = _this.data( 'order' );
                 var waitingActions = board.getWaitingActions();
@@ -1139,7 +1260,7 @@ var board;
         }
 
         setItems( items ){
-            this.orgitems = items;
+            this.orgitems = Object.values( items);
             this.initItems();
         }
         get( key, defaultValue ){
@@ -1159,8 +1280,15 @@ var board;
             return _free;
         }
 
+        startLog(){
+            this.writelog('startRecord',undefined, {... this.getItems() }, {});
+        }
         writelog( action, id, data, oldData ){
             return this.playlog.addStep( action, id, data, oldData||{} );
+        }
+        stopLog(){
+            this.writelog('stopRecord',undefined, {... this.getItems() }, {});
+            
         }
 
         // this is private function. do not call from outside
@@ -1192,7 +1320,7 @@ var board;
 
                     case 'active':
                         newPosition = 'st';
-                        order = 5;
+                        // order = 5;
                         card.fold('normal');
 
 
@@ -1259,11 +1387,35 @@ var board;
             });
             return frees.length == 1 ? frees[0] : false;
         }
+        
+        isExSSFreeOne(){
+            var frees = [];
+            $.each( this.elm.find('.summon-slot, .exsummon-slot'), function (i, el ){
+                var _el = $(el);
+                if( !_el.find('.card').length ){
+                    frees.push( _el.data( 'order' ) );
+                }
+            });
+            return frees.length == 1 ? frees[0] : false;
+        }
+        isSS_STFreeOne(){
+            var frees = [];
+            $.each( this.elm.find('.summon-slot, .exsummon-slot, .st-slot'), function (i, el ){
+                var _el = $(el);
+                if( !_el.find('.card').length ){
+                    frees.push( _el );
+                }
+            });
+            return frees.length == 1 ? frees[0] : false;
+        }
 
         getItemById(id){
             return this.items.filter( function( item ){
                 return item.id == id;
             })[0];   
+        }
+        getCard( id ){
+            return this.getItemById(id);
         }
         getItemByName(name){
             return this.items.filter( function( item ){
@@ -1354,34 +1506,88 @@ var board;
             var order = card.get('collection_order');
             var position = card.get('position');
             if( ['summon', 'st'].includes(position) ){
-                var elm = board.elm.find('.card-slot.' + position + order + '-slot');
-                console.log(elm, ('.card-slot.' + position + order + '.slot'));
+                var elm = board.elm.find('.card-slot[data-order="' + order + '"]');
+                // console.log(elm);
                 return elm;
             }
             return false;
         }
-        selectOrder(position, callback) {
+        selectOrder( isEx ) {
+            isEx = isEx||0;
             var waitingActions= this.getWaitingActions();
+            let cardHolders = false;
             if( waitingActions.newPosition ) {
                 let newPosition = waitingActions.newPosition;
-                let cardHolders = this.highlightCardHolders(newPosition);
+                if(! newPosition){
+                    cardHolders = this.highlightSS_STCardHolders();
+                }if( newPosition == 'summon' && isEx ){
+                    cardHolders = this.highlightSSExCardHolders();
+                }else{
+                    cardHolders = this.highlightCardHolders(newPosition);
+                }
                 return cardHolders;
             }
             return false;
         }
+        // selectExSSOrder(position, callback) {
+        //     var waitingActions= this.getWaitingActions();
+        //     if( waitingActions.newPosition ) {
+        //         let newPosition = waitingActions.newPosition;
+        //         let cardHolders = this.highlightCardHolders(newPosition);
+        //         return cardHolders;
+        //     }
+        //     return false;
+        // }
         highlightCardHolders(position){
             var cardHolderElms = this.getCardHolder(position);
             this.elm.find('.card-slot ').removeClass('highlight');
             
             // Highlight when slot is empty
-            if(! cardHolderElms.find('.card').length ){
-                cardHolderElms.addClass('highlight');
-            }
-            return cardHolderElms;
+            var elms = cardHolderElms.filter( function (index, cardHolder){     
+                var _cardHolder = $(cardHolder);
+                if( !_cardHolder.find('.card').length ){
+                    _cardHolder.addClass('highlight');
+                    return true;
+                }
+                return false;
+            });
+            return elms;
 
         }
+        highlightSSExCardHolders(){
+            // position = 'summon';
+            var cardHolderElms = this.elm.find('.summon-slot, .summonex-slot ');
+            this.elm.find('.card-slot ').removeClass('highlight');
+            
+            // Highlight when slot is empty
+            var elms = cardHolderElms.filter( function (index, cardHolder){     
+                var _cardHolder = $(cardHolder);
+                if( !_cardHolder.find('.card').length ){
+                    _cardHolder.addClass('highlight');
+                    return true;
+                }
+                return false;
+            });
+            return elms;
+
+        }
+        highlightSS_STCardHolders(){
+            var cardHolderElms = this.elm.find('.summon-slot, .summonex-slot, .st-slot ');
+            this.elm.find('.card-slot ').removeClass('highlight');
+            
+            // Highlight when slot is empty
+            var elms = cardHolderElms.filter( function (index, cardHolder){     
+                var _cardHolder = $(cardHolder);
+                if( !_cardHolder.find('.card').length ){
+                    _cardHolder.addClass('highlight');
+                    return true;
+                }
+                return false;
+            });
+            return elms;
+        }
         getCardHolder(position){
-            return this.elm.find('.' + position + '-slot.card-slot ')
+            return this.elm.find('.' + position + '-slot.card-slot ');
         }
 
 
@@ -1391,12 +1597,121 @@ var board;
         
     }
 
+    function parseDataFromOther( data ){
+        var cards = [];
+        var input ={...  data };
+        console.log(data);
+        if( typeof data == 'object' && 'mainDeck' in data &&'extraDeck' in data ){
+            function mapkey( card ){
+                var maps = {
+                    card_Image_Url_Small: 'imageURL',
+                    // isHandTrap: isST,
+                };
+                $.each( maps, function ( key, newKey ){
+                    card[newKey] = card[key];
+                    delete(card.key );
+                });
+                switch (card.type ) {
+                    case "Link Monster":
+                        card.isMonster = true;
+                        card.isST = false;
+                        card.isSpell = false;
+                        card.isTrap = false;
+                        break;
+                    case "Fusion Monster":
+                        card.isMonster = true;
+                        card.isST = false;
+                        card.isSpell = false;
+                        card.isTrap = false;
+
+                        break;
+                    case "Spell Card":
+                        card.isMonster = false;
+                        card.isST = true;
+                        card.isSpell = true;
+                        card.isTrap = false;
+
+                        break;
+                    case "Trap Card":
+                    card.isMonster = false;
+                    card.isST = true;
+                    card.isSpell = false;
+                    card.isTrap = true;
+
+                        break;
+                    case "Effect Monster":
+                        card.isMonster = true;
+                        card.isST = false;
+                        card.isSpell = false;
+                        card.isTrap = false;
+
+                        break;
+                    case "Tuner Monster":
+                        card.isMonster = true;
+                        card.isST = false;
+                        card.isSpell = false;
+                        card.isTrap = false;
+
+                        break;
+                    default:
+                        card.isMonster = false;
+                        card.isST = false;
+                        card.isSpell = false;
+                        card.isTrap = false;
+
+                        break;
+                }
+                return card;
+            }
+            $.each( input.mainDeck, function(  index, card  ){
+                // console.log(card );
+                card = mapkey( card );
+                card.isExtra = false;
+                cards.push( card );
+            });
+            $.each( input.extraDeck, function(  index, card  ){
+                // console.log(card );
+
+                card.isExtra = true;
+                card = mapkey( card );
+                cards.push( card );
+
+            });
+        }
+
+        // console.log(cards );
+        return cards;
+    }
+
     $(document).ready(function() {
         const isDebug = urlParams.get('debug');
-        board = new Board( $('#playtest'), boardData, {
-            isDebug: isDebug,
-        } );
-        console.log(board);
+       
+        var cards = boardData && boardData.data;
+        var jsonUrl = 'https://ygovietnamcdn.azureedge.net/storage/Assets/sample-simulator-deck.json';
+        var jsonUrl = 'sample-simulator-deck.json';
+        // jsonUrl = '0';
+        $.getJSON(jsonUrl, function(data) {
+            // Biến data chứa dữ liệu JSON được trả về từ URL
+            // Bạn có thể làm gì đó với dữ liệu này ở đây
+            const cards = data;
+            // console.log(cards); // In dữ liệu JSON lấy được từ URL
+            var data = parseDataFromOther( cards );
+            if ( !data ) {
+                data = boardData.data;
+            }
+            board = new Board( $('#playtest'), data, {
+                isDebug: isDebug,
+            } );
+        }).fail(function() {
+            board = new Board( $('#playtest'), boardData.main, {
+                isDebug: isDebug,
+            } );
+        }).done( function() {
+            console.log(board);
+
+        })
+
+       
 
     });
 // });
