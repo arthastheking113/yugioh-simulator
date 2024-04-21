@@ -43,12 +43,12 @@ var board;
             playLog.elm.find('.replay-button').off('click').on('click', function(){
                 
                 // Switch button
-                playLog.elm.find('.replay-button').addClass('hidden');
-                playLog.elm.find('.start-record-button').addClass('hidden');
-                playLog.elm.find('.stop-record-button').addClass('hidden');
+                // playLog.elm.find('.replay-button').addClass('hidden');
+                // playLog.elm.find('.start-record-button').addClass('hidden');
+                // playLog.elm.find('.stop-record-button').addClass('hidden');
 
                 playLog.replay();
-                playLog.elm.find('.start-record-button').removeClass('hidden');
+                // playLog.elm.find('.start-record-button').removeClass('hidden');
             });
             
             playLog.elm.find('.start-record-button').off('click').on('click', function(){
@@ -56,9 +56,9 @@ var board;
                 playLog.addStep('startRecord',undefined, {... data }, {});
 
                // Switch button
-                playLog.elm.find('.replay-button').addClass('hidden');
-                playLog.elm.find('.start-record-button').addClass('hidden');
-                playLog.elm.find('.stop-record-button').removeClass('hidden');
+                // playLog.elm.find('.replay-button').addClass('hidden');
+                // playLog.elm.find('.start-record-button').addClass('hidden');
+                // playLog.elm.find('.stop-record-button').removeClass('hidden');
 
 
             });
@@ -68,9 +68,9 @@ var board;
                 playLog.addStep('stopRecord', undefined, {... data }, {});
 
                 // Switch button
-                playLog.elm.find('.replay-button').removeClass('hidden');
-                playLog.elm.find('.start-record-button').addClass('hidden');
-                playLog.elm.find('.stop-record-button').addClass('hidden');
+                // playLog.elm.find('.replay-button').removeClass('hidden');
+                // playLog.elm.find('.start-record-button').addClass('hidden');
+                // playLog.elm.find('.stop-record-button').addClass('hidden');
                 
             });
         }
@@ -125,6 +125,10 @@ var board;
                 break;
                 
                 case 'stopRecord':
+                    if( ! this.isStarted){
+                        this.writeStep(`<p class="highlight-log">Not Start yet!</p>` );
+                        return false;
+                    }
                     message += `<p> Stop Record</p>`;
                     id = undefined;
                     oldData = undefined;
@@ -135,8 +139,6 @@ var board;
                     $.each( data, function(key, value){
                         switch( key ){
                             case 'position':
-                                // console.log( 'position: ' + value );
-                                // console.warn( 'position: ' + value, data );
                                 var collection = board.getCollectionByPosition( value );
                                 let posName = value;
                                 if( collection ){
@@ -149,13 +151,12 @@ var board;
                                 message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                                 
                             break;
-                            break;
                             case 'switchState':
                                 message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                                 
                             break;
                             default: 
-                                message += `<p class="log-step" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                                message += `<p class="log-step ddescription" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                             break;
                         }
                     });
@@ -207,6 +208,9 @@ var board;
             step['isLastStep'] = isLast;
             return step;
         }
+        hasRecord(){
+            return this.steps.length;
+        }
         isFirstStep() {
             return this.pointer == 0;
         }
@@ -215,6 +219,10 @@ var board;
         }
         // replay
         replay(){
+            if( !this.hasRecord() ){
+                this.writeStep(`<p class="highlight-log">No Records found</p>` );
+                return false;
+            }
             this.pointer = 0;
             this.isRePlaying = true;
             this.addOverlay();
@@ -286,7 +294,6 @@ var board;
                             imageURL: item.imageURL,
                         });
                     });
-                    // console.log( initData );
                     this.messageElm.empty();
                     board.emptyBoard();
                     board.setItems( initData );
@@ -321,8 +328,6 @@ var board;
                     this.messageElm.empty();
                     board.emptyBoard();
                     sleep( 2000, 'wait 2s' );
-
-                    console.log(initData);
                     initData && board.setItems( initData );
                     log.writeStep(`<p class="highlight-log">START REPLAY</p>` );
                     log.writeStep(step.message || `Initialized board` );
@@ -399,7 +404,6 @@ var board;
             this.isExtra && ( this.position = 'exdeck'); // if isExtra card then draw it in the extra deck
             // this.isExtra && ( this.canMoveDeck = 0);
             // this.canMoveExDeck = this.isExtra;
-            // console.log( this );
             this.options = options;
             this.order = order;
             this.Board = Board;
@@ -412,7 +416,6 @@ var board;
         }
         cardEvents(){
             var _card = this;
-            // console.log(this.html );
 
             this.html.hover( function( e ) {
                 var _board = _card.getBoard();
@@ -420,7 +423,6 @@ var board;
 
                 cardMenu.show();
             }, function( e ) { 
-                // console.log('mouseout');
                 var _board = _card.getBoard();
                 var cardMenu = _board.cardMenu;
                 cardMenu.element.dialog('option', 'appendTo', 'body');
@@ -484,7 +486,6 @@ var board;
             return true;
         }
         afterMove(newPosition){
-            // console.log( 'afterMove', newPosition );
 
             this.getBoard().writelog( 'update', this.id, {
                 position: this.position,
@@ -542,28 +543,20 @@ var board;
                 if( ['summon', 'st'].includes(newPosition) ){
                     order = order || 1;
                     var _continue = 1;
-                    var _stop = 10;
-                    while ( _continue && _stop) {
-                         var _slot = _board.elm.find('.card-slot[data-order="' + order + '"]');
-                        if(  ! _slot.find('.card').length ) {
-                            _continue = 0;
-                            _card.collection_order = order;
-                        }
-
-                        order--;
-                        _stop --;
-                        if( order == 0 ) order = 5;
-                    }
-                    if( !_stop ) {
-                        console.warn('No Space left');
+                    var _slot = _board.elm.find('.card-slot[data-order="' + order + '"]');
+                    if(  ! _slot.find('.card').length ) {
+                        _continue = 0;
+                        _card.collection_order = order;
+                    }else{
+                        console.warn('No Space to move card');
                         return false;
                     }
                 }
-                // set new position here
+                // Lật thẻ sẽ làm thay đổi order, cần cập nhật lại set new position here
+                _card.position = newPosition;
                 if( _card.itemBefore.position == 'banish' ){
                     _card.fold('normal');
                 }
-                _card.position = newPosition;
 
                 // reorder newCollection
                 if( newCollection ){
@@ -573,16 +566,20 @@ var board;
 
                 if( newPosition != 'summon' ){
                     _card.switchState = 'attack';
-                    _card.updateHtml();
+                    // _card.updateHtml();
                 }
-                if( newPosition != 'hand' ){
+                // if( newPosition != 'hand' ){
                     // _card.foldState = 'normal';
-                    _card.updateHtml();
-                }
+                    // _card.updateHtml();
+                // }
                 if( ! _card.appendToBoard() ){
                     console.warn('Append failed');
                     return false;
                 }
+
+                // Cập nhật lại collection
+                var oldCollection = _card.getBoard().getCollectionByPosition( _card.itemBefore.position ); 
+                oldCollection && oldCollection.drawOnBoard();
 
             }
             //1
@@ -600,10 +597,7 @@ var board;
             var result = false;
             if( this.canFlip ( newState ) && this.foldState !=newState ) {
 
-                // 1
                 if( animation )this.doAnimation ( newState, animation, duration );
-                // 1
-                // console.log( newState, this.html );
                 var oldFlipState = this.foldState;
                 this.foldState = newState;
                 // set new state here
@@ -612,7 +606,6 @@ var board;
 
                 var collection = this.getBoard().getCollectionByPosition( this.get('position') );
                 collection && collection.drawOnBoard();
-                // console.log( this.name, this.foldState, collection );
             } else {
                 // console.warn( 'Failed to update foldState to ' + newState );
             }
@@ -752,7 +745,6 @@ var board;
             var _board = _card.getBoard();
             var hand = _board.getHandElm();
             var position = _card.get('position');
-            // console.log( position );
             switch(position){
                 case 'deck':
                 case 'exdeck':
@@ -765,6 +757,7 @@ var board;
 
                 case'summon':
                     // var summonElm = _board.getFreeSummon();
+
                     var summonElm = _board.getCardSlot(_card.id);
                     if( !summonElm.length ){
                         return false;
@@ -802,7 +795,6 @@ var board;
             return this.Board;
         }
         get( k, defaultValue){
-            // console.log( k, this[k])
             if( this[k] ) return this[k];
             return defaultValue||false;
         }
@@ -823,7 +815,6 @@ var board;
             this.init();
         }
         init(){
-            // console.log( this.menuElm );
             if(! this.menuElm.length){
                 console.error( 'menuElm no found' );
             }
@@ -843,7 +834,6 @@ var board;
             // Remove the event when click on card
             // this.menuElm.on('click', '.card img', function(){
             //     var _cardElm = $(this).closest('.card');
-            //     // console.log( _cardElm );
             //     var _cardID = _cardElm.data('id');
             //     var _card = _board.getItemById( _cardID );
             //     _card.moveTo('hand');
@@ -858,7 +848,6 @@ var board;
 
                     collectionMenu.show();
                 }, function( e ) { 
-                    // console.log('mouseout');
                     var _board = collection.getBoard();
                     var collectionMenu = _board.collectionMenu;
                     collectionMenu.element.dialog('option', 'appendTo', 'body');
@@ -919,12 +908,10 @@ var board;
                     },
                 });
                 // this.menuElm = dialog;
-            // console.log( this.menuElm );
                 
             // }
         }
         showDialog(){
-            // console.log(this );
             this.menuElm.dialog('open');
         }
         // show Collection board
@@ -974,7 +961,6 @@ var board;
                 _board.updateItem( item.id, 'collection_order', index+1 );
             });
             this.reDraw();
-            // console.log( collection, collection.getCards(), target );
             
             if( _board.playlog ) _board.writelog('shuffle_deck', undefined, {...items});
         }
@@ -993,7 +979,6 @@ var board;
             this.deckToHand( 5, 'top');
         }
         init(){
-            // console.log("init");
             this.deckElm = this.elm.find('#deck-slot');
             this.exDeckElm = this.elm.find('#extra-deck-slot');
             this.handElm = this.elm.find('#hand-board');
@@ -1048,7 +1033,6 @@ var board;
         initItems( ){
             var _board = this;
             this.items = [];
-            // console.log( JSON.stringify(this.orgitems ));
             this.orgitems.forEach( function( item ){
                 if( _board.validateBeforeAddItem( item ) ){
                     _board.addItem( item );
@@ -1148,10 +1132,12 @@ var board;
                 var isST = _this.hasClass( 'st-slot');
                 var order = _this.data( 'order' );
                 var waitingActions = board.getWaitingActions();
+                let newPosition = isST ? 'st' : 'summon';
+
                 if( order ){
                     board.updateCardbyAction( 
                         waitingActions.card, 
-                        waitingActions.newPosition, 
+                        newPosition, 
                         order, 
                         waitingActions.newState, waitingActions.isFD
                     );
@@ -1336,12 +1322,15 @@ var board;
                     break;
                     case 'fold':
                     case 'normal':
-                        card.fold(newState);
+                        card.fold(isFD);
+                    break;
                     case 'toendST': 
+                    break;
+
                     
                 }
             }
-            if( newPosition != 'this' && newPosition != card.position){
+            if( newPosition != 'this' ){
                 card.moveTo(newPosition, isTop, order);
             }
             return true;
@@ -1466,12 +1455,10 @@ var board;
             switch( position ){
                 case 'deck':
                     collection = this.deck;
-                    // console.log( deck)
                 break;
                 
                 case 'exdeck':
                     collection = this.exdeck;
-                    // console.log(collection);
                 break;
 
                 case 'graveyard':
@@ -1481,7 +1468,6 @@ var board;
                     collection = this.banish;
                 break;
             }
-            // console.log( deck)
             return collection;
         }
 
@@ -1503,41 +1489,30 @@ var board;
         getCardSlot(cardId){
             var board = this;
             var card = this.getItemById(cardId);
+
             var order = card.get('collection_order');
             var position = card.get('position');
             if( ['summon', 'st'].includes(position) ){
                 var elm = board.elm.find('.card-slot[data-order="' + order + '"]');
-                // console.log(elm);
                 return elm;
             }
+            debugger;
             return false;
         }
         selectOrder( isEx ) {
             isEx = isEx||0;
             var waitingActions= this.getWaitingActions();
             let cardHolders = false;
-            if( waitingActions.newPosition ) {
-                let newPosition = waitingActions.newPosition;
-                if(! newPosition){
-                    cardHolders = this.highlightSS_STCardHolders();
-                }if( newPosition == 'summon' && isEx ){
-                    cardHolders = this.highlightSSExCardHolders();
-                }else{
-                    cardHolders = this.highlightCardHolders(newPosition);
-                }
-                return cardHolders;
+            let newPosition = waitingActions.newPosition;
+            if(! newPosition){
+                cardHolders = this.highlightSS_STCardHolders();
+            }else if( newPosition == 'summon' && isEx ){
+                cardHolders = this.highlightSSExCardHolders();
+            }else{
+                cardHolders = this.highlightCardHolders(newPosition);
             }
-            return false;
+            return cardHolders;
         }
-        // selectExSSOrder(position, callback) {
-        //     var waitingActions= this.getWaitingActions();
-        //     if( waitingActions.newPosition ) {
-        //         let newPosition = waitingActions.newPosition;
-        //         let cardHolders = this.highlightCardHolders(newPosition);
-        //         return cardHolders;
-        //     }
-        //     return false;
-        // }
         highlightCardHolders(position){
             var cardHolderElms = this.getCardHolder(position);
             this.elm.find('.card-slot ').removeClass('highlight');
@@ -1600,7 +1575,6 @@ var board;
     function parseDataFromOther( data ){
         var cards = [];
         var input ={...  data };
-        console.log(data);
         if( typeof data == 'object' && 'mainDeck' in data &&'extraDeck' in data ){
             function mapkey( card ){
                 var maps = {
@@ -1664,13 +1638,11 @@ var board;
                 return card;
             }
             $.each( input.mainDeck, function(  index, card  ){
-                // console.log(card );
                 card = mapkey( card );
                 card.isExtra = false;
                 cards.push( card );
             });
             $.each( input.extraDeck, function(  index, card  ){
-                // console.log(card );
 
                 card.isExtra = true;
                 card = mapkey( card );
@@ -1679,7 +1651,6 @@ var board;
             });
         }
 
-        // console.log(cards );
         return cards;
     }
 
@@ -1694,7 +1665,6 @@ var board;
             // Biến data chứa dữ liệu JSON được trả về từ URL
             // Bạn có thể làm gì đó với dữ liệu này ở đây
             const cards = data;
-            // console.log(cards); // In dữ liệu JSON lấy được từ URL
             var data = parseDataFromOther( cards );
             if ( !data ) {
                 data = boardData.data;
