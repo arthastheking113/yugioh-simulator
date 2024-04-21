@@ -57,9 +57,9 @@
                 <div class="card-slot-row">
                     <div class="holder-slot no-card-slot"></div>
                     <div class="holder-slot no-card-slot"></div>
-                    <div class="holder-slot card-slot"></div>
+                    <div class="holder-slot card-slot summonex-slot summonex1-slot" data-order="exss1" data-position="summon"></div>
                     <div class="holder-slot no-card-slot"></div>
-                    <div class="holder-slot card-slot"></div>
+                    <div class="holder-slot card-slot summonex-slot summonex2-slot" data-order="exss2" data-position="summon"></div>
                     <div class="holder-slot no-card-slot"></div>
 
                     <div class="holder-slot card-slot banish card-collection-slot" id="banish-slot">
@@ -74,19 +74,19 @@
                         <p style="margin-top: 50%;font-size: x-small;margin-bottom: 0;">Bài Phép</p>
                         <p style="font-size: x-small;margin: 0;">Môi trường</p>
                     </div>
-                    <div class="holder-slot card-slot summon-slot summon1-slot" data-order="1">
+                    <div class="holder-slot card-slot summon-slot summon1-slot" data-order="ss1" data-position="summon">
                         <em class="ddescription">Summon ( Def / Atk ) ( Set / Flip )</em>
                     </div>
-                    <div class="holder-slot card-slot summon-slot summon2-slot" data-order="2">
+                    <div class="holder-slot card-slot summon-slot summon2-slot" data-order="ss2" data-position="summon">
                         <em class="ddescription">Summon ( Def / Atk ) ( Set / Flip )</em>
                     </div>
-                    <div class="holder-slot card-slot summon-slot summon3-slot" id="center-m-z" data-order="3">
+                    <div class="holder-slot card-slot summon-slot summon3-slot" id="center-m-z" data-order="ss3" data-position="summon">
                         <em class="ddescription">Summon ( Def / Atk ) ( Set / Flip )</em>
                     </div>
-                    <div class="holder-slot card-slot summon-slot summon4-slot" data-order="4">
+                    <div class="holder-slot card-slot summon-slot summon4-slot" data-order="ss4" data-position="summon">
                         <em class="ddescription">Summon ( Def / Atk ) ( Set / Flip )</em>
                     </div>
-                    <div class="holder-slot card-slot summon-slot summon5-slot" data-order="5">
+                    <div class="holder-slot card-slot summon-slot summon5-slot" data-order="ss5" data-position="summon">
                         <em class="ddescription">Summon ( Def / Atk ) ( Set / Flip )</em>
                     </div>
                     
@@ -107,19 +107,19 @@
                         <em class="ddescription">Ex Deck</em>
 
                     </div>
-                    <div class="holder-slot card-slot st-slot st1-slot" data-order="1">
+                    <div class="holder-slot card-slot st-slot st1-slot" data-order="st1"  data-position="st">
                         <em class="ddescription">ST ( Set / Active )</em>
                     </div>
-                    <div class="holder-slot card-slot st-slot st2-slot" data-order="2">
+                    <div class="holder-slot card-slot st-slot st2-slot" data-order="st2"  data-position="st">
                         <em class="ddescription">ST ( Set / Active )</em>
                     </div>
-                    <div class="holder-slot card-slot st-slot st3-slot" data-order="3">
+                    <div class="holder-slot card-slot st-slot st3-slot" data-order="st3"  data-position="st">
                         <em class="ddescription">ST ( Set / Active )</em>
                     </div>
-                    <div class="holder-slot card-slot st-slot st4-slot" data-order="4">
+                    <div class="holder-slot card-slot st-slot st4-slot" data-order="st4"  data-position="st">
                         <em class="ddescription">ST ( Set / Active )</em>
                     </div>
-                    <div class="holder-slot card-slot st-slot st5-slot" data-order="5">
+                    <div class="holder-slot card-slot st-slot st5-slot" data-order="st5"  data-position="st">
                         <em class="ddescription">ST ( Set / Active )</em>
                     </div>
                     
@@ -145,10 +145,19 @@
                         <i class="fa fa-info-circle" aria-hidden="true"></i>
                         Log
                     </h4>
+                    
+                    <a class="start-record-button" href="javascript:void(0)" title="Record">
+                        <i class="fa fa-play-circle"></i>
+                        Start
+                    </a>
+                    
+                    <a class="stop-record-button" href="javascript:void(0)" title="Stop">
+                        <i class="fa fa-stop-circle"></i>
+                        Stop
+                    </a>
                     <a class="replay-button" href="javascript:void(0)" title="Replay">
                         <i class="fa fa-play-circle"></i>
-                        <i class="fa fa-pause-circle hidden"></i>
-                        Replay
+                        Play
                     </a>
                 </div>
                 <div class="log-message-body" id="log-message-body">

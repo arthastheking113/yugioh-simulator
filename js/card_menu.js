@@ -30,7 +30,6 @@ class MenuBase {
             },
             open: function (event, ui) {},
             // create: function (event, ui) {
-            //     console.log( $( this ), ui );
             //     // $(this).siblings('.ui-dialog-titlebar').addClass('hidden');
             // },
             position:{
@@ -61,7 +60,6 @@ class MenuBase {
     }
     hide(){
         this.beforeHide();
-        // console.log('close dialog' , this.dialog);
         this.element.dialog('close');
         this.afterHide();
     }
@@ -146,7 +144,7 @@ class CardMenu extends MenuBase {
                 'this-atk',
                 'this-def',
                 'this-flip',
-                'set',
+                'this-set',
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
@@ -159,15 +157,17 @@ class CardMenu extends MenuBase {
                 'target',
                 'to-banish',
                 'to-banish-fold',
-                'this-atk',
-                'this-def',
+                'to-summon-atk',
+                'to-summon-def',
                 'this-flip',
-                'set',
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
                 'declare',
                 'to-graveyard',
+                'this-set',
+                'this-active',
+
             ]
         }   
     
@@ -190,7 +190,6 @@ class CardMenu extends MenuBase {
             var _last = items.length ? items[items.length - 1]['collection_order'] : 0;
 
             if( card.collection_order > ( _last - 10 ) ){
-                // console.log(card, _board,  _last,  card.collection_order );
                 this.element.dialog('option', 'position', {
                     my: "center top",
                     at: "center bottom",
@@ -209,25 +208,43 @@ class CardMenu extends MenuBase {
         return this.card;
     }
     updateMenu(){
+
         var card = this.getCard();
         var ul = this.element.find('ul');
         ul.find('li a').hide();
         var pos = card.position;
         var list = this.menuList[pos];
+
         if( list ){
             for( var i = 0; i < list.length; i++ ){
                 ul.find(`#${list[i]}`).show();
                 ul.find(`#${list[i]}`).parent().appendTo(ul);
             }
         }
-        $.each( ul.find('li a').filter(':not(:hidden)') , function ( index,  menu_tag ){
-            var menuElm = $(menu_tag);
+       var itemShowed =  ul.find('li a').filter( function(item) {
+        return !$(item).is(':hidden');
+       } );
+
+        $.each( itemShowed , function ( index,  menu_tag ){
+            var menuElm = $(menu_tag); // a tag
             var condition = menuElm.data('condition');
             if( condition || '' ) {
                 if(  ! card[condition] ) {
                     menuElm.hide();
                 }
             }
+            if(menu_tag.id == 'this-active'){
+                if( card.foldState != 'fold' ){
+                    menuElm.hide();
+                }
+            }
+
+            if(menu_tag.id == 'this-set'){
+                if( card.foldState != 'normal' ){
+                    menuElm.hide();
+                }
+            }
+            
         });
 
 
@@ -240,7 +257,6 @@ class CardMenu extends MenuBase {
         ul.find(`a[data-position="this"]`).hide();
 
         var pos = card.position;
-        // console.log( pos );
         ul.find(`a[data-position="${pos}"]`).hide();
         
         var _board = card.getBoard();
@@ -260,7 +276,6 @@ class CardMenu extends MenuBase {
         }
     }
     drawHtml(){
-        // console.log( this.element );
         var ul = this.element.find('ul');
         
         ul.append(`
@@ -296,7 +311,7 @@ class CardMenu extends MenuBase {
         <!-- 'to-ss-atk' -->
 
             <li class="menuItem">
-                <a href="javascript:void(0)" id="to-summon-atk" data-target="summon,atk">
+                <a href="javascript:void(0)" id="to-summon-atk" data-target="summon,atk,normal">
                     SS ATK
                 </a>
             </li>
@@ -304,7 +319,7 @@ class CardMenu extends MenuBase {
         <!-- 'to-ss-def' -->
 
             <li class="menuItem">
-                <a href="javascript:void(0)" id="to-summon-def" data-target="summon,def">
+                <a href="javascript:void(0)" id="to-summon-def" data-target="summon,def,normal">
                     SS DEF
                 </a>
             </li>
@@ -325,7 +340,7 @@ class CardMenu extends MenuBase {
 
         <!-- 'to-hand' -->
             <li class="menuItem">
-                <a href="javascript:void(0)" id="to-hand" data-target="hand,atk">
+                <a href="javascript:void(0)" id="to-hand" data-target="hand,atk,normal">
                     To hand
                 </a>
             </li>
@@ -356,7 +371,7 @@ class CardMenu extends MenuBase {
 
         <!-- 'to-banish-fold' -->
             <li class="menuItem">
-                <a href="javascript:void(0)" id="to-banish" data-target="banish,fold">
+                <a href="javascript:void(0)" id="to-banish-fold" data-target="banish,fold">
                     Banish fold
                 </a>
             </li>
@@ -372,8 +387,23 @@ class CardMenu extends MenuBase {
         <!-- 'active' , only Spell card -->
 
             <li class="menuItem">
-                <a href="javascript:void(0)" data-condition="isST" id="set" data-target="st,normal">
+                <a href="javascript:void(0)" data-condition="isST" id="active" data-target="st,normal">
                     Active
+                </a>
+            </li>
+        <!-- 'this-active' , only Spell card fold -->
+
+            <li class="menuItem">
+                <a href="javascript:void(0)" data-condition="isST" id="this-active" data-target="this,normal">
+                    Active
+                </a>
+            </li>
+
+        <!-- 'this-set' , only Spell card fold -->
+
+            <li class="menuItem">
+                <a href="javascript:void(0)" data-condition="isST" id="this-set" data-target="this,fold">
+                    Set
                 </a>
             </li>
 
@@ -458,33 +488,71 @@ class CardMenu extends MenuBase {
                     isFD = 'fold';
                 }
             }
+
+            if(newPosition == 'this' && newState == 'move'){
+                order =false;
+                var free = board.isSS_STFreeOne();
+                if( free ){
+                    order = free.data( 'order' );
+                    newPosition = free.data( 'position' );
+                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+                }else{
+                    //select the new order
+                    board.setWaitingActions({
+                        card: card,
+                        newPosition: false,
+                        newState: newState,
+                        isFD: isFD
+                    });
+                    board.selectOrder(true);
+                    return 'waiting for select order';
+                }
+
+            }
+
             if( ( card.position != newPosition ) && ( ( newPosition == 'summon') || ( newPosition == 'st') ) ){
                 // Close the collection dialog if it is already open
                 if( ['deck', 'exdeck', 'banish', 'graveyard'].includes(card.position) ){
                     var collection = board.getCollectionByPosition(card.position);
-                    console.log(collection);
                     collection && collection.menuElm.dialog('close');
                 }
 
                 // check order
                 order =false;
-                order = ( newPosition == 'st' ) ? board.isSTFreeOne() : board.isSSFreeOne();
-
-                // If have last slot then put the card in the last slot
-                if( order ) {
-                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
-                    
-                // Else  User select a slot then put the card in the selected slot
+                if( card.isMonster && newPosition == 'summon' ){
+                    order = board.isExSSFreeOne();
+                    if( order ) {
+                        return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+                    }else{
+                        //select the new order
+                        board.setWaitingActions({
+                            card: card,
+                            newPosition: newPosition,
+                            newState: newState,
+                            isFD: isFD
+                        });
+                        board.selectOrder(true);
+                        return 'waiting for select order';
+                    }
                 }else{
-                    //select the new order
-                    board.setWaitingActions({
-                        card: card,
-                        newPosition: newPosition,
-                        newState: newState,
-                        isFD: isFD
-                    });
-                    board.selectOrder(newPosition );
-                    return 'waiting for select order';
+                    order = ( newPosition == 'st' ) ? board.isSTFreeOne() : board.isSSFreeOne();
+
+                    // If have last slot then put the card in the last slot
+                    if( order ) {
+                        return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+                        
+                    // Else  User select a slot then put the card in the selected slot
+                    }else{
+                        //select the new order
+                        board.setWaitingActions({
+                            card: card,
+                            newPosition: newPosition,
+                            newState: newState,
+                            isFD: isFD
+                        });
+                        board.selectOrder(newPosition );
+                        return 'waiting for select order';
+                    }
                 }
 
             }
@@ -546,7 +614,6 @@ class CollectionMenu extends MenuBase {
             var curPosition = collection.getPosition();
             var card = collection.getTopCard();
             var target = $(this).data('target');
-            console.log( collection, collection.getCards(), target );
 
             target = target.split(',');
             var newPosition = target[0];

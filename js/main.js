@@ -12,6 +12,8 @@ var boardData = {
             "amount": 1,
             isST: 1,
             isSpell: 1,
+            isTrap = false;
+            isMonster = true;
             imageURL: 'assets/images/HFSphynx.jpeg'
         }
          */
@@ -267,3 +269,7 @@ $(document).ready(function () {
     toolsEvent();
 
 });
+function sleep(ms, message) {
+    if( message ) console.log(message);
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }

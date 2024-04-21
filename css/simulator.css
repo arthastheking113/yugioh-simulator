@@ -81,9 +81,14 @@
     padding: 0 15px;
     align-items: flex-end;
     margin-bottom: 15px;
+    gap: 15px;
 }
 .play-board-container .log-message-header .log-title {
     margin: 0;
+    flex-grow: 1;
+}
+.play-board-container .log-message-header .replay-button {
+    color: greenyellow;
 }
 
 #playtest {
