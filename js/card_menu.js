@@ -80,6 +80,7 @@ class CardMenu extends MenuBase {
     defineMenu(){
         this.menuList = {
             banish:  [
+                'this-declare',
                 'this-target',
                 'to-deck-bottom',
                 'to-deck-top',
@@ -115,7 +116,8 @@ class CardMenu extends MenuBase {
             ],
             graveyard: [
                 // Target, To bottom of the deck, To top of the deck, S.S ATK, S.S DEF, Banish, Banish fold, To hand, Declare
-                'this-target',,
+                'this-target',
+                'this-declare',
                 'to-deck-bottom',
                 'to-deck-top',
                 'to-summon-atk',
@@ -129,6 +131,7 @@ class CardMenu extends MenuBase {
             exdeck: [
                 //Reveal, Banish, Banish fold, S.S ATK, S.S DEF, To grave
                 // 'set-reveal', // lam sau
+                'this-declare',
                 'to-banish',
                 'to-banish-fold',
                 'to-summon-atk',
@@ -136,6 +139,7 @@ class CardMenu extends MenuBase {
                 'to-graveyard',
             ],
             summon : [
+                'this-declare',
                 'detact',
                 'move',
                 'target',
@@ -149,9 +153,11 @@ class CardMenu extends MenuBase {
                 'to-exdeck',
                 'to-exdeck-fu',
                 'declare',
+                'set',
                 'to-graveyard',
             ],
             st: [
+                'this-declare',
                 'detact',
                 'move',
                 'target',
