@@ -1,4 +1,6 @@
-A simple HTML/CSS/JS Yugi-Oh! Simulator.
+No NPM, no packages, no deprecated dependencies. A simple HTML/CSS/JS Yugi-Oh! Simulator.
+
+Clone the project and run `index.html` (or you can visit our demo site below)
 
 Site: https://simulator.metaduelist.com/
 
