@@ -636,6 +636,7 @@ var board;
                 var oldSwitchState = this.switchState;
                 this.switchState = newState;
                 // set new state here
+                this.html.removeClass('fold');
                 this.html.removeClass('attack defense').addClass(newState);
             }
 
@@ -1587,12 +1588,16 @@ var board;
                 });
                 switch (card.type ) {
                     case "Link Monster":
-                        card.isMonster = true;
-                        card.isST = false;
-                        card.isSpell = false;
-                        card.isTrap = false;
-                        break;
                     case "Fusion Monster":
+                    case "Synchro Monster":
+                    case "XYZ Monster":
+                    case "Pendulum Monster":
+                    case "Synchro Pendulum Monster":
+                    case "XYZ Pendulum Effect Monster":
+                    case "Synchro Pendulum Effect Monster":
+                    case "Synchro Tuner Monster":
+                    case "Synchro Pendulum Monster":
+                    case "Synchro Pendulum Monster":
                         card.isMonster = true;
                         card.isST = false;
                         card.isSpell = false;
@@ -1614,18 +1619,28 @@ var board;
 
                         break;
                     case "Effect Monster":
-                        card.isMonster = true;
-                        card.isST = false;
-                        card.isSpell = false;
-                        card.isTrap = false;
-
-                        break;
+                    case "Normal Monster":
                     case "Tuner Monster":
+                    case "Ritual Effect Monster":
+                    case "Flip Effect Monster":
+                    case "Pendulum Normal Monster":
+                    case "Pendulum Effect Monster":
+                    case "Pendulum Effect Ritual Monster":
+                    case "Toon Monster":
+                    case "Normal Tuner Monster":
+                    case "Ritual Monster":
+                    case "Pendulum Effect Fusion Monster":
+                    case "Union Effect Monster":
+                    case "Spirit Monster":
+                    case "Pendulum Tuner Effect Monster":
+                    case "Gemini Monster":
+                    case "Pendulum Flip Effect Monster":
+                    case "Spirit Monster":
+                    case "Spirit Monster":
                         card.isMonster = true;
                         card.isST = false;
                         card.isSpell = false;
                         card.isTrap = false;
-
                         break;
                     default:
                         card.isMonster = false;
