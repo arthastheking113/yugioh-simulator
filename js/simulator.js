@@ -1674,7 +1674,6 @@ var board;
        
         var cards = boardData && boardData.data;
         var jsonUrl = 'https://ygovietnamcdn.azureedge.net/storage/Assets/sample-simulator-deck.json';
-        var jsonUrl = 'sample-simulator-deck.json';
         // jsonUrl = '0';
         $.getJSON(jsonUrl, function(data) {
             // Biến data chứa dữ liệu JSON được trả về từ URL
