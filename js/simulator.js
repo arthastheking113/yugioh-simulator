@@ -1579,7 +1579,7 @@ var board;
         if( typeof data == 'object' && 'mainDeck' in data &&'extraDeck' in data ){
             function mapkey( card ){
                 var maps = {
-                    card_Image_Url_Small: 'imageURL',
+                    image: 'imageURL',
                     // isHandTrap: isST,
                 };
                 $.each( maps, function ( key, newKey ){
