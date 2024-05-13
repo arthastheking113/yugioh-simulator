@@ -267,9 +267,25 @@ if (isDebug) {
 }
 $(document).ready(function () {
     toolsEvent();
+    setCardSize();
+
+});
+$(window).resize(function () {
+    setCardSize();
 
 });
 function sleep(ms, message) {
     if( message ) console.log(message);
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+}
+function setCardSize(){
+    var cardSlots = $('.holder-slot')
+    cardSlots.width('');
+    var cardSlot = cardSlots.first();
+    cardSlots.height( cardSlot.width() );
+    cardSlots.width( cardSlot.width() );    
+}
+var _clickCard = 0;
+$('body').on('click', '.card', function( event ){
+    _clickCard = $(this).data('id');
+});
