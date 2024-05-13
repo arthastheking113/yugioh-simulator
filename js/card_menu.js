@@ -88,10 +88,9 @@ class CardMenu extends MenuBase {
                 'to-summon-def',
                 'to-graveyard',
                 'to-hand',
-                'this-declare',
             ],
             hand: [
-                // 'reveal',
+                'this-reveal',
                 'this-declare',
                 'to-deck-bottom',
                 'to-deck-top',
@@ -131,6 +130,7 @@ class CardMenu extends MenuBase {
             exdeck: [
                 //Reveal, Banish, Banish fold, S.S ATK, S.S DEF, To grave
                 // 'set-reveal', // lam sau
+                'this-reveal',
                 'this-declare',
                 'to-banish',
                 'to-banish-fold',
@@ -148,11 +148,10 @@ class CardMenu extends MenuBase {
                 'this-atk',
                 'this-def',
                 'this-flip',
-                'this-set',
+                // 'this-set',
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
-                'declare',
                 'set',
                 'to-graveyard',
             ],
@@ -169,10 +168,17 @@ class CardMenu extends MenuBase {
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
-                'declare',
                 'to-graveyard',
                 'this-set',
                 'this-active',
+
+            ],
+            'fz': [ // Field zone 
+                'move',
+                'to-hand',
+                'to-graveyard',
+                'set',
+                'active',
 
             ]
         }   
@@ -227,9 +233,13 @@ class CardMenu extends MenuBase {
                 ul.find(`#${list[i]}`).parent().appendTo(ul);
             }
         }
-       var itemShowed =  ul.find('li a').filter( function(item) {
-        return !$(item).is(':hidden');
-       } );
+        var itemShowed = ul.find('li a');
+    //     var itemShowed =  ul.find('li a').filter( function(index, item) {
+    //         console.log( item, !$(item).is(':hidden') );
+
+    //         return !$(item).is(':hidden');
+    //     } );
+    //    console.log( itemShowed )
 
         $.each( itemShowed , function ( index,  menu_tag ){
             var menuElm = $(menu_tag); // a tag
@@ -246,6 +256,11 @@ class CardMenu extends MenuBase {
             }
 
             if(menu_tag.id == 'this-set'){
+                if( card.foldState != 'normal' ){
+                    menuElm.hide();
+                }
+            }
+            if(menu_tag.id == 'set'){
                 if( card.foldState != 'normal' ){
                     menuElm.hide();
                 }
@@ -310,7 +325,7 @@ class CardMenu extends MenuBase {
         <!-- 'summon-normal' -->
             <li class="menuItem">
                 <a href="javascript:void(0)" id="to-summon-normal" data-target="summon,atk">
-                    Normal summon
+                    SS Normal
                 </a>
             </li>
 
@@ -359,10 +374,10 @@ class CardMenu extends MenuBase {
                 </a>
             </li>
 
-        <!-- 'reveal' -->
+        <!-- 'this-reveal' -->
 
             <li class="menuItem">
-                <a href="javascript:void(0)" id="reveal" data-target="reveal">
+                <a href="javascript:void(0)" id="this-reveal" data-target="this,reveal">
                     Reveal
                 </a>
             </li>
@@ -422,7 +437,7 @@ class CardMenu extends MenuBase {
 
         <!-- 'to-exdeck' -->
             <li class="menuItem">
-                <a href="javascript:void(0)" data-condition="isExtra" id="to-exdeck-fu" data-target="exdeck,top, normal">
+                <a href="javascript:void(0)" data-condition="isExtra" id="to-exdeck-fu" data-target="exdeck,top,normal">
                     To extra FU
                 </a>
             </li>
@@ -497,7 +512,8 @@ class CardMenu extends MenuBase {
 
             if(newPosition == 'this' && newState == 'move'){
                 order =false;
-                var free = board.isSS_STFreeOne();
+                var free = board.isSS_STFreeOne(card);
+                // cần thêm 1 position tên là 'fz'
                 if( free ){
                     order = free.data( 'order' );
                     newPosition = free.data( 'position' );
@@ -510,9 +526,14 @@ class CardMenu extends MenuBase {
                         newState: newState,
                         isFD: isFD
                     });
-                    board.selectOrder(true);
+                    board.selectOrder(card.isMonster, card.isSpell);
                     return 'waiting for select order';
                 }
+
+            }
+            if(newPosition == 'this' && ['atk', 'def'].includes(newState) ){
+                    isFD = 'normal'; // lật bài lên trong tường hợp position = summon, và action == defense, attack
+                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
 
             }
 
@@ -562,6 +583,7 @@ class CardMenu extends MenuBase {
                 }
 
             }
+            // console.log( card, newPosition, order, newState, isFD );
             return board.updateCardbyAction( card, newPosition, order, newState, isFD);
 
         });

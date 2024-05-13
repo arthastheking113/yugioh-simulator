@@ -56,7 +56,7 @@ $white-color: #efefef;
         resize: none !important;
         display: block;
         position: relative;
-        min-width: 300px;
+        width: 360px;
         border: 1px solid $white-color;
         border-radius: 4px;
         padding: 10px;
@@ -116,15 +116,35 @@ $white-color: #efefef;
     position: relative;
     display: inline-block;
     border-radius: 4px;
+    max-width: 100%;
 
+    @media (max-width: 767px) {
+        padding: 10px;
+
+        .game-board .card-slot-row {
+            gap: 5px;
+
+        }
+    }
 
     .game-board {
         display: flex;
         gap: 15px;
         flex-direction: column;
         justify-content: center;
+
+
+
     }
 
+    #hand,
+    .card-slot-row {
+        z-index: 1;
+
+        &:hover {
+            z-index: 2; // ontop
+        }
+    }
     .card-slot-row {
         display: flex;
         justify-content: center;
@@ -137,7 +157,7 @@ $white-color: #efefef;
         }
 
         .holder-slot {
-            height: 102px;
+            // height: 102px;
             width: 102px;
             display: block;
             border: 1px solid #ccc;
@@ -146,9 +166,13 @@ $white-color: #efefef;
             text-align: center;
 
             .card {
-                display: inline-flex;
+                display: block;
+                width: 100%;
+                height: 100%;
+                z-index: 2;
             }
 
+            .description,
             .collection-count {
                 position: absolute;
                 top: 0;
@@ -160,6 +184,12 @@ $white-color: #efefef;
                 align-items: center;
                 font-weight: 600;
                 font-size: 30px;
+                z-index: 3;
+            }
+
+            .description {
+                z-index: 1;
+                font-size: x-small;
             }
 
             &.desk {
@@ -167,14 +197,34 @@ $white-color: #efefef;
             }
 
             &.card-slot.highlight {
-                animation: moving-border 4s ease infinite;
-                border-style: solid;
-                border-width: 1px;
-                // border-image-source: 
-                border-image: linear-gradient(45deg, red, blue) 10;
-                border-image-slice: 1;
-                border-image-outset: 0;
-                border-image-repeat: stretch;
+                // animation: moving-border 4s ease infinite;
+                // border-style: solid;
+                // border-radius: 4px;
+                // border-width: 1px;
+                // border-image: linear-gradient(45deg, red, blue) 10;
+                // border-image-slice: 1;
+                // border-image-outset: 0;
+                // border-image-repeat: stretch;
+                background-image: linear-gradient(90deg, silver 50%, transparent 50%), linear-gradient(90deg, silver 50%, transparent 50%), linear-gradient(0deg, silver 50%, transparent 50%), linear-gradient(0deg, silver 50%, transparent 50%);
+                background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+                background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
+                background-position: left top, right bottom, left bottom, right top;
+                animation: border-dance 0.4s infinite linear;
+
+            }
+
+            @media (max-width: 767px) {
+                // .description {
+                //     display: none;
+                // }
+
+                .collection-count {
+                    font-size: 16px;
+                }
+
+                &.card-slot.highlight {
+                    animation: none;
+                }
             }
         }
 
@@ -185,45 +235,121 @@ $white-color: #efefef;
 .card {
     cursor: pointer;
     width: 70px;
+    height: 102px;
     background-color: transparent;
+    perspective: 1000px;
+    // max-width: 100%;
+    // max-height: 100%;
+
+    &:hover{
+        // Ontop for menu
+        z-index: 99;
+    }
+
+    .card .card-imgs {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition: 0.4s ease;
+    }
 
     .card-img {
-        max-width: 70px;
-        max-height: 102px;
+        width: auto;
         height: auto;
-    }
-
-    .back-image {
-        display: none;
-    }
-
-    .front-image {
-        display: inline-block;
+        max-width: 100%;
+        max-height: 100%;
     }
 
     .card-name {
         display: none;
     }
 
-    &.fold {
-        .back-image {
-            display: block;
-        }
+    // .back-image {
+    //     display: none;
+    // }
 
-        .front-image {
-            display: none;
+    // .front-image {
+    //     display: inline-block;
+    // }
+
+
+    // &.fold {
+    //     .back-image {
+    //         display: inline-block;
+    //     }
+
+    //     .front-image {
+    //         display: none;
+    //     }
+    // }
+
+    // &.defense {
+    //     width: 102px;
+
+    //     img {
+    //         transform: rotate(-90deg);
+    //         position: relative;
+    //     }
+    // }
+
+    /* Animation */
+    &.animate__animated{
+        -webkit-animation-duration: 1s;
+        animation-duration: 1s;
+    }
+    .card-imgs {
+        position: absolute;
+        // max-width: 100%;
+        // max-height: 100%;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        
+
+        .card-img {
+            position: absolute;
+            width: auto;
+            height: auto;
+            top: 50%;
+            left: 50%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transition: transform 0.6s;
+            transform: translate(-50%, -50%) rotateY(0);
+
+            &.back-image {
+                transform: translate(-50%, -50%) rotateY(180deg);
+            }
         }
     }
-
-    &.defense {
-        width: 102px;
-
-        img {
-            transform: rotate(-90deg);
-            position: relative;
-            left: 14px;
+    &.fold{
+        .card-imgs {
+            .card-img {
+                transform: translate(-50%, -50%) rotateY(180deg);
+            }
+            .back-image {
+                transform: translate(-50%, -50%) rotateY(0);
+            }
         }
     }
+    &.defense .card-imgs {
+        transform: rotateZ(90deg);
+    }
+
+    /* CSS for the card in fold state */
+    // &.fold .card-imgs {
+    //     transform: rotateY(-180deg);
+    //     /* Flip front face */
+    // }
+
+    // &.fold .back-image {
+    //     transform: rotateY(0deg);
+    //     /* Flip back face */
+    // }
+    /* END Animation */
+
+    /* END Animation */
 }
 
 #hand {
@@ -247,6 +373,9 @@ $white-color: #efefef;
             max-width: 100px;
             height: 102px;
             width: auto;
+            .card{
+                height: 100%;
+            }
         }
     }
 
@@ -298,10 +427,17 @@ body .ui-dialog .menu-dialog {
                 border-bottom: 1px solid #ccc;
                 display: block;
                 font-size: 11px;
+                line-height: 25px;
+
 
                 // width: 100px;
                 &:hover {
                     background-color: #eee;
+                }
+
+                @media (max-width: 767px) {
+                    line-height: 32px;
+                    font-size: 14px;
                 }
             }
 
@@ -323,13 +459,53 @@ body {
         padding: 0;
         border: 1px solid #ccc;
         border-radius: 2px 2px 0 0;
-
+        transition: 0.1s ease-in-out;
     }
 
     .ui-widget-overlay {
         background-color: #00001680;
     }
 
+}
+.play-board {
+    .lightbox-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background-color: #00001681;
+
+        .card-lightbox-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            .image-cont {
+                width: 80%;
+                height: 80%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                img {
+                    // width: auto;
+                    // height: auto;
+                    // max-width: 100%;
+                    width: auto;
+                    max-height: 100%;
+                }
+            }
+        }
+    }
+}
+.move-container{
+    position: absolute;
+    transition: 1s ease-in-out;
 }
 
 @keyframes moving-border {
@@ -348,5 +524,15 @@ body {
         border-image: linear-gradient(45deg, red, blue) 10;
 
 
+    }
+}
+
+@keyframes border-dance {
+    0% {
+        background-position: left top, right bottom, left bottom, right top;
+    }
+
+    100% {
+        background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
     }
 }

@@ -432,7 +432,7 @@ var board;
         // validate
         canMoveTo( newPosition ){
             var _board = this.getBoard();
-            newPosition = newPosition|| 'hand'; // hand / deck / exdeck / graveyard / summon / st / banish 
+            newPosition = newPosition|| 'hand'; // hand / deck / exdeck / graveyard / summon / st / banish / fz
             //1
             var allow = false;
             switch( newPosition ){
@@ -443,10 +443,16 @@ var board;
                     allow = true;
                     break;
                 case'summon':
-                case'st':
                     allow = true;
                     var summonElm = _board.getFreeSummon();
                     if( !summonElm.length ){
+                        allow = false;
+                    }
+                break;
+                case'st':
+                    allow = true;
+                    var stElm = _board.getFreeST();
+                    if( !stElm.length ){
                         allow = false;
                     }
                 break;
@@ -455,6 +461,13 @@ var board;
                         allow = true;
                     }
                     break;
+                case'fz':
+                    allow = this.isSpell;
+                    var fzElm = _board.getFreeFZ();
+                    if( !fzElm.length ){
+                        allow = false;
+                    }
+                break;
                 default:
                     allow = false;
                 
@@ -502,9 +515,9 @@ var board;
             return true;
         }
 
-        // Biến order chỉ dùng cho summon và ST
+        // Biến order chỉ dùng cho summon và ST / FZ
         moveTo( newPosition, isTop, order, animation, duration ) {
-            if(!['hand', 'deck', 'exdeck', 'graveyard','summon','st', 'banish'].includes( newPosition ) ) return false;
+            if(!['hand', 'deck', 'exdeck', 'graveyard','summon','st', 'banish', 'fz'].includes( newPosition ) ) return false;
 
             var _card = this;
             var _board = _card.getBoard();
@@ -522,8 +535,10 @@ var board;
             if( _card.canMoveTo ( newPosition) ) {
                 // 1
                 result = true;
-                var to = _card.getNewOffset( newPosition );
-                if( animation )_card.doAnimation ( to, animation, duration );
+
+                var moveContainer = _card.startMoveAnimation();
+                _card.startBoardAnimation( moveContainer );
+
                 var newOrder = 0;
                 var newCollection = _card.getBoard().getCollectionByPosition( newPosition);
                 var items = [];
@@ -540,7 +555,7 @@ var board;
                 } else {
                     _card.collection_order = newOrder;
                 }
-                if( ['summon', 'st'].includes(newPosition) ){
+                if( ['summon', 'st', 'fz'].includes(newPosition) ){
                     order = order || 1;
                     var _continue = 1;
                     var _slot = _board.elm.find('.card-slot[data-order="' + order + '"]');
@@ -549,6 +564,7 @@ var board;
                         _card.collection_order = order;
                     }else{
                         console.warn('No Space to move card');
+                        _card.endBoardAnimation( moveContainer );
                         return false;
                     }
                 }
@@ -566,14 +582,15 @@ var board;
 
                 if( newPosition != 'summon' ){
                     _card.switchState = 'attack';
-                    // _card.updateHtml();
+                    _card.updateHtml();
                 }
                 // if( newPosition != 'hand' ){
                     // _card.foldState = 'normal';
                     // _card.updateHtml();
                 // }
                 if( ! _card.appendToBoard() ){
-                    console.warn('Append failed');
+                    console.warn('Not moved');
+                    _card.endBoardAnimation( moveContainer );
                     return false;
                 }
 
@@ -588,6 +605,13 @@ var board;
                 willRemove.remove();
             }
             _card.afterMove( newPosition );
+            setTimeout( function() {
+                _card.moveAnimation( moveContainer );
+                setTimeout( function(){
+                    _card.endBoardAnimation( moveContainer );
+                    _card.appendToBoard(); // End animation of the card
+                }, 1500 );
+            }, 5 );  
             return result;
         }
 
@@ -630,41 +654,42 @@ var board;
             if( this.canSwitch ( newState ) ) {
 
                 // 1
-                result = true;
                 if( animation ) this.doAnimation ( newState, animation, duration );
                 // 1
                 var oldSwitchState = this.switchState;
                 this.switchState = newState;
                 // set new state here
-                this.html.removeClass('fold');
-                this.html.removeClass('attack defense').addClass(newState);
+                // this.html.removeClass('fold');
+                // this.html.removeClass('attack defense').addClass(newState);
+                this.updateHtml();
+
+                this.getBoard().writelog( 'update', this.id, {
+                    switchState: newState,
+                }, {
+                    switchState: oldSwitchState
+                } );
+                result = true;
             }
 
-            this.getBoard().writelog( 'update', this.id, {
-                switchState: newState,
-            }, {
-                switchState: oldSwitchState
-            } );
             return result;
         }
         target(){
+            this.doAnimation('target');
             this.getBoard().writelog( 'target', this.id, {});
         }
         
         declare(){
+            this.doAnimation('declare');
             this.getBoard().writelog( 'declare', this.id, {});
         }
         reveal(){
-            this.getBoard().writelog( 'reveal', this.id, {
-                collection_position: this.collection_position
-            });
-            if( this.position === 'hand'){
-                //1 
-                // Move card to center of Hand
-            }
+            this.getBoard().writelog( 'reveal', this.id, {});
+            // Show image as full screen
+            this.doAnimation('reveal');
             if( this.position === 'exdeck'){
-                //1 // Show image as full screen
                 // then move to the Top of the extra deck
+                let collection = this.getBoard().getCollectionByPosition( this.position );
+                collection && collection.appendCard( this );
             }
 
         }
@@ -690,6 +715,17 @@ var board;
             //         cardElement.addClass(moveOption);
             //     }
             // });
+            var typeCards = [
+                'isST',
+                'isSpell',
+                'isTrap',
+                'isMonster',
+            ];
+            typeCards.forEach( function( typeCard ) {
+                if (_card[typeCard] || 1 ) {
+                    cardElement.toggleClass(typeCard, (typeCard in _card ) && (_card[typeCard] == 1) );
+                }
+            });
             var states = [
                 'foldState',
                 'switchState',
@@ -703,8 +739,11 @@ var board;
             });
 
             cardElement.append(`<span class="card-name">${_card.name}</span>`);
-            cardElement.append(`<img src="${backImageSrc}" width="70" height="102" class="card-img back-image"/>`);
-            cardElement.append(`<img src="${frontImageSrc}" width="70" height="102" class="card-img front-image""/>`);
+            cardElement.append(`
+                <div class="card-imgs">
+                    <img src="${backImageSrc}" class="card-img back-image"/>
+                    <img src="${frontImageSrc}" width="70" height="102" class="card-img front-image""/>
+                </div>`);
 
             this.html = cardElement;
 
@@ -713,18 +752,29 @@ var board;
             var _card = this;
             var cardElement = _card.html;
 
-            var moveOptions = [
-                'canMoveHand',
-                'canMoveSummon',
-                'canMoveExDeck',
-                'canMoveDeck',
-                'canMoveST',
-                'canMoveBanish',
-                'canMoveGraveyard',
+            // var moveOptions = [
+            //     'canMoveHand',
+            //     'canMoveSummon',
+            //     'canMoveExDeck',
+            //     'canMoveDeck',
+            //     'canMoveST',
+            //     'canMoveBanish',
+            //     'canMoveGraveyard',
+            // ];
+            // moveOptions.forEach( function( moveOption ) {
+            //     if (_card[moveOption] || 1 ) {
+            //         cardElement.toggleClass(moveOption, (moveOption in _card ) && (_card[moveOption] == 1) );
+            //     }
+            // });
+            var typeCards = [
+                'isST',
+                'isSpell',
+                'isTrap',
+                'isMonster',
             ];
-            moveOptions.forEach( function( moveOption ) {
-                if (_card[moveOption] || 1 ) {
-                    cardElement.toggleClass(moveOption, (moveOption in _card ) && (_card[moveOption] == 1) );
+            typeCards.forEach( function( typeCard ) {
+                if (_card[typeCard] || 1 ) {
+                    cardElement.toggleClass(typeCard, (typeCard in _card ) && (_card[typeCard] == 1) );
                 }
             });
             var states = [
@@ -732,7 +782,7 @@ var board;
                 'switchState',
                 'position',
             ];
-            cardElement.removeClass('normal fold attack defense deck exdeck graveyard banish summon st hand');
+            cardElement.removeClass('normal fold attack defense deck exdeck graveyard banish summon st hand fz');
             states.forEach( function( stateName ) {
                 if (_card[stateName]) {
                     cardElement.addClass(_card[stateName]);
@@ -778,6 +828,16 @@ var board;
                     
                 break;
 
+                case'fz':
+                    var fzElm = _board.getCardSlot(_card.id);
+                    if( !fzElm.length ){
+                        return false;
+                    }
+                    _card.updateHtml();
+                    _card.html.appendTo( fzElm );
+                    
+                break;
+
                 case 'hand':
                 hand.append( $('<div class="hand-card-container" />').append( _card.html ) );
                 break;
@@ -798,6 +858,133 @@ var board;
         get( k, defaultValue){
             if( this[k] ) return this[k];
             return defaultValue||false;
+        }
+
+        // this.doAnimation('target', '<animation name>', <duration>); details in https://animate.style
+
+        /**
+         * Do the card animation
+         * @param {string} action Action name, from the action on board
+         * @param {string} animation animation name, get from animate.style
+         * @param {number} duration duration time by miliseconds default 300
+         * @param {function} callback callback function after animation
+         * @returns void
+         */
+        doAnimation(action, animation, duration, callback ){
+            var _card = this;
+            duration = duration || 1000;
+
+            switch( action ){
+                case 'declare':
+                    animation = animation || 'shakeY';
+                case 'target':
+                    console.log( action );
+                    animation = animation || 'bounceIn';
+                    animation = 'animate__animated animate__' + animation;
+                    this.html.addClass(animation);
+                    setTimeout( function(){
+                        _card.html.removeClass(animation);
+                    }, duration);
+                break;
+
+
+                case 'reveal':
+                    // Show card in full screen;
+                    var board = _card.getBoard();
+                    var boardElm = board.getBoardElm();
+                    boardElm.find('#card-lightbox').remove();
+                    var lightbox = $('<div></div>', {
+                        'id': 'card-lightbox',
+                        'class': 'lightbox-container',
+                    });
+                    lightbox.append(
+                        `<div class="card-lightbox-inner">
+                            <div class="image-cont animate__animated animate__jackInTheBox">
+                                <img src="${_card.imageURL}" data-width="481" data-height="701"  />
+                            </div>
+                        </div>`,
+                    );
+                    boardElm.append( lightbox );
+                    const waitTime = 1000;
+                    setTimeout( function() {
+                        lightbox.removeClass( 'animate__animated animate__jackInTheBox' ).addClass(' animate__animated animate__zoomOut');
+                        setTimeout( function() {
+                                lightbox.remove();
+                        }, duration );
+                    }, duration + waitTime );
+                    
+                    
+                default:
+                    return false;
+            }
+            if( callback ) callback();
+        }
+        startMoveAnimation(){
+            var card = this;
+            var board = card.getBoard();
+            var oldPosition = card.position;
+            var clone = card.html.clone();
+            var offset = [];
+            var collection = board.getCollectionByPosition( oldPosition);
+            if( collection ){
+                offset = collection.elm.offset();
+            }else{
+                offset = card.html.offset();
+            }
+            clone.attr('id', '');
+            clone.css({
+                width: card.html.width(),
+                height: card.html.height(),
+            });
+
+            var moveContainer = $('<div class="move-container"></div>');
+            moveContainer.css({
+                top: offset.top,
+                left: collection ? ( collection.elm.width() - card.html.width())/2 + offset.left : offset.left,
+                width: card.html.width(),
+                height: card.html.height(),
+                zIndex: 1000,
+            }).appendTo( $('body') );
+
+            clone.appendTo( moveContainer );
+            return moveContainer;
+        }
+        moveAnimation( moveContainer ){
+            var card = this;
+            var board = card.getBoard();
+            var newPosition = card.position;
+            var collection = board.getCollectionByPosition( newPosition);
+            var offset = [];
+            var clone = moveContainer.find('.card');
+            clone.css({
+                width: card.html.width(),
+                height: card.html.height(),
+            });
+
+            if( collection ){
+                offset = collection.elm.offset();
+            }else{
+                offset = card.html.offset();
+            }
+            moveContainer.css({
+                top: offset.top,
+                left: collection ? ( collection.elm.width() - clone.width())/2 + offset.left : offset.left,
+                zIndex: 1000,
+            });
+            
+            // Keep the animations;
+            clone[0].classList = 'card';
+            clone.addClass( card.html[0].classList.value );
+            return true;
+        }
+        startBoardAnimation( moveContainer ){
+            this.html.css('visibility', 'hidden');
+            moveContainer && moveContainer.show();
+
+        }
+        endBoardAnimation( moveContainer ){
+            this.html.css('visibility', 'visible');
+            moveContainer && moveContainer.remove();
         }
     }
 
@@ -829,6 +1016,9 @@ var board;
             var collection = this;
             var _board = collection.getBoard();
             this.elm.on('click', '.card img, .collection-count, .ddescription', function(){
+                if( collection.collection_position == 'deck' ){
+                    return false;
+                }
                 collection.showDialog();
             } );
 
@@ -913,6 +1103,7 @@ var board;
             // }
         }
         showDialog(){
+            this.menuElm.dialog('option', 'width', Math.min( 450, $(window).width() - 10 ));
             this.menuElm.dialog('open');
         }
         // show Collection board
@@ -937,7 +1128,12 @@ var board;
         appendCard( card, reDraw ){
             // if( reDraw || 0 ){
                 card.position = this.collection_position;
+                let top_order = 0;
+                let top_card = this.getTopCard();
+                if( top_card ) top_order = top_card.collection_order;
+                card.collection_order = top_order + 1;
                 card.updateHtml();
+
             // }
             this.reDraw();
 
@@ -1129,11 +1325,9 @@ var board;
             var board = this;
             this.elm.on('click', '.highlight', function( e ){
                 var _this = $(this);
-                // var isSS = _this.hasClass( 'summon-slot');
-                var isST = _this.hasClass( 'st-slot');
                 var order = _this.data( 'order' );
                 var waitingActions = board.getWaitingActions();
-                let newPosition = isST ? 'st' : 'summon';
+                let newPosition = _this.data( 'position');
 
                 if( order ){
                     board.updateCardbyAction( 
@@ -1245,6 +1439,9 @@ var board;
         getStItems(){
             return this.getItemsByPosition('st');
         }
+        getFzItems(){
+            return this.getItemsByPosition('fz');
+        }
 
         setItems( items ){
             this.orgitems = Object.values( items);
@@ -1259,6 +1456,17 @@ var board;
         getFreeSummon(){
             var _free = [];
             $.each( this.elm.find('.summon-slot'), function (i, el ){
+                var _el = $(el);
+                if( (!_free.length) && (!_el.find('.card').length) ){
+                    _free = _el;
+                }
+            });
+            return _free;
+        }
+
+        getFreeFZ(){
+            var _free = [];
+            $.each( this.elm.find('.fz-slot'), function (i, el ){
                 var _el = $(el);
                 if( (!_free.length) && (!_el.find('.card').length) ){
                     _free = _el;
@@ -1388,9 +1596,16 @@ var board;
             });
             return frees.length == 1 ? frees[0] : false;
         }
-        isSS_STFreeOne(){
+        isSS_STFreeOne(card){
             var frees = [];
-            $.each( this.elm.find('.summon-slot, .exsummon-slot, .st-slot'), function (i, el ){
+            var ssstElms = [];
+            if( card && card.isSpell ){
+                ssstElms = this.elm.find('.summon-slot, .exsummon-slot, .st-slot, .fz-slot');
+                // Hiện tại fz-slot chỉ áp dụng cho action "Move To" nên chỉ check ở đây 
+            }else{
+                ssstElms = this.elm.find('.summon-slot, .exsummon-slot, .st-slot');
+            }
+            $.each( ssstElms, function (i, el ){
                 var _el = $(el);
                 if( !_el.find('.card').length ){
                     frees.push( _el );
@@ -1493,20 +1708,20 @@ var board;
 
             var order = card.get('collection_order');
             var position = card.get('position');
-            if( ['summon', 'st'].includes(position) ){
+            if( ['summon', 'st', 'fz'].includes(position) ){
                 var elm = board.elm.find('.card-slot[data-order="' + order + '"]');
                 return elm;
             }
             debugger;
             return false;
         }
-        selectOrder( isEx ) {
+        selectOrder( isEx, isFz ) {
             isEx = isEx||0;
-            var waitingActions= this.getWaitingActions();
+            var waitingActions = this.getWaitingActions();
             let cardHolders = false;
             let newPosition = waitingActions.newPosition;
             if(! newPosition){
-                cardHolders = this.highlightSS_STCardHolders();
+                cardHolders = this.highlightSS_STCardHolders(isEx, isFz); // 'Move action'
             }else if( newPosition == 'summon' && isEx ){
                 cardHolders = this.highlightSSExCardHolders();
             }else{
@@ -1547,29 +1762,43 @@ var board;
             return elms;
 
         }
-        highlightSS_STCardHolders(){
-            var cardHolderElms = this.elm.find('.summon-slot, .summonex-slot, .st-slot ');
+        highlightSS_STCardHolders(isEx, isFz){
+            var waitingActions = this.getWaitingActions();
+            var card = waitingActions.card;
+            var cardHolderElms = this.elm.find('.summon-slot, .summonex-slot, .st-slot, .fz-slot ');
             this.elm.find('.card-slot ').removeClass('highlight');
             
             // Highlight when slot is empty
             var elms = cardHolderElms.filter( function (index, cardHolder){     
                 var _cardHolder = $(cardHolder);
-                if( !_cardHolder.find('.card').length ){
-                    _cardHolder.addClass('highlight');
-                    return true;
+                var check = true;
+                
+                // if( !card.isMonster && _cardHolder.hasClass('summonex-slot') ){
+                //     check = false;
+                // }
+                if( (!card.isSpell) && _cardHolder.hasClass('fz-slot') ){
+                    check = false;
                 }
-                return false;
+                if( _cardHolder.find('.card').length ){
+                    check = false;
+                }
+
+                if( check ) _cardHolder.addClass('highlight');
+                return check;
             });
             return elms;
         }
         getCardHolder(position){
-            return this.elm.find('.' + position + '-slot.card-slot ');
+            var moreClass = '';
+            var waitingActions = this.getWaitingActions();
+            if( waitingActions ){
+                let newPosition = waitingActions.newPosition;
+                let card = waitingActions.card;
+                if( newPosition == 'st' && card.isSpell ) moreClass = ', .fz-slot';
+            }
+
+            return this.elm.find('.' + position + '-slot.card-slot ' + moreClass );
         }
-
-
-
-
-
         
     }
 
