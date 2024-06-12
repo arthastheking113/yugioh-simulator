@@ -5,6 +5,8 @@ class MenuBase {
         this.options = $.extend( {}, options);
         this.dialog = {};
         this.init();
+        this.infoPanel = $('.lcard-information-container');
+        this.breakpoint = 1200;
     }
     init(){
         this.defineMenu();
@@ -70,6 +72,77 @@ class MenuBase {
     afterHide(){
         // This is an abstract function
 
+    }
+    isSmallScreen(){
+        return ( $(window).width() < this.breakpoint );
+    }
+    cardInformationsPopup(){
+        if( this.isSmallScreen() ){
+            var card = this.getCard();
+            var board = card.getBoard();
+            var boardElm = board.getBoardElm();
+            boardElm.find('#lightbox-card-info').remove();
+            var lightbox = $('<div></div>', {
+                'id': 'lightbox-card-info',
+                'class': 'lightbox-card-info',
+            });
+
+            // lightbox.append(
+            //     `<div class="card-lightbox-bgr">
+            //     </div>
+            //     <div class="card-lightbox-inner">
+            //         <div class="card-info">
+            //             <img class="animate__animated" src="${card.imageURL}" width="200" data-width="481" data-height="701"  />
+            //             <p name="card-descriptons" id="lb-card-descriptons" class="card-descriptons animate__animated" cols="30" rows="10">  ${card.description} </p>
+            //             <a href="javascript:void(0)" class="lightbox-close">
+            //                 <i class="fas fa-window-close"></i>
+            //             </a>
+            //         </div>
+            //     </div>`,
+            // );
+
+            lightbox.append(
+                `<div class="card-lightbox-bgr">
+                </div>
+                <div class="card-lightbox-inner">
+                    <div class="card-info">
+                        <img class="" src="${card.imageURL}" width="200" data-width="481" data-height="701"  />
+                        <p name="card-descriptons" id="lb-card-descriptons" class="card-descriptons " cols="30" rows="10">  ${card.description} </p>
+                        <a href="javascript:void(0)" class="lightbox-close">
+                            <i class="fas fa-window-close"></i>
+                        </a>
+                    </div>
+                </div>`,
+            );
+            lightbox.on('click', '.card-lightbox-bgr, .lightbox-close', function(e) {
+                lightbox.fadeOut( 300, function() {
+                    lightbox.remove();
+                });
+            });
+            boardElm.append( lightbox );
+        }
+    }
+    sideCardInformations() {
+        if( !this.isSmallScreen() ){
+            // Draw the card infos by jQuery <div class="lcard-header"> <div class="lcard-image"> </div> </div> <div class="lcard-descriptons-cont"> <code name="lcard-descriptons" id="lcard-descriptons" class="lcard-descriptons" cols="30" rows="10">  &nbsp;  </code> </div>
+            // <h4 class="lcard-name">${card.name}</h4> 
+            var card = this.getCard();
+
+            var infoHtml = `<div class="lcard-header"> <div class="lcard-image"> <img src="${card.imageURL}" data-width="481" data-height="701"  /> </div> </div> <div class="lcard-descriptons-cont"> <p name="lcard-descriptons" id="lcard-descriptons" class="lcard-descriptons" cols="30" rows="10">  ${card.description} </p> </div>`;
+            this.infoPanel.empty().append( infoHtml );
+        }
+    }
+    hideInformationsPopup(){
+        this.infoPanel.empty();
+        duration = duration || 1000;
+        if( this.infoPopup ){
+            // this.infoPopup.removeClass( 'animate__animated animate__jackInTheBox' ).addClass(' animate__animated animate__zoomOut');
+            this.infoPopup.addClass(' animate__animated animate__zoomOut');
+            setTimeout( function() {
+                    this.infoPopup.removeClass(' animate__animated animate__zoomOut');
+                    lightbox.remove();
+            }, duration );
+        }
     }
     
 }
@@ -267,6 +340,11 @@ class CardMenu extends MenuBase {
             }
             
         });
+        if( this.isSmallScreen() ){
+            ul.find('li #this-view').show();
+        }else{
+            ul.find('li #this-view').hide();
+        }
 
 
     }
@@ -300,6 +378,12 @@ class CardMenu extends MenuBase {
         var ul = this.element.find('ul');
         
         ul.append(`
+        <!-- this-view-card -->
+            <li class="menuItem">
+                <a href="javascript:void(0)" id="this-view" data-target="this,view">
+                    View
+                </a>
+            </li>
         <!-- 'this-target' -->
             <li class="menuItem">
                 <a href="javascript:void(0)" id="this-target" data-target="this,target">
@@ -488,6 +572,10 @@ class CardMenu extends MenuBase {
             var board = card.getBoard();
             var target = $(this).data('target');
             console.log(target);
+            if( target == 'this,view'){
+                // Not a play step 
+                menu.cardInformationsPopup();
+            }
 
             target = target.split(',');
             var newPosition = target[0];

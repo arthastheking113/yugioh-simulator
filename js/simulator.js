@@ -18,20 +18,22 @@ var board;
             this.pointer = 0;
             this.isStarted = false;
             this.isRePlaying = false;
+            this.isPausing = false;
             this.replaytimeout = 0;
             this.messageElm = this.elm.find('#log-message');
             this.overlay = $('<div class="replay-overlay"></div>').css({
-                position: 'fixed',
-                width: '100vw',
-                height: '100vh',
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
                 top: 0,
                 left: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0)',
                 zIndex: 99,
                 display: 'none',
             });
-            $('body').find('.replay-overlay').remove();
-            $('body').append(this.overlay);
+            var boardElm = this.getBoard().getBoardElm();
+            boardElm.find('.replay-overlay').remove();
+            boardElm.append(this.overlay);
             this.messageElm.empty();
             this.events();
 
@@ -72,6 +74,14 @@ var board;
                 // playLog.elm.find('.start-record-button').addClass('hidden');
                 // playLog.elm.find('.stop-record-button').addClass('hidden');
                 
+            });
+
+            playLog.elm.find('.pause-button').off('click').on('click', function(){
+                playLog.pauseReplay();
+            });
+            
+            playLog.elm.find('.resume-button').off('click').on('click', function(){
+                playLog.resumeReplay();
             });
         }
         async setInitItems(items){
@@ -219,10 +229,19 @@ var board;
         }
         // replay
         replay(){
+            var playLog = this;
             if( !this.hasRecord() ){
                 this.writeStep(`<p class="highlight-log">No Records found</p>` );
                 return false;
             }
+
+            playLog.elm.find('.start-record-button').addClass('hidden');
+            playLog.elm.find('.stop-record-button').addClass('hidden');
+            playLog.elm.find('.replay-button').addClass('hidden');
+
+            playLog.elm.find('.pause-button').removeClass('hidden');
+            playLog.elm.find('.resume-button').removeClass('hidden');
+
             this.pointer = 0;
             this.isRePlaying = true;
             this.addOverlay();
@@ -230,9 +249,14 @@ var board;
             this.playStep();
         }
         addOverlay(){
-            $('.replay-overlay').fadeIn('300');
+            this.overlay.fadeIn('300');
         }
         playStep(){
+            // console.warn('Play step', this.pointer);
+            if( this.isPausing ){
+                this.writePause();
+                return false;
+            }
             let step = this.step();
             let log = this;
             if(!step ) {
@@ -352,8 +376,16 @@ var board;
         // write step
         writeStep( message){
             this.messageElm.append(`<p>${message}</p>`);
+            // console.warn( message );
             this.messageElm.stop().animate({scrollTop: 99999}, 300);
 
+        }
+        writePause(){
+            this.writeStep(`<p class="highlight-log">PAUSE!!</p>` );
+        }
+
+        writeResume(){
+            this.writeStep(`<p class="highlight-log">RESUME!!</p>` );
         }
         writeEnd(){
             this.writeStep(`<p class="highlight-log">COMPLETE REPLAY!!</p>` );
@@ -361,13 +393,39 @@ var board;
         }
         // stop replay
         stopReplay(){
+            var playLog = this;
             this.pointer = 0;
             this.isRePlaying = false;
+            this.isPausing = false;
             clearTimeout(this.replaytimeout);
             this.removeOverlay();
+
+
+            playLog.elm.find('.start-record-button').removeClass('hidden');
+            playLog.elm.find('.stop-record-button').removeClass('hidden');
+            playLog.elm.find('.replay-button').removeClass('hidden');
+
+            playLog.elm.find('.pause-button').addClass('hidden');
+            playLog.elm.find('.resume-button').addClass('hidden');
+        }
+        pauseReplay(){
+            if( this.isRePlaying ){
+                this.isPausing = true;
+                return true;
+            }
+            return false;
+        }
+        resumeReplay(){
+            if( this.isRePlaying && this.isPausing ){
+                this.isPausing = false;
+                this.writeResume();
+                this.playStep();
+                return true;
+            }
+            return false;
         }
         removeOverlay(){
-            $('.replay-overlay').fadeOut('300');
+            this.overlay.fadeOut('300');
         }
         // reset
         reset(){
@@ -421,12 +479,14 @@ var board;
                 var _board = _card.getBoard();
                 var cardMenu = _board.cardMenu.setCard(_card);
 
+                cardMenu.sideCardInformations();
                 cardMenu.show();
             }, function( e ) { 
                 var _board = _card.getBoard();
                 var cardMenu = _board.cardMenu;
                 cardMenu.element.dialog('option', 'appendTo', 'body');
                 cardMenu.hide();
+                // cardMenu.hideCardInformations();
             });
         }
         // validate
@@ -499,7 +559,6 @@ var board;
             return true;
         }
         afterMove(newPosition){
-
             this.getBoard().writelog( 'update', this.id, {
                 position: this.position,
                 collection_order: this.collection_order,
@@ -507,6 +566,7 @@ var board;
                 position: this.itemBefore.position,
                 collection_order: this.itemBefore.collection_order,
             } );
+
             // Draw old collection was moved from
             if( this.position !=  this.itemBefore.position ){
                 var collection = this.getBoard().getCollectionByPosition( this.itemBefore.position );
@@ -1070,10 +1130,11 @@ var board;
             }
         }
         drawDialog(){
+            var collection = this;
             // if( this.menuElm.length ){
                 var dialog = this.menuElm.dialog({
                     width: 450,
-                    height: 563,
+                    height: collection.getBoard().getBoardElm().height(),
                     resizable: true,
                     draggable: true,
                     autoOpen: false,
@@ -1103,7 +1164,9 @@ var board;
             // }
         }
         showDialog(){
+            var collection = this;
             this.menuElm.dialog('option', 'width', Math.min( 450, $(window).width() - 10 ));
+            this.menuElm.dialog('option', 'height', collection.getBoard().getBoardElm().height() );
             this.menuElm.dialog('open');
         }
         // show Collection board
@@ -1712,7 +1775,6 @@ var board;
                 var elm = board.elm.find('.card-slot[data-order="' + order + '"]');
                 return elm;
             }
-            debugger;
             return false;
         }
         selectOrder( isEx, isFz ) {
@@ -1924,6 +1986,31 @@ var board;
 
         })
 
+        var playBoard = $('#playtest');
+        var logMessage = $('#log-message');
+        var lcardinformations = $('.lcard-informations');
+
+        if( playBoard.length && logMessage.length ){
+            setTimeout( function(){
+                setLogHeight();
+            }, 50);
+        }
+        var logHeightTimeOut = 0;
+        function setLogHeight(){
+            logMessage.height(playBoard.height() - logMessage.parent().siblings().first().outerHeight( true ) );
+            if( lcardinformations.length ){
+                lcardinformations.height ( playBoard.outerHeight( true ) - 10 );
+                var descriptonsHeight = playBoard.height() - lcardinformations.find('.lcard-header').outerHeight( true );
+                lcardinformations.find('.lcard-descriptons').css({
+                    height: descriptonsHeight,
+                    maxHeight: descriptonsHeight
+                });
+            }
+        }
+        $(window).on('resize', function(){
+            clearTimeout( logHeightTimeOut );
+            logHeightTimeOut = setTimeout( setLogHeight, 200);
+        } );
        
 
     });

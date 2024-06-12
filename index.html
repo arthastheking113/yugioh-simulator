@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="css/theme.css?v=1.5" integrity="" />
     <link rel="stylesheet" href="css/tournamentStyle.css?v=1.4" integrity="" />
     <link rel="stylesheet" href="css/app.css" integrity="" />
-    <link rel="stylesheet" href="css/simulator.css?v=1.0.2" integrity="" />
+    <link rel="stylesheet" href="css/simulator.css?v=1.0.4" integrity="" />
     <script src="js/jquery.min.js?v=3.2.1"></script>
     <script src="js/jquery-ui.min.js?v=1.12.1"></script>
     <script src="js/jquery.ui.touch-punch.min.js?v=0.2.3"></script>
@@ -158,6 +158,16 @@
                         <i class="fas fa-play-circle"></i>
                         Play
                     </a>
+
+                    <a class="pause-button hidden" href="javascript:void(0)" title="Pause">
+                        <i class="fas fa-pause"></i>
+                        Pause
+                    </a>
+
+                    <a class="resume-button hidden" href="javascript:void(0)" title="Resume">
+                        <i class="fas fa-play"></i>
+                        Resume
+                    </a>
                 </div>
                 <div class="log-message-body" id="log-message-body">
                     <code name="log-message" id="log-message" class="log-message" cols="30" rows="10">
@@ -167,6 +177,22 @@
 
             </div>
         </aside>
+
+        <aside class="play-board-side lcard-informations">
+            <div class="lcard-information-container">
+                <div class="lcard-header">
+                    <div class="lcard-image">
+                        
+                    </div>
+                </div>
+                <div class="lcard-descriptons-cont">
+                    <code name="lcard-descriptons" id="lcard-descriptons" class="lcard-descriptons" cols="30" rows="10">
+                        &nbsp;
+                    </code>
+                </div>
+            </div>
+        </aside>
+
         <!--this.deckMenuElm = $('#deckmenu');
             this.exDeckMenuElm = $('#extradeckmenu');
             this.graveyardMenuElm = $('#graveyardmenu');
@@ -209,8 +235,8 @@
         </div>
     </div>
 
-    <script src="js/card_menu.js?v=1.0.2" integrity=""></script>
-    <script src="js/simulator.js?v=1.0.2" integrity=""></script>
+    <script src="js/card_menu.js?v=1.0.4" integrity=""></script>
+    <script src="js/simulator.js?v=1.0.4" integrity=""></script>
     <script src="js/main.js?v=1.0.2" integrity=""></script>
     <script src="js/Function.js?v=1.6" integrity=""></script>
 
