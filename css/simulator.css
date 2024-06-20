@@ -1,1 +1,534 @@
-.game-board{display:inline-block}.game-board .stats .tools{height:60px;display:flex;justify-content:center;align-items:center}.game-board .stats .tools .token,.game-board .stats .tools .coin,.game-board .stats .tools .dice{width:25px;margin-right:5px;cursor:pointer;z-index:99}#results{position:relative;left:25px}.ddescription{display:none !important;font-family:MONOSPACE;font-style:normal}.devMode .ddescription{display:block !important;font-size:11px;position:absolute;top:0;left:0;width:100%;height:100%}.play-board-container{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:15px;margin-top:80px}.play-board-container .play-board{max-width:calc(100% - 20px)}@media(min-width: 768px){.play-board-container .play-board-side{order:9;max-width:290px;width:22%}.play-board-container .play-board{order:5;max-width:calc(60% - 30px)}.play-board-container .lcard-informations{order:1;width:18%;max-width:200px;z-index:999;background:#011d38;border-radius:8px;display:block;overflow:hidden;margin:-10px;padding:10px}}.play-board-container .log-message{height:604px;resize:none !important;display:block;position:relative;max-width:360px;width:100%;border:1px solid #efefef;border-radius:4px;padding:10px;padding-bottom:25px;font-size:11px;color:#efefef;overflow:hidden;white-space:pre-wrap;overflow:auto}.play-board-container .log-message .log-step{max-width:350px}.play-board-container .log-message-container .card-key{color:#b4b4ed}.play-board-container .log-message-container .new-state{color:#f7a5a5}.play-board-container .log-message-container .log-card-name{color:red}.play-board-container .log-message-header{display:flex;justify-content:space-between;padding:0 15px;align-items:flex-end;margin-bottom:15px;gap:15px}.play-board-container .log-message-header .log-title{margin:0;flex-grow:1}.play-board-container .log-message-header .replay-button{color:#adff2f}#playtest{border:1px solid #efefef;background-color:#000016;background-image:url("../asset/bk_layer_a.png");background-size:cover;padding:1rem;position:relative;display:inline-block;border-radius:4px}@media(max-width: 767px){#playtest{padding:10px}#playtest .game-board .card-slot-row{gap:5px}}#playtest .game-board{display:flex;gap:15px;flex-direction:column;justify-content:center}#playtest #hand,#playtest .card-slot-row{z-index:1}#playtest #hand:hover,#playtest .card-slot-row:hover{z-index:2}#playtest .card-slot-row{display:flex;justify-content:center;align-items:flex-start;flex-wrap:nowrap;gap:15px}#playtest .card-slot-row .no-card-slot{visibility:hidden}#playtest .card-slot-row .holder-slot{width:102px;display:block;border:1px solid #ccc;border-radius:4px;position:relative;text-align:center}#playtest .card-slot-row .holder-slot .card{display:block;width:100%;height:100%;z-index:2}#playtest .card-slot-row .holder-slot .description,#playtest .card-slot-row .holder-slot .collection-count{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;justify-content:space-around;align-items:center;font-weight:600;font-size:30px;z-index:3}#playtest .card-slot-row .holder-slot .description{z-index:1;font-size:x-small}#playtest .card-slot-row .holder-slot.desk{height:200px}#playtest .card-slot-row .holder-slot.card-slot.highlight{background-image:linear-gradient(90deg, silver 50%, transparent 50%),linear-gradient(90deg, silver 50%, transparent 50%),linear-gradient(0deg, silver 50%, transparent 50%),linear-gradient(0deg, silver 50%, transparent 50%);background-repeat:repeat-x,repeat-x,repeat-y,repeat-y;background-size:15px 2px,15px 2px,2px 15px,2px 15px;background-position:left top,right bottom,left bottom,right top;animation:border-dance .4s infinite linear}@media(max-width: 767px){#playtest .card-slot-row .holder-slot .collection-count{font-size:16px}#playtest .card-slot-row .holder-slot.card-slot.highlight{animation:none}}.card{cursor:pointer;width:70px;height:102px;background-color:rgba(0,0,0,0);perspective:1000px}.card:hover{z-index:99}.card .card .card-imgs{display:block;width:100%;height:100%;position:relative;transition:.4s ease}.card .card-img{width:auto;height:auto;max-width:100%;max-height:100%}.card .card-name{display:none}.card.animate__animated{animation-duration:1s}.card .card-imgs{position:absolute;width:100%;height:100%;transition:transform .6s}.card .card-imgs .card-img{position:absolute;width:auto;height:auto;top:50%;left:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .6s;transform:translate(-50%, -50%) rotateY(0)}.card .card-imgs .card-img.back-image{transform:translate(-50%, -50%) rotateY(180deg)}.card.fold .card-imgs .card-img{transform:translate(-50%, -50%) rotateY(180deg)}.card.fold .card-imgs .back-image{transform:translate(-50%, -50%) rotateY(0)}.card.defense .card-imgs{transform:rotateZ(90deg)}#hand .hand-board{flex-wrap:nowrap;width:80%;max-width:900px;margin:0 auto;display:flex;align-items:center;min-height:102px;justify-content:center}#hand .hand-board .hand-card-container{margin-top:20px;margin-bottom:20px;clear:both;position:relative;min-width:10px;max-width:100px;height:102px;width:auto}#hand .hand-board .hand-card-container .card{height:100%}#hand .card-container{margin:20px 0;clear:both;position:relative;min-width:10px;max-width:102px;height:102px;width:auto}.collection-menu .collection-container{padding:.5em 0;clear:both;position:relative;display:flex;flex-wrap:wrap;justify-content:left;align-items:flex-start;gap:10px}#playtest .actions{text-align:center}#playtest .actions .input{margin:1rem}body .ui-dialog .menu-dialog{padding:0}body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list{padding:0;list-style:none;margin:0}body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li a{padding:.1em .2em;border-bottom:1px solid #ccc;display:block;font-size:11px;line-height:25px}body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li a:hover{background-color:#eee}@media(max-width: 767px){body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li a{line-height:29px;font-size:14px}}body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li:last-child a{border:none}.hidden{display:none !important}body{font-size:14px}body .ui-dialog-card-menu{padding:0;border:1px solid #ccc;border-radius:2px 2px 0 0;transition:.1s ease-in-out}body .ui-widget-overlay{background-color:rgba(0,0,22,.5019607843)}.play-board .lightbox-container{position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;background-color:rgba(0,0,22,.5058823529)}.play-board .lightbox-container .card-lightbox-inner{position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center}.play-board .lightbox-container .card-lightbox-inner .image-cont{width:80%;height:80%;display:flex;justify-content:center;align-items:center}.play-board .lightbox-container .card-lightbox-inner .image-cont img{width:auto;max-height:100%}.move-container{position:absolute;transition:1s ease-in-out}.lcard-informations{width:240px;max-width:20%}.lcard-informations .lcard-descriptons{max-height:190px;overflow:auto;padding-right:10px;text-align:justify}.lcard-informations .lcard-image{margin-bottom:15px}.lightbox-card-info{position:absolute;width:100%;height:100%;top:0;left:0;z-index:999;display:flex;justify-content:space-around;align-items:center}.lightbox-card-info .card-lightbox-bgr{position:absolute;width:100%;height:100%;top:0;left:0;background-color:rgba(0,0,0,.8);z-index:1}.lightbox-card-info .card-lightbox-inner{z-index:2;position:relative}.lightbox-card-info .card-lightbox-inner .card-info{display:flex;justify-content:space-around;align-items:center;gap:10px;padding-top:20px}.lightbox-card-info .card-lightbox-inner .card-info img{max-width:250px}.lightbox-card-info .card-lightbox-inner .card-info .card-descriptons{text-align:justify;max-width:350px;max-height:292px;overflow:auto}.lightbox-card-info .lightbox-close{position:absolute;top:0;right:0;transform:translate(50%, -50%);width:18px;height:18px;border-radius:3px;background-color:#fff;color:#e26868;font-size:22px;display:block;line-height:22px}.lightbox-card-info .lightbox-close i{margin-top:-2px}@media(min-width: 650px){.lightbox-card-info img{animation-name:bounceIn;z-index:2}.lightbox-card-info .card-descriptons{z-index:1;animation-name:fadeInLeft}}@media(max-width: 649px){.lightbox-card-info .card-lightbox-inner{max-height:100%;height:100%}.lightbox-card-info .card-lightbox-inner .card-info{display:flex;flex-direction:column;align-items:center;gap:10px;max-height:100%}.lightbox-card-info .card-lightbox-inner .card-info img{max-width:250px;flex:1 1 auto}.lightbox-card-info .card-lightbox-inner .card-info .card-descriptons{flex:1 1 auto;height:calc(100% - 292px)}}@media(max-width: 1199px){.lcard-informations{display:none}}@keyframes moving-border{0%{-o-border-image:linear-gradient(45deg, red, blue) 10;border-image:linear-gradient(45deg, red, blue) 10}50%{-o-border-image:linear-gradient(45deg, blue, red) 10;border-image:linear-gradient(45deg, blue, red) 10}0%{-o-border-image:linear-gradient(45deg, red, blue) 10;border-image:linear-gradient(45deg, red, blue) 10}}@keyframes border-dance{0%{background-position:left top,right bottom,left bottom,right top}100%{background-position:left 15px top,right 15px bottom,left bottom 15px,right top 15px}}
+.game-board {
+    display: inline-block;
+}
+
+.game-board .stats .tools {
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-board .stats .tools .token,
+.game-board .stats .tools .coin,
+.game-board .stats .tools .dice {
+    width: 25px;
+    margin-right: 5px;
+    cursor: pointer;
+    z-index: 99;
+}
+
+#results {
+    position: relative;
+    left: 25px;
+}
+
+.ddescription {
+    display: none !important;
+    font-family: MONOSPACE;
+    font-style: normal;
+}
+
+.devMode .ddescription {
+    display: block !important;
+    font-size: 11px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.play-board-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 80px;
+}
+.play-board-container .play-board {
+    max-width: calc(100% - 20px);
+}
+@media (min-width: 768px) {
+    .play-board-container .play-board-side {
+        order: 9;
+        max-width: 290px;
+        width: 22%;
+    }
+    .play-board-container .play-board {
+        order: 5;
+        max-width: calc(60% - 30px);
+    }
+    .play-board-container .lcard-informations {
+        order: 1;
+        width: 18%;
+        max-width: 200px;
+        z-index: 999;
+        background: #011d38;
+        border-radius: 8px;
+        display: block;
+        overflow: hidden;
+        margin: -10px;
+        padding: 10px;
+    }
+}
+.play-board-container .log-message {
+    height: 604px;
+    resize: none !important;
+    display: block;
+    position: relative;
+    max-width: 360px;
+    width: 100%;
+    border: 1px solid #efefef;
+    border-radius: 4px;
+    padding: 10px;
+    padding-bottom: 25px;
+    font-size: 11px;
+    color: #efefef;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow: auto;
+}
+.play-board-container .log-message .log-step {
+    max-width: 350px;
+}
+.play-board-container .log-message-container .card-key {
+    color: #b4b4ed;
+}
+.play-board-container .log-message-container .new-state {
+    color: #f7a5a5;
+}
+.play-board-container .log-message-container .log-card-name {
+    color: red;
+}
+.play-board-container .log-message-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px;
+    align-items: flex-end;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+.play-board-container .log-message-header .log-title {
+    margin: 0;
+    flex-grow: 1;
+}
+.play-board-container .log-message-header .replay-button {
+    color: greenyellow;
+}
+
+#playtest {
+    border: 1px solid #efefef;
+    background-color: #000016;
+    background-image: url("../asset/bk_layer_a.png");
+    background-size: cover;
+    padding: 1rem;
+    position: relative;
+    display: inline-block;
+    border-radius: 4px;
+}
+@media (max-width: 767px) {
+    #playtest {
+        padding: 10px;
+    }
+    #playtest .game-board .card-slot-row {
+        gap: 5px;
+    }
+}
+#playtest .game-board {
+    display: flex;
+    gap: 15px;
+    flex-direction: column;
+    justify-content: center;
+}
+#playtest #hand,
+#playtest .card-slot-row {
+    z-index: 1;
+}
+#playtest #hand:hover,
+#playtest .card-slot-row:hover {
+    z-index: 2;
+}
+#playtest .card-slot-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 15px;
+}
+#playtest .card-slot-row .no-card-slot {
+    visibility: hidden;
+}
+#playtest .card-slot-row .holder-slot {
+    width: 102px;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    position: relative;
+    text-align: center;
+}
+#playtest .card-slot-row .holder-slot .card {
+    display: block;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+#playtest .card-slot-row .holder-slot .description,
+#playtest .card-slot-row .holder-slot .collection-count {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-weight: 600;
+    font-size: 30px;
+    z-index: 3;
+}
+#playtest .card-slot-row .holder-slot .description {
+    z-index: 1;
+    font-size: x-small;
+}
+#playtest .card-slot-row .holder-slot.desk {
+    height: 200px;
+}
+#playtest .card-slot-row .holder-slot.card-slot.highlight {
+    background-image: linear-gradient(90deg, silver 50%, transparent 50%), linear-gradient(90deg, silver 50%, transparent 50%), linear-gradient(0deg, silver 50%, transparent 50%), linear-gradient(0deg, silver 50%, transparent 50%);
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
+    background-position: left top, right bottom, left bottom, right top;
+    animation: border-dance 0.4s infinite linear;
+}
+@media (max-width: 767px) {
+    #playtest .card-slot-row .holder-slot .collection-count {
+        font-size: 16px;
+    }
+    #playtest .card-slot-row .holder-slot.card-slot.highlight {
+        animation: none;
+    }
+}
+
+.card {
+    cursor: pointer;
+    width: 70px;
+    height: 102px;
+    background-color: transparent;
+    perspective: 1000px;
+    /* Animation */
+    /* END Animation */
+}
+.card:hover {
+    z-index: 99;
+}
+.card .card .card-imgs {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: 0.4s ease;
+}
+.card .card-img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+.card .card-name {
+    display: none;
+}
+.card.animate__animated {
+    animation-duration: 0.2s;
+}
+.card .card-imgs {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+}
+.card .card-imgs .card-img {
+    position: absolute;
+    width: auto;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: transform 0.6s;
+    transform: translate(-50%, -50%) rotateY(0);
+}
+.card .card-imgs .card-img.back-image {
+    transform: translate(-50%, -50%) rotateY(180deg);
+}
+.card.fold .card-imgs .card-img {
+    transform: translate(-50%, -50%) rotateY(180deg);
+}
+.card.fold .card-imgs .back-image {
+    transform: translate(-50%, -50%) rotateY(0);
+}
+.card.defense .card-imgs {
+    transform: rotateZ(90deg);
+}
+
+#hand .hand-board {
+    flex-wrap: nowrap;
+    width: 80%;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    min-height: 102px;
+    justify-content: center;
+}
+#hand .hand-board .hand-card-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    clear: both;
+    position: relative;
+    min-width: 10px;
+    max-width: 100px;
+    height: 102px;
+    width: auto;
+}
+#hand .hand-board .hand-card-container .card {
+    height: 100%;
+}
+#hand .card-container {
+    margin: 20px 0;
+    clear: both;
+    position: relative;
+    min-width: 10px;
+    max-width: 102px;
+    height: 102px;
+    width: auto;
+}
+
+.collection-menu .collection-container {
+    padding: 0.5em 0;
+    clear: both;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+#playtest .actions {
+    text-align: center;
+}
+#playtest .actions .input {
+    margin: 1rem;
+}
+
+body .ui-dialog .menu-dialog {
+    padding: 0;
+}
+body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li a {
+    padding: 0.1em 0.2em;
+    border-bottom: 1px solid #ccc;
+    display: block;
+    font-size: 11px;
+    line-height: 25px;
+}
+body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li a:hover {
+    background-color: #eee;
+}
+@media (max-width: 767px) {
+    body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li a {
+        line-height: 29px;
+        font-size: 14px;
+    }
+}
+body .ui-dialog .menu-dialog .menu-dialog-inner .menu-list li:last-child a {
+    border: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+body {
+    font-size: 14px;
+}
+body .ui-dialog-card-menu {
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 2px 2px 0 0;
+    transition: 0.1s ease-in-out;
+}
+body .ui-widget-overlay {
+    background-color: rgba(0, 0, 22, 0.5019607843);
+}
+
+.play-board .lightbox-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: rgba(0, 0, 22, 0.5058823529);
+}
+.play-board .lightbox-container .card-lightbox-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.play-board .lightbox-container .card-lightbox-inner .image-cont {
+    width: 80%;
+    height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.play-board .lightbox-container .card-lightbox-inner .image-cont img {
+    width: auto;
+    max-height: 100%;
+}
+
+.move-container {
+    position: absolute;
+    transition: 0.2s ease-in-out;
+}
+
+.lcard-informations {
+    width: 240px;
+    max-width: 20%;
+}
+.lcard-informations .lcard-descriptons {
+    max-height: 190px;
+    overflow: auto;
+    padding-right: 10px;
+    text-align: justify;
+}
+.lcard-informations .lcard-image {
+    margin-bottom: 15px;
+}
+
+.lightbox-card-info {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.lightbox-card-info .card-lightbox-bgr {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1;
+}
+.lightbox-card-info .card-lightbox-inner {
+    z-index: 2;
+    position: relative;
+}
+.lightbox-card-info .card-lightbox-inner .card-info {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+    padding-top: 20px;
+}
+.lightbox-card-info .card-lightbox-inner .card-info img {
+    max-width: 250px;
+}
+.lightbox-card-info .card-lightbox-inner .card-info .card-descriptons {
+    text-align: justify;
+    max-width: 350px;
+    max-height: 292px;
+    overflow: auto;
+}
+.lightbox-card-info .lightbox-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    background-color: #fff;
+    color: #e26868;
+    font-size: 22px;
+    display: block;
+    line-height: 22px;
+}
+.lightbox-card-info .lightbox-close i {
+    margin-top: -2px;
+}
+@media (min-width: 650px) {
+    .lightbox-card-info img {
+        animation-name: bounceIn;
+        z-index: 2;
+    }
+    .lightbox-card-info .card-descriptons {
+        z-index: 1;
+        animation-name: fadeInLeft;
+    }
+}
+@media (max-width: 649px) {
+    .lightbox-card-info .card-lightbox-inner {
+        max-height: 100%;
+        height: 100%;
+    }
+    .lightbox-card-info .card-lightbox-inner .card-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-height: 100%;
+    }
+    .lightbox-card-info .card-lightbox-inner .card-info img {
+        max-width: 250px;
+        flex: 1 1 auto;
+    }
+    .lightbox-card-info .card-lightbox-inner .card-info .card-descriptons {
+        flex: 1 1 auto;
+        height: calc(100% - 292px);
+    }
+}
+
+@media (max-width: 1199px) {
+    .lcard-informations {
+        display: none;
+    }
+}
+@keyframes moving-border {
+    0% {
+        -o-border-image: linear-gradient(45deg, red, blue) 10;
+           border-image: linear-gradient(45deg, red, blue) 10;
+    }
+    50% {
+        -o-border-image: linear-gradient(45deg, blue, red) 10;
+           border-image: linear-gradient(45deg, blue, red) 10;
+    }
+    0% {
+        -o-border-image: linear-gradient(45deg, red, blue) 10;
+           border-image: linear-gradient(45deg, red, blue) 10;
+    }
+}
+@keyframes border-dance {
+    0% {
+        background-position: left top, right bottom, left bottom, right top;
+    }
+    100% {
+        background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
+    }
+}

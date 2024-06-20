@@ -670,7 +670,7 @@ var board;
                 setTimeout( function(){
                     _card.endBoardAnimation( moveContainer );
                     _card.appendToBoard(); // End animation of the card
-                }, 1500 );
+                }, 400 );
             }, 5 );  
             return result;
         }
