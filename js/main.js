@@ -221,6 +221,7 @@ var boardData = {
     "url": "/top-decks/january-2018/hazy-flame-br/420-hazyyyyy-by-dbgxoso/"
 };
 
+var duration = 300; // For animation
 function toolsEvent() {
     $('.dice').click(function () {
         let die = [

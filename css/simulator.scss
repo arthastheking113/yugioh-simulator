@@ -301,8 +301,8 @@ $white-color: #efefef;
 
     /* Animation */
     &.animate__animated {
-        -webkit-animation-duration: 1s;
-        animation-duration: 1s;
+        -webkit-animation-duration: 0.2s;
+        animation-duration: 0.2s;
     }
 
     .card-imgs {
@@ -507,7 +507,7 @@ body {
 
 .move-container {
     position: absolute;
-    transition: 1s ease-in-out;
+    transition: 0.2s ease-in-out;
 }
 
 .lcard-informations {
