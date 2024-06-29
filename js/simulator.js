@@ -129,6 +129,7 @@ var board;
                             position: item.position,
                             switchState: item.switchState,
                             imageURL: item.imageURL,
+                            description: item.description,
                         });
                     });
                     data = initData;
@@ -257,25 +258,48 @@ var board;
                 this.writePause();
                 return false;
             }
-            let step = this.step();
-            let log = this;
+            var step = this.step();
+            var log = this;
             if(!step ) {
                 this.writeEnd();
                 this.stopReplay();
                 return false;
             }
-            let waitTime = this.options.waitTime || 500;
-            let action = step.action || 'update';
-            let data = step.data;
-            let oldData = step.oldData;
-            let board = this.Board;
+            var waitTime = this.options.waitTime || 1500;
+            var action = step.action || 'update';
+            var data = step.data;
+            var oldData = step.oldData;
+            var board = this.Board;
+            var card = board.getCard(step.id);
             switch (action) {
                 case 'update': 
                     // var card = board.getItemById( step.id );
+                    var isMoving = ('position' in data) && ('position' in oldData) && ( data.position != oldData.position );
+
+                    var isFlipping = ('foldState' in data) && ('foldState' in oldData) && ( data.foldState != oldData.foldState);
+                    var isRorating = ('switchState' in data) && ('switchState' in oldData) && ( data.switchState != oldData.switchState);
+                    if( isFlipping || isRorating ){
+                        // No waiting time
+                        waitTime = 5;
+                    }
+                    if( isMoving ){
+                        var moveContainer = card.startMoveAnimation();
+                        card.startBoardAnimation( moveContainer );
+                    } 
                     $.each(data, function( key, value ){
                         log.writeStep(step.message || `Update ${key} to ${value}` );
                         board.updateItem( step.id, key, value );
                     });
+                    if( isMoving ){
+                        setTimeout( function() {
+                            card.moveAnimation( moveContainer );
+                            setTimeout( function(){
+                                card.endBoardAnimation( moveContainer );
+                                card.appendToBoard(); // End animation of the card
+                            }, 400 );
+                        }, 5 );  
+                    } 
+
                 break;
                 case 'shuffle':
                     log.writeStep(step.message || ` Shuffle Cards` );
@@ -299,6 +323,12 @@ var board;
                     var deck = board.getCollectionByPosition(position);
                     deck.reDraw();
                 break;
+                case 'target':
+                case 'declare':
+                case 'reveal':
+                    card[action]();
+                    log.writeStep(step.message || `Update ${key} to ${value}` );
+                break;
                 case 'init': // Function này đã bị bỏ, sẽ remove ở version sau
                     console.warn( ' This function is deprecated');
                     // var initData = {...data};
@@ -307,15 +337,21 @@ var board;
                         // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
                         initData.push({
                             id: item.id,
+                            itemBefore: {},
+                            isMonster: item.isMonster||false,
+                            isST: item.isST||false,
+                            isSpell: item.isSpell||false,
+                            isTrap: item.isTrap||false,
                             amount: item.amount,
                             collection_order: item.collection_order,
                             foldState: item.foldState,
                             isExtra: item.isExtra,
                             name: item.name,
                             order: item.order,
-                            position: item.position=='hand' ? 'deck' : item.position,
+                            position: item.position,
                             switchState: item.switchState,
                             imageURL: item.imageURL,
+                            description: item.description,
                         });
                     });
                     this.messageElm.empty();
@@ -333,20 +369,21 @@ var board;
                     //     // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
                     //     initData.push({
                     //         id: item.id,
-                    //         itemBefore: {},
-                    //         isMonster: item.isMonster||false,
-                    //         isST: item.isST||false,
-                    //         isSpell: item.isSpell||false,
-                    //         isTrap: item.isTrap||false,
-                    //         amount: item.amount,
-                    //         collection_order: item.collection_order,
-                    //         foldState: item.foldState,
-                    //         isExtra: item.isExtra,
-                    //         name: item.name,
-                    //         order: item.order,
-                    //         position: item.position=='hand' ? 'deck' : item.position,
-                    //         switchState: item.switchState,
-                    //         imageURL: item.imageURL,
+                                // itemBefore: {},
+                                // isMonster: item.isMonster||false,
+                                // isST: item.isST||false,
+                                // isSpell: item.isSpell||false,
+                                // isTrap: item.isTrap||false,
+                                // amount: item.amount,
+                                // collection_order: item.collection_order,
+                                // foldState: item.foldState,
+                                // isExtra: item.isExtra,
+                                // name: item.name,
+                                // order: item.order,
+                                // position: item.position,
+                                // switchState: item.switchState,
+                                // imageURL: item.imageURL,
+                                // description: item.description,
                     //     });
                     // });
                     this.messageElm.empty();
@@ -363,6 +400,7 @@ var board;
                 break;
 
             }
+
             this.replaytimeout = setTimeout(function(){
                 log.playStep();
             }, waitTime);
@@ -431,6 +469,7 @@ var board;
         reset(){
             this.pointer = 0;
             this.isRePlaying = false;
+            this.isPausing = false;
             this.messageElm.empty();
         }
 
@@ -812,20 +851,6 @@ var board;
             var _card = this;
             var cardElement = _card.html;
 
-            // var moveOptions = [
-            //     'canMoveHand',
-            //     'canMoveSummon',
-            //     'canMoveExDeck',
-            //     'canMoveDeck',
-            //     'canMoveST',
-            //     'canMoveBanish',
-            //     'canMoveGraveyard',
-            // ];
-            // moveOptions.forEach( function( moveOption ) {
-            //     if (_card[moveOption] || 1 ) {
-            //         cardElement.toggleClass(moveOption, (moveOption in _card ) && (_card[moveOption] == 1) );
-            //     }
-            // });
             var typeCards = [
                 'isST',
                 'isSpell',
@@ -938,7 +963,6 @@ var board;
                 case 'declare':
                     animation = animation || 'shakeY';
                 case 'target':
-                    console.log( action );
                     animation = animation || 'bounceIn';
                     animation = 'animate__animated animate__' + animation;
                     this.html.addClass(animation);
@@ -1237,6 +1261,7 @@ var board;
             this.options = $.extend( defaultOptions, options);
             this.init();
             this.deckToHand( 5, 'top');
+            this.version = '1.0';
         }
         init(){
             this.deckElm = this.elm.find('#deck-slot');
@@ -1425,7 +1450,16 @@ var board;
             var card = this.getItemById(id);
             card[k] = v;
             card.updateHtml();
-            card.appendToBoard();
+
+            // Update Card display on Board
+            // if( ! ['foldState', 'switchState'].includes(k) ){
+                card.appendToBoard();
+            // }
+            
+            // Update Collection display on Board
+            var collection = this.getCollectionByPosition( card.position );
+            collection && collection.drawOnBoard();
+            
             return card;
         }
         shuffleCards(){
@@ -1508,6 +1542,7 @@ var board;
 
         setItems( items ){
             this.orgitems = Object.values( items);
+            // console.log( this.orgitems)
             this.initItems();
         }
         get( key, defaultValue ){
@@ -1861,6 +1896,92 @@ var board;
 
             return this.elm.find('.' + position + '-slot.card-slot ' + moreClass );
         }
+
+        // Export and import state
+        exportState( type = 'array'){
+            var board = this;
+            var items = [];
+            var boarddata = board.getItems();
+            $.each( boarddata , function( i, item ) {
+                // Copy the properties from the item to state
+                items.push({
+                    id: item.id,
+                    itemBefore: {},
+                    isMonster: item.isMonster||false,
+                    isST: item.isST||false,
+                    isSpell: item.isSpell||false,
+                    isTrap: item.isTrap||false,
+                    amount: item.amount,
+                    collection_order: item.collection_order,
+                    foldState: item.foldState,
+                    isExtra: item.isExtra,
+                    name: item.name,
+                    order: item.order,
+                    position: item.position,
+                    switchState: item.switchState,
+                    imageURL: item.imageURL,
+                    description: item.description,
+                });
+            });
+            var data = {
+                dateCreate: (new Date()).toISOString(),
+                items: items,
+                version: board.version,
+            }
+            type = ( type || 'array' ).toLowerCase();
+            switch( type ){
+                case 'json':
+                    return JSON.stringify( data );
+                break;
+                case 'other cases':
+                
+                break
+            }
+            // default array;
+            return data;
+        }
+        importState( state){
+            this.emptyBoard();
+            this.playlog.reset();
+            var data = this.checkData( state );
+            var items =  this.parseDataFromState( data );
+            this.setItems( items );
+            // this.writelog( 'importState' )
+        }
+        checkData( state ){
+            var board = this;
+            var data = state;
+            var checkStatus = true;
+            if( typeof data == 'string' ){
+                data = JSON.parse( data );
+            }
+            if( !( 'items' in data ) ){
+                checkStatus =  false;
+                throw new Error( 'Wrong input. No Items set' );
+            }
+
+            var items = {...data.items};
+            if( !Array.isArray( items ) ){
+                if( typeof items == 'object'){
+                    items = Object.values( items );
+                }
+            }
+
+            if( Array.isArray( items ) ){
+                items.forEach(item => {
+                    if( !board.validateBeforeAddItem( item ) ){
+                        checkStatus =  false;
+                        throw new Error( 'Wrong item.' + JSON.stringify(item) );
+                    }
+                });
+            }else{
+                throw new Error( 'Data items must be an array' )
+            }
+            return items;
+        }
+        parseDataFromState( state ){
+            return state;
+        }
         
     }
 
@@ -2011,8 +2132,6 @@ var board;
             clearTimeout( logHeightTimeOut );
             logHeightTimeOut = setTimeout( setLogHeight, 200);
         } );
-       
 
     });
 // });
-//s

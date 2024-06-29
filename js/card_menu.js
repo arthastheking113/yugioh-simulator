@@ -671,6 +671,10 @@ class CardMenu extends MenuBase {
                 }
 
             }
+
+            if( ( card.position != newPosition ) && ( ['deck', 'exdeck', 'graveyard'].includes(newPosition ) ) ){
+                newState = ''; // attack && normal
+            }
             // console.log( card, newPosition, order, newState, isFD );
             return board.updateCardbyAction( card, newPosition, order, newState, isFD);
 
