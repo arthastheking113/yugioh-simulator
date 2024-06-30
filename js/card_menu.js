@@ -2,22 +2,22 @@
 class MenuBase {
     constructor(element, options) {
         this.element = element;
-        this.options = $.extend( {}, options);
+        this.options = $.extend({}, options);
         this.dialog = {};
         this.init();
         this.infoPanel = $('.lcard-information-container');
         this.breakpoint = 1200;
     }
-    init(){
+    init() {
         this.defineMenu();
         this.drawHtml(this.options);
         this.createDialog();
         this.events();
     }
-    drawHtml(){
+    drawHtml() {
 
     }
-    createDialog(){
+    createDialog() {
         var w = $('.st-slot').first().width();
         this.dialog = this.element.dialog({
             minWidth: 100,
@@ -27,14 +27,14 @@ class MenuBase {
             modal: false,
             autoOpen: false,
             classes: {
-                'ui-dialog-titlebar' : 'hidden',
-                'ui-dialog' : 'ui-dialog-card-menu',
+                'ui-dialog-titlebar': 'hidden',
+                'ui-dialog': 'ui-dialog-card-menu',
             },
-            open: function (event, ui) {},
+            open: function (event, ui) { },
             // create: function (event, ui) {
             //     // $(this).siblings('.ui-dialog-titlebar').addClass('hidden');
             // },
-            position:{
+            position: {
                 my: "bottom center",
                 at: "top center",
                 of: '#playtest'
@@ -43,41 +43,41 @@ class MenuBase {
             // show: { effect: "blind", duration: 50 },
         });
     }
-    defineMenu(){
+    defineMenu() {
         // This is an abstract function
     }
-    show(){
+    show() {
         this.beforeShow();
         this.dialog.dialog('open');
         this.afterShow();
     }
-    beforeShow(){
+    beforeShow() {
         // This is an abstract function
     }
-    afterShow(){
+    afterShow() {
         // This is an abstract function
     }
-    events(){
+    events() {
         // This is an abstract function
     }
-    hide(){
+    hide() {
         this.beforeHide();
         this.element.dialog('close');
         this.afterHide();
     }
-    beforeHide(){
+    beforeHide() {
         // This is an abstract function
 
     }
-    afterHide(){
+    afterHide() {
         // This is an abstract function
 
     }
-    isSmallScreen(){
-        return ( $(window).width() < this.breakpoint );
+    isSmallScreen() {
+        return ($(window).width() < this.breakpoint);
     }
-    cardInformationsPopup(){
-        if( this.isSmallScreen() ){
+    cardInformationsPopup() {
+        if (this.isSmallScreen()) {
             var card = this.getCard();
             var board = card.getBoard();
             var boardElm = board.getBoardElm();
@@ -114,45 +114,45 @@ class MenuBase {
                     </div>
                 </div>`,
             );
-            lightbox.on('click', '.card-lightbox-bgr, .lightbox-close', function(e) {
-                lightbox.fadeOut( 300, function() {
+            lightbox.on('click', '.card-lightbox-bgr, .lightbox-close', function (e) {
+                lightbox.fadeOut(300, function () {
                     lightbox.remove();
                 });
             });
-            boardElm.append( lightbox );
+            boardElm.append(lightbox);
         }
     }
     sideCardInformations() {
-        if( !this.isSmallScreen() ){
+        if (!this.isSmallScreen()) {
             // Draw the card infos by jQuery <div class="lcard-header"> <div class="lcard-image"> </div> </div> <div class="lcard-descriptons-cont"> <code name="lcard-descriptons" id="lcard-descriptons" class="lcard-descriptons" cols="30" rows="10">  &nbsp;  </code> </div>
             // <h4 class="lcard-name">${card.name}</h4> 
             var card = this.getCard();
 
             var infoHtml = `<div class="lcard-header"> <div class="lcard-image"> <img src="${card.imageURL}" data-width="481" data-height="701"  /> </div> </div> <div class="lcard-descriptons-cont"> <p name="lcard-descriptons" id="lcard-descriptons" class="lcard-descriptons" cols="30" rows="10">  ${card.description} </p> </div>`;
-            this.infoPanel.empty().append( infoHtml );
+            this.infoPanel.empty().append(infoHtml);
         }
     }
-    hideInformationsPopup(){
+    hideInformationsPopup() {
         this.infoPanel.empty();
         duration = duration || 1000;
-        if( this.infoPopup ){
+        if (this.infoPopup) {
             // this.infoPopup.removeClass( 'animate__animated animate__jackInTheBox' ).addClass(' animate__animated animate__zoomOut');
             this.infoPopup.addClass(' animate__animated animate__zoomOut');
-            setTimeout( function() {
-                    this.infoPopup.removeClass(' animate__animated animate__zoomOut');
-                    lightbox.remove();
-            }, duration );
+            setTimeout(function () {
+                this.infoPopup.removeClass(' animate__animated animate__zoomOut');
+                lightbox.remove();
+            }, duration);
         }
     }
-    
+
 }
 class CardMenu extends MenuBase {
     constructor(element, options) {
         super(element, options);
     }
-    defineMenu(){
+    defineMenu() {
         this.menuList = {
-            banish:  [
+            banish: [
                 'this-declare',
                 'this-target',
                 'to-deck-bottom',
@@ -177,7 +177,7 @@ class CardMenu extends MenuBase {
                 'active',
             ],
             deck: [
-               'to-exdeck',
+                'to-exdeck',
                 'to-hand',
                 'to-summon-atk',
                 'to-summon-def',
@@ -211,7 +211,7 @@ class CardMenu extends MenuBase {
                 'to-summon-def',
                 'to-graveyard',
             ],
-            summon : [
+            summon: [
                 'this-declare',
                 'detact',
                 'move',
@@ -254,8 +254,8 @@ class CardMenu extends MenuBase {
                 'active',
 
             ]
-        }   
-    
+        }
+
     }
     beforeShow() {
         var card = this.getCard();
@@ -270,11 +270,11 @@ class CardMenu extends MenuBase {
             of: '#' + cardElm.attr('id')
         });
 
-        if( ['deck', 'exdeck', 'graveyard', 'banish'].includes( card.position )  ){
+        if (['deck', 'exdeck', 'graveyard', 'banish'].includes(card.position)) {
             var items = _board.getCollectionItems(card.position);
             var _last = items.length ? items[items.length - 1]['collection_order'] : 0;
 
-            if( card.collection_order > ( _last - 10 ) ){
+            if (card.collection_order > (_last - 10)) {
                 this.element.dialog('option', 'position', {
                     my: "center top",
                     at: "center bottom",
@@ -284,7 +284,7 @@ class CardMenu extends MenuBase {
         }
 
     }
-    setCard( card ) {
+    setCard(card) {
         this.card = card;
         this.updateMenu();
         return this;
@@ -292,7 +292,7 @@ class CardMenu extends MenuBase {
     getCard() {
         return this.card;
     }
-    updateMenu(){
+    updateMenu() {
 
         var card = this.getCard();
         var ul = this.element.find('ul');
@@ -300,56 +300,56 @@ class CardMenu extends MenuBase {
         var pos = card.position;
         var list = this.menuList[pos];
 
-        if( list ){
-            for( var i = 0; i < list.length; i++ ){
+        if (list) {
+            for (var i = 0; i < list.length; i++) {
                 ul.find(`#${list[i]}`).show();
                 ul.find(`#${list[i]}`).parent().appendTo(ul);
             }
         }
         var itemShowed = ul.find('li a');
-    //     var itemShowed =  ul.find('li a').filter( function(index, item) {
-    //         console.log( item, !$(item).is(':hidden') );
+        //     var itemShowed =  ul.find('li a').filter( function(index, item) {
+        //         console.log( item, !$(item).is(':hidden') );
 
-    //         return !$(item).is(':hidden');
-    //     } );
-    //    console.log( itemShowed )
+        //         return !$(item).is(':hidden');
+        //     } );
+        //    console.log( itemShowed )
 
-        $.each( itemShowed , function ( index,  menu_tag ){
+        $.each(itemShowed, function (index, menu_tag) {
             var menuElm = $(menu_tag); // a tag
             var condition = menuElm.data('condition');
-            if( condition || '' ) {
-                if(  ! card[condition] ) {
+            if (condition || '') {
+                if (!card[condition]) {
                     menuElm.hide();
                 }
             }
-            if(menu_tag.id == 'this-active'){
-                if( card.foldState != 'fold' ){
+            if (menu_tag.id == 'this-active') {
+                if (card.foldState != 'fold') {
                     menuElm.hide();
                 }
             }
 
-            if(menu_tag.id == 'this-set'){
-                if( card.foldState != 'normal' ){
+            if (menu_tag.id == 'this-set') {
+                if (card.foldState != 'normal') {
                     menuElm.hide();
                 }
             }
-            if(menu_tag.id == 'set'){
-                if( card.foldState != 'normal' ){
+            if (menu_tag.id == 'set') {
+                if (card.foldState != 'normal') {
                     menuElm.hide();
                 }
             }
-            
+
         });
-        if( this.isSmallScreen() ){
+        if (this.isSmallScreen()) {
             ul.find('li #this-view').show();
-        }else{
+        } else {
             ul.find('li #this-view').hide();
         }
 
 
     }
 
-    updateMenuOLD(){
+    updateMenuOLD() {
         var card = this.getCard();
         var ul = this.element.find('ul');
         ul.find('li a').show();
@@ -357,10 +357,10 @@ class CardMenu extends MenuBase {
 
         var pos = card.position;
         ul.find(`a[data-position="${pos}"]`).hide();
-        
+
         var _board = card.getBoard();
         var summonElm = _board.getFreeSummon();
-        if( !summonElm.length ){
+        if (!summonElm.length) {
             ul.find(`a[data-position="summon"]`).hide();
         }
         // (pos == 'summon') && ul.find(`a[data-position="summon"]`).hide();
@@ -370,13 +370,13 @@ class CardMenu extends MenuBase {
         card.isExtra && ul.find(`a[data-position="deck"]`).hide();
         (!card.isExtra) && ul.find(`a[data-position="exdeck"]`).hide();
         var stElm = _board.getFreeST();
-        if( !stElm.length ){
+        if (!stElm.length) {
             ul.find(`a[data-position="st"]`).hide();
         }
     }
-    drawHtml(){
+    drawHtml() {
         var ul = this.element.find('ul');
-        
+
         ul.append(`
         <!-- this-view-card -->
             <li class="menuItem">
@@ -409,7 +409,7 @@ class CardMenu extends MenuBase {
         <!-- 'summon-normal' -->
             <li class="menuItem">
                 <a href="javascript:void(0)" id="to-summon-normal" data-target="summon,atk">
-                    SS Normal
+                    Normal Summon
                 </a>
             </li>
 
@@ -564,15 +564,15 @@ class CardMenu extends MenuBase {
         `);
 
     }
-    events(){
+    events() {
         var menu = this;
-        this.element.on('click','ul li a', function(){
+        this.element.on('click', 'ul li a', function () {
             var _this = this;
             var card = menu.getCard();
             var board = card.getBoard();
             var target = $(this).data('target');
             console.log(target);
-            if( target == 'this,view'){
+            if (target == 'this,view') {
                 // Not a play step 
                 menu.cardInformationsPopup();
             }
@@ -580,33 +580,33 @@ class CardMenu extends MenuBase {
             target = target.split(',');
             var newPosition = target[0];
             var isTop = true;
-            var newState = target[1]|| '';
-            var isFD = target[2]||'';
+            var newState = target[1] || '';
+            var isFD = target[2] || '';
             var order = 0; // Use for SS / ST
-            if( newPosition != 'this' && !card.canMoveTo( newPosition ) ){
+            if (newPosition != 'this' && !card.canMoveTo(newPosition)) {
                 return false;
             }
             menu.dialog.dialog('close');
-            if(newPosition == 'this' && newState == 'set'){
-                if( card.isST ){
+            if (newPosition == 'this' && newState == 'set') {
+                if (card.isST) {
                     newPosition = 'st';
                     newState = 'fold';
-                }else{
+                } else {
                     newPosition = 'summon';
                     newState = 'def';
                     isFD = 'fold';
                 }
             }
 
-            if(newPosition == 'this' && newState == 'move'){
-                order =false;
+            if (newPosition == 'this' && newState == 'move') {
+                order = false;
                 var free = board.isSS_STFreeOne(card);
                 // cần thêm 1 position tên là 'fz'
-                if( free ){
-                    order = free.data( 'order' );
-                    newPosition = free.data( 'position' );
-                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
-                }else{
+                if (free) {
+                    order = free.data('order');
+                    newPosition = free.data('position');
+                    return board.updateCardbyAction(card, newPosition, order, newState, isFD);
+                } else {
                     //select the new order
                     board.setWaitingActions({
                         card: card,
@@ -619,26 +619,26 @@ class CardMenu extends MenuBase {
                 }
 
             }
-            if(newPosition == 'this' && ['atk', 'def'].includes(newState) ){
-                    isFD = 'normal'; // lật bài lên trong tường hợp position = summon, và action == defense, attack
-                    return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+            if (newPosition == 'this' && ['atk', 'def'].includes(newState)) {
+                isFD = 'normal'; // lật bài lên trong tường hợp position = summon, và action == defense, attack
+                return board.updateCardbyAction(card, newPosition, order, newState, isFD);
 
             }
 
-            if( ( card.position != newPosition ) && ( ( newPosition == 'summon') || ( newPosition == 'st') ) ){
+            if ((card.position != newPosition) && ((newPosition == 'summon') || (newPosition == 'st'))) {
                 // Close the collection dialog if it is already open
-                if( ['deck', 'exdeck', 'banish', 'graveyard'].includes(card.position) ){
+                if (['deck', 'exdeck', 'banish', 'graveyard'].includes(card.position)) {
                     var collection = board.getCollectionByPosition(card.position);
                     collection && collection.menuElm.dialog('close');
                 }
 
                 // check order
-                order =false;
-                if( card.isMonster && newPosition == 'summon' ){
+                order = false;
+                if (card.isMonster && newPosition == 'summon') {
                     order = board.isExSSFreeOne();
-                    if( order ) {
-                        return board.updateCardbyAction( card, newPosition, order, newState, isFD);
-                    }else{
+                    if (order) {
+                        return board.updateCardbyAction(card, newPosition, order, newState, isFD);
+                    } else {
                         //select the new order
                         board.setWaitingActions({
                             card: card,
@@ -649,15 +649,15 @@ class CardMenu extends MenuBase {
                         board.selectOrder(true);
                         return 'waiting for select order';
                     }
-                }else{
-                    order = ( newPosition == 'st' ) ? board.isSTFreeOne() : board.isSSFreeOne();
+                } else {
+                    order = (newPosition == 'st') ? board.isSTFreeOne() : board.isSSFreeOne();
 
                     // If have last slot then put the card in the last slot
-                    if( order ) {
-                        return board.updateCardbyAction( card, newPosition, order, newState, isFD);
-                        
-                    // Else  User select a slot then put the card in the selected slot
-                    }else{
+                    if (order) {
+                        return board.updateCardbyAction(card, newPosition, order, newState, isFD);
+
+                        // Else  User select a slot then put the card in the selected slot
+                    } else {
                         //select the new order
                         board.setWaitingActions({
                             card: card,
@@ -665,18 +665,18 @@ class CardMenu extends MenuBase {
                             newState: newState,
                             isFD: isFD
                         });
-                        board.selectOrder(newPosition );
+                        board.selectOrder(newPosition);
                         return 'waiting for select order';
                     }
                 }
 
             }
 
-            if( ( card.position != newPosition ) && ( ['deck', 'exdeck', 'graveyard'].includes(newPosition ) ) ){
+            if ((card.position != newPosition) && (['deck', 'exdeck', 'graveyard'].includes(newPosition))) {
                 newState = ''; // attack && normal
             }
             // console.log( card, newPosition, order, newState, isFD );
-            return board.updateCardbyAction( card, newPosition, order, newState, isFD);
+            return board.updateCardbyAction(card, newPosition, order, newState, isFD);
 
         });
     }
@@ -685,7 +685,7 @@ class CollectionMenu extends MenuBase {
     constructor(element, options) {
         super(element, options);
     }
-    setCollection( collection ) {
+    setCollection(collection) {
         this.collection = collection;
         this.updateMenu();
         return this;
@@ -693,8 +693,8 @@ class CollectionMenu extends MenuBase {
     getCollection() {
         return this.collection;
     }
-    
-    defineMenu(){
+
+    defineMenu() {
         // This is an abstract function
     }
     beforeShow() {
@@ -707,10 +707,10 @@ class CollectionMenu extends MenuBase {
             of: '#' + collectionElm.attr('id')
         });
     }
-    updateMenu(){
+    updateMenu() {
         // Foe Extra deck: Hide all, only show "View" item
     }
-    drawHtml(){
+    drawHtml() {
         //List actions: View, Banish FD, Banish T., Mill, Shuffle, Draw
         var ul = this.element.find('ul');
         ul.empty();
@@ -726,9 +726,9 @@ class CollectionMenu extends MenuBase {
 
     }
 
-    events(){
+    events() {
         var menu = this;
-        this.element.on('click','ul li a', function(){
+        this.element.on('click', 'ul li a', function () {
             var _this = this;
             var collection = menu.getCollection();
             var curPosition = collection.getPosition();
@@ -738,14 +738,14 @@ class CollectionMenu extends MenuBase {
             target = target.split(',');
             var newPosition = target[0];
 
-            if( newPosition != 'this'){
-                if( !card.canMoveTo( newPosition ) ){
+            if (newPosition != 'this') {
+                if (!card.canMoveTo(newPosition)) {
                     return false;
-                }else{
+                } else {
                     card.moveTo(newPosition);
-                    if( target[1] ){
+                    if (target[1]) {
                         let newState = target[1];
-                        switch( newState ){
+                        switch (newState) {
                             case 'def':
                                 card.defense();
                                 break;
@@ -761,18 +761,18 @@ class CollectionMenu extends MenuBase {
                 }
             }
             else {
-                if( target[1] ){
+                if (target[1]) {
                     let newState = target[1];
 
-                    switch( newState ){
-                        case'shuffle':
+                    switch (newState) {
+                        case 'shuffle':
                             collection.shuffleCollectionCards();
-                        break;
+                            break;
                         case 'open':
                             collection.showCollection();
-                        break;
+                            break;
                     }
-                }else{
+                } else {
 
                     collection.showCollection();
                 }
