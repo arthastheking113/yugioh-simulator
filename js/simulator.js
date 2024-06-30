@@ -59,9 +59,9 @@ class PlayLog {
             playLog.addStep('startRecord', undefined, { ...data }, {});
 
             // Switch button
-            // playLog.elm.find('.replay-button').addClass('hidden');
-            // playLog.elm.find('.start-record-button').addClass('hidden');
-            // playLog.elm.find('.stop-record-button').removeClass('hidden');
+            playLog.elm.find('.replay-button').addClass('hidden');
+            playLog.elm.find('.start-record-button').addClass('hidden');
+            playLog.elm.find('.stop-record-button').removeClass('hidden');
 
 
         });
@@ -71,9 +71,9 @@ class PlayLog {
             playLog.addStep('stopRecord', undefined, { ...data }, {});
 
             // Switch button
-            // playLog.elm.find('.replay-button').removeClass('hidden');
-            // playLog.elm.find('.start-record-button').addClass('hidden');
-            // playLog.elm.find('.stop-record-button').addClass('hidden');
+            playLog.elm.find('.replay-button').removeClass('hidden');
+            playLog.elm.find('.start-record-button').removeClass('hidden');
+            playLog.elm.find('.stop-record-button').addClass('hidden');
 
         });
 
@@ -441,7 +441,7 @@ class PlayLog {
 
 
         playLog.elm.find('.start-record-button').removeClass('hidden');
-        playLog.elm.find('.stop-record-button').removeClass('hidden');
+        //playLog.elm.find('.stop-record-button').removeClass('hidden');
         playLog.elm.find('.replay-button').removeClass('hidden');
 
         playLog.elm.find('.pause-button').addClass('hidden');
