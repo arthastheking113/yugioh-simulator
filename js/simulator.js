@@ -1,4 +1,5 @@
 var board;
+var logHeightTimeOut = 0;
 // (function ($) {
 	'use strict';
     class PlayLog{
@@ -2116,7 +2117,7 @@ var board;
                 setLogHeight();
             }, 50);
         }
-        var logHeightTimeOut = 0;
+        logHeightTimeOut = 0;
         function setLogHeight(){
             logMessage.height(playBoard.height() - logMessage.parent().siblings().first().outerHeight( true ) );
             if( lcardinformations.length ){
