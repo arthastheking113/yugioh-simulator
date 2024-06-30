@@ -9,3 +9,11 @@ This is a open source project. Feel free to open issue/conversation with us!
 We are from https://metaduelist.com/ ❤️!
 
 This is a modular on https://metaduelist.com/ to show a combo.
+
+## Export Board State
+
+- `exportState(type = 'array' || 'json')`
+
+## Import Board State
+
+- `board.importState(object || jsonString)`

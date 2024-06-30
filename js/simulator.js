@@ -1906,7 +1906,7 @@ class Board {
         $.each(boarddata, function (i, item) {
             // Copy the properties from the item to state
             items.push({
-                id: item.id,
+                id: item.cardId,
                 itemBefore: {},
                 isMonster: item.isMonster || false,
                 isST: item.isST || false,
