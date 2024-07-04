@@ -1,5 +1,6 @@
 var board;
 var logHeightTimeOut = 0;
+var playLog;
 // (function ($) {
 'use strict';
 class PlayLog {
@@ -40,7 +41,7 @@ class PlayLog {
 
     }
     events() {
-        var playLog = this;
+        playLog = this;
         playLog.elm.find('.start-record-button').removeClass('hidden');
 
         playLog.elm.find('.replay-button').off('click').on('click', function () {
@@ -231,7 +232,7 @@ class PlayLog {
     }
     // replay
     replay() {
-        var playLog = this;
+        playLog = this;
         if (!this.hasRecord()) {
             this.writeStep(`<p class="highlight-log">No Records found</p>`);
             return false;
@@ -432,7 +433,7 @@ class PlayLog {
     }
     // stop replay
     stopReplay() {
-        var playLog = this;
+        playLog = this;
         this.pointer = 0;
         this.isRePlaying = false;
         this.isPausing = false;
