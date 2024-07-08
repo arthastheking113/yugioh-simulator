@@ -112,28 +112,7 @@ class PlayLog {
                 oldData = undefined;
                 this.isStarted = true;
                 this.steps = [];
-                var initData = [];
-                $.each(data, function (i, item) {
-                    // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
-                    initData.push({
-                        id: item.id,
-                        itemBefore: {},
-                        isMonster: item.isMonster || false,
-                        isST: item.isST || false,
-                        isSpell: item.isSpell || false,
-                        isTrap: item.isTrap || false,
-                        amount: item.amount,
-                        collection_order: item.collection_order,
-                        foldState: item.foldState,
-                        isExtra: item.isExtra,
-                        name: item.name,
-                        order: item.order,
-                        position: item.position,
-                        switchState: item.switchState,
-                        imageURL: item.imageURL,
-                        description: item.description,
-                    });
-                });
+                var initData = board.copyCardData( data );
                 data = initData;
                 break;
 
@@ -334,28 +313,7 @@ class PlayLog {
             case 'init': // Function này đã bị bỏ, sẽ remove ở version sau
                 console.warn(' This function is deprecated');
                 // var initData = {...data};
-                var initData = [];
-                $.each(data, function (i, item) {
-                    // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
-                    initData.push({
-                        id: item.id,
-                        itemBefore: {},
-                        isMonster: item.isMonster || false,
-                        isST: item.isST || false,
-                        isSpell: item.isSpell || false,
-                        isTrap: item.isTrap || false,
-                        amount: item.amount,
-                        collection_order: item.collection_order,
-                        foldState: item.foldState,
-                        isExtra: item.isExtra,
-                        name: item.name,
-                        order: item.order,
-                        position: item.position,
-                        switchState: item.switchState,
-                        imageURL: item.imageURL,
-                        description: item.description,
-                    });
-                });
+                var initData = board.copyCardData( data );
                 this.messageElm.empty();
                 board.emptyBoard();
                 board.setItems(initData);
@@ -1899,15 +1857,12 @@ class Board {
         return this.elm.find('.' + position + '-slot.card-slot ' + moreClass);
     }
 
-    // Export and import state
-    exportState(type = 'array') {
-        var board = this;
+    copyCardData(cards){
         var items = [];
-        var boarddata = board.getItems();
-        $.each(boarddata, function (i, item) {
+        $.each(cards, function (i, item) {
             // Copy the properties from the item to state
             items.push({
-                id: item.cardId,
+                id: item.id,
                 itemBefore: {},
                 isMonster: item.isMonster || false,
                 isST: item.isST || false,
@@ -1925,10 +1880,48 @@ class Board {
                 description: item.description,
             });
         });
+        
+        return items;
+    }
+    recursive_copy_object (obj) {
+        var board = this;
+        if ( typeof obj == null || obj == undefined ) return obj;
+        if (typeof obj != 'object') return obj;
+        if ($.isArray(obj)) {
+            var new_obj = [];
+            $.each(obj, function (i, v) {
+                if (typeof v == 'object') new_obj.push(board.recursive_copy_object(v));
+                else new_obj.push(v);
+            });
+            return new_obj;
+        } else {
+            var new_obj = {};
+            $.each(obj, function (i, v) {
+                if (typeof v == 'object') new_obj[i] = board.recursive_copy_object(v);
+                else new_obj[i] = v;
+            });
+            return new_obj;
+        }
+    }
+
+    // Export and import state
+    exportState(type = 'array') {
+        var board = this;
+        var items = board.copyCardData( board.getItems() );
+        var playLog = board.get('playlog');
+        var playLogData = {
+            initItems: board.copyCardData( playLog.initItems ),
+            steps: board.recursive_copy_object( playLog.steps ),
+            isPausing: false,
+            isRePlaying: false,
+            isStarted: false,
+            pointer: 0
+        }
         var data = {
             dateCreate: (new Date()).toISOString(),
             items: items,
             version: board.version,
+            playLogData: playLogData,
         }
         type = (type || 'array').toLowerCase();
         switch (type) {
@@ -1943,13 +1936,31 @@ class Board {
         return data;
     }
     importState(state) {
-        this.emptyBoard();
-        this.playlog.reset();
-        var data = this.checkData(state);
-        var items = this.parseDataFromState(data);
-        this.setItems(items);
-        // this.writelog( 'importState' )
+        var board = this;
+        board.emptyBoard();
+        board.playlog.reset();
+        state = board.checkStateType(state);
+        var data = board.checkData(state);
+        var items = board.parseDataFromState(data);
+        board.setItems(items);
+        var playLog = board.get('playlog');
+        if( 'playLogData' in state ) {
+            for (const [key, value] of Object.entries(state.playLogData)) {
+                playLog[key] = value;
+            }
+        }
     }
+
+    // Check if inpput state is JSON or string of JSON data
+    // Currently supports: JSON or Object
+    // Returns state object
+    checkStateType( state ) {
+        if (typeof state == 'string') {
+            state = JSON.parse(state);
+        }
+        return state;
+    }
+
     checkData(state) {
         var board = this;
         var data = state;
