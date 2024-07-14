@@ -112,7 +112,7 @@ class PlayLog {
                 oldData = undefined;
                 this.isStarted = true;
                 this.steps = [];
-                var initData = board.copyCardData( data );
+                var initData = board.copyCardData(data);
                 data = initData;
                 break;
 
@@ -313,7 +313,7 @@ class PlayLog {
             case 'init': // Function này đã bị bỏ, sẽ remove ở version sau
                 console.warn(' This function is deprecated');
                 // var initData = {...data};
-                var initData = board.copyCardData( data );
+                var initData = board.copyCardData(data);
                 this.messageElm.empty();
                 board.emptyBoard();
                 board.setItems(initData);
@@ -1843,7 +1843,7 @@ class Board {
         return this.elm.find('.' + position + '-slot.card-slot ' + moreClass);
     }
 
-    copyCardData(cards){
+    copyCardData(cards) {
         var items = [];
         $.each(cards, function (i, item) {
             // Copy the properties from the item to state
@@ -1866,14 +1866,13 @@ class Board {
                 description: item.description,
             });
         });
-        
+
         return items;
     }
-    recursive_copy_object (obj) {
+    recursive_copy_object(obj) {
         var board = this;
-        if ( typeof obj == null || obj == undefined ) return obj;
+        if (typeof obj == null || obj == undefined) return obj;
         if (typeof obj != 'object') return obj;
-        console.log( obj );
         if ($.isArray(obj)) {
             var new_obj = [];
             $.each(obj, function (i, v) {
@@ -1884,8 +1883,7 @@ class Board {
         } else {
             var new_obj = {};
             $.each(obj, function (i, v) {
-        console.log( i );
-                if( i === 'onchange' ) return 0;
+                if (i === 'onchange') return 0;
                 if (typeof v == 'object') new_obj[i] = board.recursive_copy_object(v);
                 else new_obj[i] = v;
             });
@@ -1896,11 +1894,11 @@ class Board {
     // Export and import state
     exportState(type = 'array') {
         var board = this;
-        var items = board.copyCardData( board.getItems() );
+        var items = board.copyCardData(board.getItems());
         var playLog = board.get('playlog');
         var playLogData = {
-            initItems: board.copyCardData( playLog.initItems ),
-            steps: board.recursive_copy_object( playLog.steps ),
+            initItems: board.copyCardData(playLog.initItems),
+            steps: board.recursive_copy_object(playLog.steps),
             isPausing: false,
             isRePlaying: false,
             isStarted: false,
@@ -1933,7 +1931,7 @@ class Board {
         var items = board.parseDataFromState(data);
         board.setItems(items);
         var playLog = board.get('playlog');
-        if( 'playLogData' in state ) {
+        if ('playLogData' in state) {
             for (const [key, value] of Object.entries(state.playLogData)) {
                 playLog[key] = value;
             }
@@ -1943,7 +1941,7 @@ class Board {
     // Check if inpput state is JSON or string of JSON data
     // Currently supports: JSON or Object
     // Returns state object
-    checkStateType( state ) {
+    checkStateType(state) {
         if (typeof state == 'string') {
             state = JSON.parse(state);
         }
@@ -1992,7 +1990,7 @@ function parseDataFromOther(data) {
     var input = { ...data };
     if (typeof data == 'object' && 'mainDeck' in data && 'extraDeck' in data) {
         function mapkey(card) {
-            if( (! 'cardId' in card ) && ( 'id' in card ) ){
+            if ((! 'cardId' in card) && ('id' in card)) {
                 card.cardId = card.id;
             }
             var maps = {
@@ -2088,8 +2086,8 @@ function parseDataFromOther(data) {
 
     return cards;
 }
-function wv_showError( msg ){
-    alert( msg );
+function wv_showError(msg) {
+    alert(msg);
 }
 
 $(document).ready(function () {
@@ -2143,4 +2141,3 @@ $(document).ready(function () {
     });
 
 });
-// });
