@@ -89,51 +89,30 @@ class PlayLog {
     async setInitItems(items) {
         this.initItems = items;
     }
-    async addStep(action, id, data, oldData) {
+    async addStep(action, cardId, data, oldData) {
         // if(( !this.isStarted) && (action != 'startRecord') ) return false;
         if (this.isRePlaying) return false;
         var message = '';
         var board = this.Board;
-        var card = board.getItemById(id);
+        var card = board.getItemById(cardId);
 
 
         switch (action) {
             case 'init': // Sự kiện này đã bị bỏ, sẽ remove ở version sau
                 console.warn(' This function is deprecated');
                 message += oldData;
-                id = undefined;
+                cardId = undefined;
                 oldData = undefined;
                 break;
 
             case 'startRecord':
                 message += `<p>Init state</p>`;
                 this.messageElm.empty();
-                id = undefined;
+                cardId = undefined;
                 oldData = undefined;
                 this.isStarted = true;
                 this.steps = [];
-                var initData = [];
-                $.each(data, function (i, item) {
-                    // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
-                    initData.push({
-                        id: item.id,
-                        itemBefore: {},
-                        isMonster: item.isMonster || false,
-                        isST: item.isST || false,
-                        isSpell: item.isSpell || false,
-                        isTrap: item.isTrap || false,
-                        amount: item.amount,
-                        collection_order: item.collection_order,
-                        foldState: item.foldState,
-                        isExtra: item.isExtra,
-                        name: item.name,
-                        order: item.order,
-                        position: item.position,
-                        switchState: item.switchState,
-                        imageURL: item.imageURL,
-                        description: item.description,
-                    });
-                });
+                var initData = board.copyCardData( data );
                 data = initData;
                 break;
 
@@ -143,7 +122,7 @@ class PlayLog {
                     return false;
                 }
                 message += `<p> Stop Record</p>`;
-                id = undefined;
+                cardId = undefined;
                 oldData = undefined;
                 this.isStarted = false;
                 break;
@@ -157,44 +136,44 @@ class PlayLog {
                             if (collection) {
                                 posName = collection.getName();
                             };
-                            message += `<p class="log-step" data-possition="${value}"> <span class="card-key">Move</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${posName}</span> </p>`;
+                            message += `<p class="log-step" data-possition="${value}"> <span class="card-key">Move</span> card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${posName}</span> </p>`;
 
                             break;
                         case 'foldState':
-                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
 
                             break;
                         case 'switchState':
-                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
 
                             break;
                         default:
-                            message += `<p class="log-step ddescription" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.id}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            message += `<p class="log-step ddescription" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                             break;
                     }
                 });
                 break;
 
             case 'target':
-                message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
+                message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span></p>`;
                 break;
 
             case 'declare':
-                message += `<p class="log-step"> Declared effect of <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
+                message += `<p class="log-step"> Declared effect of <span class="log-card-name" data-id="${card.cardId}">${card.name}</span></p>`;
                 break;
 
             case 'reveal':
-                message += `<p class="log-step"> Reveal card <span class="log-card-name" data-id="${card.id}">${card.name}</span></p>`;
+                message += `<p class="log-step"> Reveal card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span></p>`;
                 break;
 
             case 'shuffle':
                 message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Cards</span> </p>`;
-                id = undefined;
+                cardId = undefined;
                 oldData = undefined;
 
             case 'shuffle_deck':
                 message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Deck</span> </p>`;
-                id = undefined;
+                cardId = undefined;
                 oldData = undefined;
                 break;
 
@@ -203,7 +182,7 @@ class PlayLog {
         if ((this.isStarted) || (action == 'startRecord')) {
             this.steps.push({
                 action: action,
-                id: id,
+                cardId: cardId,
                 data: { ...data },
                 oldData: oldData || {},
                 message: message || '',
@@ -272,10 +251,10 @@ class PlayLog {
         var data = step.data;
         var oldData = step.oldData;
         var board = this.Board;
-        var card = board.getCard(step.id);
+        var card = board.getCard(step.cardId);
         switch (action) {
             case 'update':
-                // var card = board.getItemById( step.id );
+                // var card = board.getItemById( step.cardId );
                 var isMoving = ('position' in data) && ('position' in oldData) && (data.position != oldData.position);
 
                 var isFlipping = ('foldState' in data) && ('foldState' in oldData) && (data.foldState != oldData.foldState);
@@ -290,7 +269,7 @@ class PlayLog {
                 }
                 $.each(data, function (key, value) {
                     log.writeStep(step.message || `Update ${key} to ${value}`);
-                    board.updateItem(step.id, key, value);
+                    board.updateItem(step.cardId, key, value);
                 });
                 if (isMoving) {
                     setTimeout(function () {
@@ -307,9 +286,9 @@ class PlayLog {
                 log.writeStep(step.message || ` Shuffle Cards`);
                 // Update from data to cards
                 $.each(data, function (index, item) {
-                    // var card = board.getItemById( item.id );
+                    // var card = board.getItemById( item.cardId );
                     $.each(['collection_order', 'order'], function (i, k) {
-                        board.updateItem(item.id, k, item[k]);
+                        board.updateItem(item.cardId, k, item[k]);
                     });
                 });
             case 'shuffle_deck':
@@ -317,9 +296,9 @@ class PlayLog {
                 log.writeStep(step.message || ` Shuffle Deck`);
                 // Update from data to cards
                 $.each(data, function (index, item) {
-                    // var card = board.getItemById( item.id );
+                    // var card = board.getItemById( item.cardId );
                     $.each(['collection_order', 'order'], function (i, k) {
-                        board.updateItem(item.id, k, item[k]);
+                        board.updateItem(item.cardId, k, item[k]);
                     });
                 });
                 var deck = board.getCollectionByPosition(position);
@@ -334,28 +313,7 @@ class PlayLog {
             case 'init': // Function này đã bị bỏ, sẽ remove ở version sau
                 console.warn(' This function is deprecated');
                 // var initData = {...data};
-                var initData = [];
-                $.each(data, function (i, item) {
-                    // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
-                    initData.push({
-                        id: item.id,
-                        itemBefore: {},
-                        isMonster: item.isMonster || false,
-                        isST: item.isST || false,
-                        isSpell: item.isSpell || false,
-                        isTrap: item.isTrap || false,
-                        amount: item.amount,
-                        collection_order: item.collection_order,
-                        foldState: item.foldState,
-                        isExtra: item.isExtra,
-                        name: item.name,
-                        order: item.order,
-                        position: item.position,
-                        switchState: item.switchState,
-                        imageURL: item.imageURL,
-                        description: item.description,
-                    });
-                });
+                var initData = board.copyCardData( data );
                 this.messageElm.empty();
                 board.emptyBoard();
                 board.setItems(initData);
@@ -366,28 +324,6 @@ class PlayLog {
 
             case 'startRecord':
                 initData = { ...data };
-                // var initData = [];
-                // $.each( data , function( i, item ) {
-                //     // Copy the properties from the item to initData: amount, collection_order, foldState, id, isExtra, name, order, position, switchState, imageURL
-                //     initData.push({
-                //         id: item.id,
-                // itemBefore: {},
-                // isMonster: item.isMonster||false,
-                // isST: item.isST||false,
-                // isSpell: item.isSpell||false,
-                // isTrap: item.isTrap||false,
-                // amount: item.amount,
-                // collection_order: item.collection_order,
-                // foldState: item.foldState,
-                // isExtra: item.isExtra,
-                // name: item.name,
-                // order: item.order,
-                // position: item.position,
-                // switchState: item.switchState,
-                // imageURL: item.imageURL,
-                // description: item.description,
-                //     });
-                // });
                 this.messageElm.empty();
                 board.emptyBoard();
                 sleep(2000, 'wait 2s');
@@ -483,7 +419,7 @@ class Card {
     constructor(Board, item, order, options) {
         // this.item = item;
         var _default = {
-            id: 0,
+            cardId: 0,
             name: 'card',
             order: 1,
             collection_order: 1,
@@ -600,7 +536,7 @@ class Card {
         return true;
     }
     afterMove(newPosition) {
-        this.getBoard().writelog('update', this.id, {
+        this.getBoard().writelog('update', this.cardId, {
             position: this.position,
             collection_order: this.collection_order,
         }, {
@@ -734,7 +670,7 @@ class Card {
         } else {
             // console.warn( 'Failed to update foldState to ' + newState );
         }
-        result && this.getBoard().writelog('update', this.id, {
+        result && this.getBoard().writelog('update', this.cardId, {
             foldState: newState,
         }, {
             foldState: oldFlipState
@@ -764,7 +700,7 @@ class Card {
             // this.html.removeClass('attack defense').addClass(newState);
             this.updateHtml();
 
-            this.getBoard().writelog('update', this.id, {
+            this.getBoard().writelog('update', this.cardId, {
                 switchState: newState,
             }, {
                 switchState: oldSwitchState
@@ -776,15 +712,15 @@ class Card {
     }
     target() {
         this.doAnimation('target');
-        this.getBoard().writelog('target', this.id, {});
+        this.getBoard().writelog('target', this.cardId, {});
     }
 
     declare() {
         this.doAnimation('declare');
-        this.getBoard().writelog('declare', this.id, {});
+        this.getBoard().writelog('declare', this.cardId, {});
     }
     reveal() {
-        this.getBoard().writelog('reveal', this.id, {});
+        this.getBoard().writelog('reveal', this.cardId, {});
         // Show image as full screen
         this.doAnimation('reveal');
         if (this.position === 'exdeck') {
@@ -800,7 +736,7 @@ class Card {
         var _card = this;
         var backImageSrc = this.options.imgPath + this.options.backImageSrc;
         var frontImageSrc = this.imageURL || (this.options.imgPath + 'card/' + this.name + '.jpeg');
-        var cardId = this.id;
+        var cardId = this.cardId;
         var cardElement = $(`<div id="card-${cardId}" class="card card-id-${cardId}" data-id="${cardId}" title="${_card.name}"/>`);
         // var moveOptions = [
         //     'canMoveHand',
@@ -896,7 +832,7 @@ class Card {
             case 'summon':
                 // var summonElm = _board.getFreeSummon();
 
-                var summonElm = _board.getCardSlot(_card.id);
+                var summonElm = _board.getCardSlot(_card.cardId);
                 if (!summonElm.length) {
                     return false;
                 }
@@ -906,7 +842,7 @@ class Card {
                 break;
             case 'st':
                 // var stElm = _board.getFreeST();
-                var stElm = _board.getCardSlot(_card.id);
+                var stElm = _board.getCardSlot(_card.cardId);
                 if (!stElm.length) {
                     return false;
                 }
@@ -916,7 +852,7 @@ class Card {
                 break;
 
             case 'fz':
-                var fzElm = _board.getCardSlot(_card.id);
+                var fzElm = _board.getCardSlot(_card.cardId);
                 if (!fzElm.length) {
                     return false;
                 }
@@ -1239,16 +1175,24 @@ class Collection {
     }
     shuffleCollectionCards() {
         var _board = this.getBoard();
+        var data = [];
         var collection = this;
         var items = collection.getCards();
         // var shuffledArr = items.sort(() => Math.random() - 0.5);
         items.sort(() => Math.random() - 0.5);
         $.each(items, function (index, item) {
-            _board.updateItem(item.id, 'collection_order', index + 1);
+            _board.updateItem(item.cardId, 'collection_order', index + 1);
         });
         this.reDraw();
+        items.forEach(function (item, index) {
+            var itemdata = {};
+            $.each(['cardId', 'collection_order', 'order'], function (i, k) {
+                itemdata[k] = item[k];
+            });
+            data.push(itemdata);
+        });
 
-        if (_board.playlog) _board.writelog('shuffle_deck', undefined, { ...items });
+        if (_board.playlog) _board.writelog('shuffle_deck', undefined, data);
     }
 
 }
@@ -1470,8 +1414,8 @@ class Board {
         // var shuffledArr = items.sort(() => Math.random() - 0.5);
         items.sort(() => Math.random() - 0.5);
         $.each(items, function (index, item) {
-            _board.updateItem(item.id, 'collection_order', index + 1);
-            _board.updateItem(item.id, 'order', index + 1);
+            _board.updateItem(item.cardId, 'collection_order', index + 1);
+            _board.updateItem(item.cardId, 'order', index + 1);
         });
         if (this.playlog) this.writelog('shuffle', undefined, { ...this.items });
     }
@@ -1716,7 +1660,7 @@ class Board {
 
     getItemById(id) {
         return this.items.filter(function (item) {
-            return item.id == id;
+            return item.cardId == id;
         })[0];
     }
     getCard(id) {
@@ -1899,15 +1843,12 @@ class Board {
         return this.elm.find('.' + position + '-slot.card-slot ' + moreClass);
     }
 
-    // Export and import state
-    exportState(type = 'array') {
-        var board = this;
+    copyCardData(cards){
         var items = [];
-        var boarddata = board.getItems();
-        $.each(boarddata, function (i, item) {
+        $.each(cards, function (i, item) {
             // Copy the properties from the item to state
             items.push({
-                id: item.cardId,
+                cardId: item.cardId,
                 itemBefore: {},
                 isMonster: item.isMonster || false,
                 isST: item.isST || false,
@@ -1925,10 +1866,51 @@ class Board {
                 description: item.description,
             });
         });
+        
+        return items;
+    }
+    recursive_copy_object (obj) {
+        var board = this;
+        if ( typeof obj == null || obj == undefined ) return obj;
+        if (typeof obj != 'object') return obj;
+        console.log( obj );
+        if ($.isArray(obj)) {
+            var new_obj = [];
+            $.each(obj, function (i, v) {
+                if (typeof v == 'object') new_obj.push(board.recursive_copy_object(v));
+                else new_obj.push(v);
+            });
+            return new_obj;
+        } else {
+            var new_obj = {};
+            $.each(obj, function (i, v) {
+        console.log( i );
+                if( i === 'onchange' ) return 0;
+                if (typeof v == 'object') new_obj[i] = board.recursive_copy_object(v);
+                else new_obj[i] = v;
+            });
+            return new_obj;
+        }
+    }
+
+    // Export and import state
+    exportState(type = 'array') {
+        var board = this;
+        var items = board.copyCardData( board.getItems() );
+        var playLog = board.get('playlog');
+        var playLogData = {
+            initItems: board.copyCardData( playLog.initItems ),
+            steps: board.recursive_copy_object( playLog.steps ),
+            isPausing: false,
+            isRePlaying: false,
+            isStarted: false,
+            pointer: 0
+        }
         var data = {
             dateCreate: (new Date()).toISOString(),
             items: items,
             version: board.version,
+            playLogData: playLogData,
         }
         type = (type || 'array').toLowerCase();
         switch (type) {
@@ -1943,13 +1925,31 @@ class Board {
         return data;
     }
     importState(state) {
-        this.emptyBoard();
-        this.playlog.reset();
-        var data = this.checkData(state);
-        var items = this.parseDataFromState(data);
-        this.setItems(items);
-        // this.writelog( 'importState' )
+        var board = this;
+        board.emptyBoard();
+        board.playlog.reset();
+        state = board.checkStateType(state);
+        var data = board.checkData(state);
+        var items = board.parseDataFromState(data);
+        board.setItems(items);
+        var playLog = board.get('playlog');
+        if( 'playLogData' in state ) {
+            for (const [key, value] of Object.entries(state.playLogData)) {
+                playLog[key] = value;
+            }
+        }
     }
+
+    // Check if inpput state is JSON or string of JSON data
+    // Currently supports: JSON or Object
+    // Returns state object
+    checkStateType( state ) {
+        if (typeof state == 'string') {
+            state = JSON.parse(state);
+        }
+        return state;
+    }
+
     checkData(state) {
         var board = this;
         var data = state;
@@ -1992,14 +1992,20 @@ function parseDataFromOther(data) {
     var input = { ...data };
     if (typeof data == 'object' && 'mainDeck' in data && 'extraDeck' in data) {
         function mapkey(card) {
+            if( (! 'cardId' in card ) && ( 'id' in card ) ){
+                card.cardId = card.id;
+            }
             var maps = {
                 image: 'imageURL',
+                id: 'orgID',
+                // 'orgID' : 'id'
                 // isHandTrap: isST,
             };
             $.each(maps, function (key, newKey) {
                 card[newKey] = card[key];
-                delete (card.key);
+                delete (card[key]);
             });
+            // console.log(card, card.orgID);
             switch (card.type) {
                 case "Link Monster":
                 case "Fusion Monster":
@@ -2082,11 +2088,13 @@ function parseDataFromOther(data) {
 
     return cards;
 }
+function wv_showError( msg ){
+    alert( msg );
+}
 
 $(document).ready(function () {
     const isDebug = urlParams.get('debug');
 
-    var cards = boardData && boardData.data;
     var jsonUrl = 'https://ygovietnamcdn.azureedge.net/storage/Assets/sample-simulator-deck.json';
     // jsonUrl = '0';
     $.getJSON(jsonUrl, function (data) {
@@ -2095,15 +2103,14 @@ $(document).ready(function () {
         const cards = data;
         var data = parseDataFromOther(cards);
         if (!data) {
-            data = boardData.data;
+            wv_showError('Wrong data');
         }
         board = new Board($('#playtest'), data, {
             isDebug: isDebug,
         });
     }).fail(function () {
-        board = new Board($('#playtest'), boardData.main, {
-            isDebug: isDebug,
-        });
+        wv_showError('Get JSON data failed');
+
     }).done(function () {
         console.log(board);
 
