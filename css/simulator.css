@@ -45,7 +45,7 @@
     justify-content: center;
     align-items: flex-start;
     gap: 15px;
-    margin-top: 80px;
+    margin-top: 20px;
 }
 .play-board-container .play-board {
     max-width: calc(100% - 20px);
@@ -531,4 +531,13 @@ body .ui-widget-overlay {
     100% {
         background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
     }
+}
+
+.water-mark p {
+    position: absolute;
+    bottom: -10px; /* or whatever */
+    right: 8px; /* or whatever, position according to taste */
+    opacity: 0.5; /* Firefox, Chrome, Safari, Opera, IE >= 9 (preview) */
+    filter:alpha(opacity=50); /* for <= IE 8 */
+    font-size: small;
 }
