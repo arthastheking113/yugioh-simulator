@@ -35,7 +35,7 @@
     --bs-danger: #f34770;
     --bs-light: #fff;
     --bs-dark: #373f50;
-    /*--bs-font-sans-serif: "Rubik", sans-serif;*/
+    --bs-font-sans-serif: "Rubik", sans-serif;
     --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
 }

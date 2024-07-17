@@ -596,7 +596,7 @@ class Card {
                 order = order || 1;
                 var _continue = 1;
                 var _slot = _board.elm.find('.card-slot[data-order="' + order + '"]');
-                if (!_slot.find('.card').length) {
+                if (!_slot.find('.simulator-card').length) {
                     _continue = 0;
                     _card.collection_order = order;
                 } else {
@@ -737,7 +737,7 @@ class Card {
         var backImageSrc = this.options.imgPath + this.options.backImageSrc;
         var frontImageSrc = this.imageURL || (this.options.imgPath + 'card/' + this.name + '.jpeg');
         var cardId = this.cardId;
-        var cardElement = $(`<div id="card-${cardId}" class="card card-id-${cardId}" data-id="${cardId}" title="${_card.name}"/>`);
+        var cardElement = $(`<div id="card-${cardId}" class="simulator-card card-id-${cardId}" data-id="${cardId}" title="${_card.name}"/>`);
         // var moveOptions = [
         //     'canMoveHand',
         //     'canMoveSummon',
@@ -977,7 +977,7 @@ class Card {
         var newPosition = card.position;
         var collection = board.getCollectionByPosition(newPosition);
         var offset = [];
-        var clone = moveContainer.find('.card');
+        var clone = moveContainer.find('.simulator-card');
         clone.css({
             width: card.html.width(),
             height: card.html.height(),
@@ -995,7 +995,7 @@ class Card {
         });
 
         // Keep the animations;
-        clone[0].classList = 'card';
+        clone[0].classList = 'simulator-card';
         clone.addClass(card.html[0].classList.value);
         return true;
     }
@@ -1037,7 +1037,7 @@ class Collection {
     events() {
         var collection = this;
         var _board = collection.getBoard();
-        this.elm.on('click', '.card img, .collection-count, .ddescription', function () {
+        this.elm.on('click', '.simulator-card img, .collection-count, .ddescription', function () {
             if (collection.collection_position == 'deck') {
                 return false;
             }
@@ -1045,8 +1045,8 @@ class Collection {
         });
 
         // Remove the event when click on card
-        // this.menuElm.on('click', '.card img', function(){
-        //     var _cardElm = $(this).closest('.card');
+        // this.menuElm.on('click', '.simulator-card img', function(){
+        //     var _cardElm = $(this).closest('.simulator-card');
         //     var _cardID = _cardElm.data('id');
         //     var _card = _board.getItemById( _cardID );
         //     _card.moveTo('hand');
@@ -1082,7 +1082,7 @@ class Collection {
     drawOnBoard() {
         var cards = this.getCards();
         // count cards
-        this.elm.find('.card').remove();
+        this.elm.find('.simulator-card').remove();
         this.elm.find('.collection-count').children().first().empty().text(cards.length);
 
         // TODO: check and draw top card with status;
@@ -1253,7 +1253,7 @@ class Board {
     emptyBoard() {
         var board = this;
         this.items = [];
-        this.elm.find('.card').remove();
+        this.elm.find('.simulator-card').remove();
         $.each(['deckMenuElm', 'exDeckMenuElm', 'graveyardMenuElm', 'banishMenuElm', 'cardMenuElm', 'collectionMenuElm'], function (index, elm) {
             board[elm].find('.collection-container').empty();
         });
@@ -1501,7 +1501,7 @@ class Board {
         var _free = [];
         $.each(this.elm.find('.summon-slot'), function (i, el) {
             var _el = $(el);
-            if ((!_free.length) && (!_el.find('.card').length)) {
+            if ((!_free.length) && (!_el.find('.simulator-card').length)) {
                 _free = _el;
             }
         });
@@ -1512,7 +1512,7 @@ class Board {
         var _free = [];
         $.each(this.elm.find('.fz-slot'), function (i, el) {
             var _el = $(el);
-            if ((!_free.length) && (!_el.find('.card').length)) {
+            if ((!_free.length) && (!_el.find('.simulator-card').length)) {
                 _free = _el;
             }
         });
@@ -1598,7 +1598,7 @@ class Board {
         var _free = [];
         $.each(this.elm.find('.st-slot'), function (i, el) {
             var _el = $(el);
-            if ((!_free.length) && (!_el.find('.card').length)) {
+            if ((!_free.length) && (!_el.find('.simulator-card').length)) {
                 _free = _el;
             }
         });
@@ -1612,7 +1612,7 @@ class Board {
         var frees = [];
         $.each(this.elm.find('.st-slot'), function (i, el) {
             var _el = $(el);
-            if (!_el.find('.card').length) {
+            if (!_el.find('.simulator-card').length) {
                 frees.push(_el.data('order'));
             }
         });
@@ -1623,7 +1623,7 @@ class Board {
         var frees = [];
         $.each(this.elm.find('.summon-slot'), function (i, el) {
             var _el = $(el);
-            if (!_el.find('.card').length) {
+            if (!_el.find('.simulator-card').length) {
                 frees.push(_el.data('order'));
             }
         });
@@ -1634,7 +1634,7 @@ class Board {
         var frees = [];
         $.each(this.elm.find('.summon-slot, .exsummon-slot'), function (i, el) {
             var _el = $(el);
-            if (!_el.find('.card').length) {
+            if (!_el.find('.simulator-card').length) {
                 frees.push(_el.data('order'));
             }
         });
@@ -1651,7 +1651,7 @@ class Board {
         }
         $.each(ssstElms, function (i, el) {
             var _el = $(el);
-            if (!_el.find('.card').length) {
+            if (!_el.find('.simulator-card').length) {
                 frees.push(_el);
             }
         });
@@ -1779,7 +1779,7 @@ class Board {
         // Highlight when slot is empty
         var elms = cardHolderElms.filter(function (index, cardHolder) {
             var _cardHolder = $(cardHolder);
-            if (!_cardHolder.find('.card').length) {
+            if (!_cardHolder.find('.simulator-card').length) {
                 _cardHolder.addClass('highlight');
                 return true;
             }
@@ -1796,7 +1796,7 @@ class Board {
         // Highlight when slot is empty
         var elms = cardHolderElms.filter(function (index, cardHolder) {
             var _cardHolder = $(cardHolder);
-            if (!_cardHolder.find('.card').length) {
+            if (!_cardHolder.find('.simulator-card').length) {
                 _cardHolder.addClass('highlight');
                 return true;
             }
@@ -1822,7 +1822,7 @@ class Board {
             if ((!card.isSpell) && _cardHolder.hasClass('fz-slot')) {
                 check = false;
             }
-            if (_cardHolder.find('.card').length) {
+            if (_cardHolder.find('.simulator-card').length) {
                 check = false;
             }
 
