@@ -250,6 +250,7 @@ class CardMenu extends MenuBase {
             'fz': [ // Field zone 
                 'move',
                 'to-hand',
+                'this-target',
                 'to-graveyard',
                 'set',
                 'active',
