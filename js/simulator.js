@@ -898,8 +898,8 @@ class Card {
         duration = duration || 1000;
 
         switch (action) {
-            case 'declare':
-                animation = animation || 'shakeY';
+            // case 'declare':
+            //     animation = animation || 'shakeY';
             case 'target':
                 animation = animation || 'bounceIn';
                 animation = 'animate__animated animate__' + animation;
@@ -910,6 +910,7 @@ class Card {
                 break;
 
 
+            case 'declare':
             case 'reveal':
                 // Show card in full screen;
                 var board = _card.getBoard();
