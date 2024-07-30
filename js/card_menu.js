@@ -199,6 +199,7 @@ class CardMenu extends MenuBase {
                 'to-banish-fold',
                 'to-hand',
                 'to-graveyard',
+                'to-st', // st, atk, normal
 
             ],
             exdeck: [
@@ -226,6 +227,8 @@ class CardMenu extends MenuBase {
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
+                'to-deck-bottom',
+                'to-deck-top',
                 'set',
                 'to-graveyard',
             ],
@@ -242,6 +245,8 @@ class CardMenu extends MenuBase {
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
+                'to-deck-bottom',
+                'to-deck-top',
                 'to-graveyard',
                 'this-set',
                 'this-active',
