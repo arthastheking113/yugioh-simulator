@@ -49,3 +49,19 @@
     - Should be similar to `Reveal` but a little bit different in order to distinguish between `Declare` and `Reveal`.
     - Design can be flexible.
     - May be a shining effect on top of `Reveal` + sound effect `(.sound/declare-sound-effect.mp3)` is good enough.
+
+## 3. New `Skill` feature
+
+- Check property `skill` in json:
+    - If `skill` is not null:
+        - Add a button `Activate {skillName}` for user can click on it to activate it
+        - When user click on `Activate {skillName}`:
+            - Add to log: `Activate {skillName}`
+            - Add a text to middle of screen `{skillName}` (similar to `Phase` feature above)
+            - Add to replay when in capture replay mode.
+        
+    - If `skill` is null or undefined:
+        - Don't show activate skill button.
+
+- When playing existing replay:
+    - Hide activate skill button.
