@@ -1,7 +1,7 @@
 # Issue 7
 
 
-## 1. Phase
+## 1. New `Phase` Feature
 
 - Add 6 phases to field.
 - ![image info](./issue/phase.PNG)
@@ -65,3 +65,42 @@
 
 - When playing existing replay:
     - Hide activate skill button.
+
+
+## 4. Multiple duplicated card menu not showing correctly when hover over it.
+
+- If duplicated card in the deck, menu/action will not show correctly
+- ![image info](./issue/deck-menu.PNG)
+
+- Card can be duplicated. Therefore, menu need to be shown on correct card.
+
+
+## 5. New `Overlay` feature
+
+- New menu option `Overlay`
+    - ![image info](./issue/menu-overlay.PNG)
+- `Overlay` definition: Grouping multiple card into 1 group of cards. This group of card have 1 card represent all cards under it.
+    - Ex: ![image info](./issue/card-overlay.PNG)
+
+- When select `Overlay` option:
+    - User can select another card to put that card under it.
+    - Ex: ![image info](./issue/overlay-selection.PNG)
+
+- When cards are in `Overlay`:
+    - All cards are treated as 1 card.
+    - Show menu as a regular card.
+    - Ex: ![image info](./issue/overlay-option.PNG)
+
+    - User can hover over cards under the top card to select 2 options:
+        - `Detach` = `To Grave`
+        - `Banish FU`
+        - Ex: ![image info](./issue/detach-overlay.PNG)
+
+        - When select `Detach`:
+            - Send card `To Grave`.
+        - When select `Banish FU`:
+            - Send card to Banish face up.
+
+- When Overlay card send `To Grave`/`To Deck`/`Banish`/`To Ex Deck`/`To Hand` (all other zones):
+    - Send the top card to that zone.
+    - Send all cards under it `To Grave`
