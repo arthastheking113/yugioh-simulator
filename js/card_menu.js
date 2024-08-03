@@ -263,6 +263,7 @@ class CardMenu extends MenuBase {
                 'to-graveyard',
                 'set',
                 'active',
+                'this-declare',
 
             ]
         }
