@@ -53,7 +53,7 @@
     <link rel="stylesheet" href="css/theme.css?v=1.5" integrity="" />
     <link rel="stylesheet" href="css/tournamentStyle.css?v=1.4" integrity="" />
     <link rel="stylesheet" href="css/app.css" integrity="" />
-    <link rel="stylesheet" href="css/simulator.css?v=1.0.8" integrity="" />
+    <link rel="stylesheet" href="css/simulator.css?v=1.0.9" integrity="" />
     <script src="js/jquery.min.js?v=3.2.1"></script>
     <script src="js/jquery-ui.min.js?v=1.12.1"></script>
     <script src="js/jquery.ui.touch-punch.min.js?v=0.2.3"></script>
@@ -110,13 +110,34 @@
                         </div>
                     </div>
                 </div>
+                <div class="card-slot-row row">
+                    <div class="col-2"></div>
+                    <div class="phase-slot col-8">
+                        <!-- Add DP (Draw Phase) and SP (Stand By) -->
+                        <div class="phase-container">
+                            <input type="button" class="phase-btn sp stand-by  rounded-circle" title="Draw Phase" value="dp">
+                            <input type="button" class="phase-btn sp stand-by rounded-circle" title="Stand By" value="sp">
+                            <input type="button" class="phase-btn m1 stand-by  rounded-circle" title="Main Phase 1" value="m1">
+                            <input type="button" class="phase-btn bp stand-by rounded-circle" title="Battle Phase" value="bp">
+                            <input type="button" class="phase-btn m2 stand-by  rounded-circle" title="Main Phase 2" value="m2">
+                            <input type="button" class="phase-btn ep stand-by rounded-circle" title="End Phase" value="ep">
+                        </div>
+                    </div>
+                    <div class="col-2"></div>
+
+                    
+                </div>
                 <div class="card-slot-row">
                     <div class="holder-slot no-card-slot"></div>
-                    <div class="holder-slot no-card-slot"></div>
+                    <div class="holder-slot no-card-slot">
+                    </div>
                     <div class="holder-slot card-slot summonex-slot summonex1-slot" data-order="exss1" data-position="summon"></div>
-                    <div class="holder-slot no-card-slot"></div>
+                    <div class="holder-slot no-card-slot">
+
+                    </div>
                     <div class="holder-slot card-slot summonex-slot summonex2-slot" data-order="exss2" data-position="summon"></div>
-                    <div class="holder-slot no-card-slot"></div>
+                    <div class="holder-slot no-card-slot">
+                    </div>
 
                     <div class="holder-slot card-slot banish card-collection-slot" id="banish-slot">
                         <div class="collection-count">
@@ -302,9 +323,9 @@
             </div>
         </div>
     </div>
-    <script src="js/card_menu.js?v=1.0.8" integrity=""></script>
-    <script src="js/simulator.js?v=1.0.8" integrity=""></script>
-    <script src="js/main.js?v=1.0.8" integrity=""></script>
+    <script src="js/card_menu.js?v=1.0.9" integrity=""></script>
+    <script src="js/simulator.js?v=1.0.9" integrity=""></script>
+    <script src="js/main.js?v=1.0.9" integrity=""></script>
     <script src="js/Function.js?v=1.6" integrity=""></script>
 
     <!-- <script src="https://code.iconify.design/2/2.0.3/iconify.min.js" integrity=""></script> -->

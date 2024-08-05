@@ -1,3 +1,4 @@
+/* If you want to edit any thing. Please update it in css\simulator.scss file. css\simulator.css will be overwrite when building */
 $white-color: #efefef;
 
 .game-board {
@@ -54,7 +55,7 @@ $white-color: #efefef;
     .play-board {
         max-width: calc( 100% - 20px );
     }
-    @media( min-width: 768px ) {
+    @media( min-width: 1200px ) { // check card_menu.js > breakpoint
         .play-board-side {
             order: 9;
             max-width: 290px;
@@ -189,6 +190,69 @@ $white-color: #efefef;
         .no-card-slot {
             visibility: hidden;
         }
+        .phase-slot{
+            border: none;
+
+            .text-phase{
+                display: none;
+            }
+            .phase-icon{
+                display: block;
+                min-width: 30px;
+                max-width: 60px;
+                width: calc( 50% - 10px );
+                aspect-ratio: 1 / 1;
+                border-radius: 100%;
+                background-color: #b4b4ed;
+                border:  1px solid #b4b4ed;
+                float: left;
+                margin: 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                ~.phase-icon{
+                    float: right;
+                };
+
+                &.current-phase {
+                    background-color:  #fff;
+                }
+            }
+            .phase-btn {
+                display: block;
+                min-width: 35px;
+                max-width: 60px;
+                aspect-ratio: 1 / 1;
+                margin: 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-transform: uppercase;
+                opacity: 0.6;
+                
+                @media( min-width: 768px) {
+                    float: left;
+                    ~.phase-btn{
+                        float: right;
+                    };
+
+                }
+                &.current-phase{
+                    border: 2px solid #fff !important;
+                    color: #b4b4ed !important;
+                    opacity: 1;
+                }
+            }
+            .phase-container{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                white-space: pre-wrap;
+            }
+        }
 
         .holder-slot {
             // height: 102px;
@@ -198,8 +262,9 @@ $white-color: #efefef;
             border-radius: 4px;
             position: relative;
             text-align: center;
+            aspect-ratio: 1 / 1;
 
-            .card {
+            .simulator-card {
                 display: block;
                 width: 100%;
                 height: 100%;
@@ -266,7 +331,7 @@ $white-color: #efefef;
     }
 }
 
-.card {
+.simulator-card {
     cursor: pointer;
     width: 70px;
     height: 102px;
@@ -280,7 +345,7 @@ $white-color: #efefef;
         z-index: 99;
     }
 
-    .card .card-imgs {
+    .simulator-card .card-imgs {
         display: block;
         width: 100%;
         height: 100%;
@@ -372,7 +437,7 @@ $white-color: #efefef;
             height: 102px;
             width: auto;
 
-            .card {
+            .simulator-card {
                 height: 100%;
             }
         }
@@ -478,7 +543,7 @@ body {
         z-index: 1000;
         background-color: #00001681;
 
-        .card-lightbox-inner {
+        .lightbox-inner {
             position: relative;
             width: 100%;
             height: 100%;
@@ -499,6 +564,14 @@ body {
                     // max-width: 100%;
                     width: auto;
                     max-height: 100%;
+                }
+            }
+            .phase-lightbox-text{
+                font-size: 2rem;
+                font-weight: 600;
+
+                @media (min-width: 768px){
+                    font-size: 4rem;
                 }
             }
         }
@@ -698,7 +771,7 @@ body {
     }
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 1199px) { // check card_menu.js > breakpoint
     .lcard-informations {
         display: none;
     }

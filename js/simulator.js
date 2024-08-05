@@ -89,26 +89,26 @@ class PlayLog {
     async setInitItems(items) {
         this.initItems = items;
     }
-    async addStep(action, cardId, data, oldData) {
+    async addStep(action, uuid, data, oldData) {
         // if(( !this.isStarted) && (action != 'startRecord') ) return false;
         if (this.isRePlaying) return false;
         var message = '';
         var board = this.Board;
-        var card = board.getItemById(cardId);
+        var card = board.getItemById(uuid);
 
 
         switch (action) {
             case 'init': // Sự kiện này đã bị bỏ, sẽ remove ở version sau
                 console.warn(' This function is deprecated');
                 message += oldData;
-                cardId = undefined;
+                uuid = undefined;
                 oldData = undefined;
                 break;
 
             case 'startRecord':
                 message += `<p>Init state</p>`;
                 this.messageElm.empty();
-                cardId = undefined;
+                uuid = undefined;
                 oldData = undefined;
                 this.isStarted = true;
                 this.steps = [];
@@ -122,7 +122,7 @@ class PlayLog {
                     return false;
                 }
                 message += `<p> Stop Record</p>`;
-                cardId = undefined;
+                uuid = undefined;
                 oldData = undefined;
                 this.isStarted = false;
                 break;
@@ -136,58 +136,74 @@ class PlayLog {
                             if (collection) {
                                 posName = collection.getName();
                             };
-                            message += `<p class="log-step" data-possition="${value}"> <span class="card-key">Move</span> card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${posName}</span> </p>`;
+                            message += `<p class="log-step" data-possition="${value}"> <span class="card-key">Move</span> card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span> to <span class="new-state">${posName}</span> </p>`;
 
                             break;
                         case 'foldState':
-                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Flip</span> card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
 
                             break;
                         case 'switchState':
-                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            message += `<p class="log-step" data-foldState="${value}"> <span class="card-key">Switch</span> card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
 
                             break;
                         default:
-                            message += `<p class="log-step ddescription" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.cardId}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
+                            message += `<p class="log-step ddescription" data-newValue="${value}> Change <span class="card-key">${key}</span> <span class="log-card-name" data-id="${card.uuid}">${card.name}</span> to <span class="new-state">${value}</span> </p>`;
                             break;
                     }
                 });
                 break;
 
             case 'target':
-                message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span></p>`;
+                message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
                 break;
 
             case 'declare':
-                message += `<p class="log-step"> Declared effect of <span class="log-card-name" data-id="${card.cardId}">${card.name}</span></p>`;
+                message += `<p class="log-step"> Declared effect of <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
                 break;
 
             case 'reveal':
-                message += `<p class="log-step"> Reveal card <span class="log-card-name" data-id="${card.cardId}">${card.name}</span></p>`;
+                message += `<p class="log-step"> Reveal card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
                 break;
 
             case 'shuffle':
                 message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Cards</span> </p>`;
-                cardId = undefined;
+                uuid = undefined;
                 oldData = undefined;
 
             case 'shuffle_deck':
                 message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Shuffle Deck</span> </p>`;
-                cardId = undefined;
+                uuid = undefined;
                 oldData = undefined;
                 break;
 
+            case 'update-phase':
+                var phase = data;
+                message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Enter ${board.phases[phase]}</span> </p>`;
+                uuid = undefined;
+                break;
         }
+
+
+        // if (action == 'startRecord') {
+        //     this.steps.push({
+        //         action: 'update-phase',
+        //         uuid: undefined,
+        //         data: board.currentPhase,
+        //         message: `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Enter ${board.phases[board.currentPhase]}</span> </p>`;,
+        //     });
+        // }
 
         if ((this.isStarted) || (action == 'startRecord')) {
             this.steps.push({
                 action: action,
-                cardId: cardId,
-                data: { ...data },
+                uuid: uuid,
+                data: typeof data == 'object' ? { ...data } : data,
                 oldData: oldData || {},
                 message: message || '',
             });
         }
+
         this.messageElm.append(message);
         this.messageElm.stop().animate({ scrollTop: 999999 }, 300);
         return true;
@@ -251,10 +267,10 @@ class PlayLog {
         var data = step.data;
         var oldData = step.oldData;
         var board = this.Board;
-        var card = board.getCard(step.cardId);
+        var card = board.getCard(step.uuid);
         switch (action) {
             case 'update':
-                // var card = board.getItemById( step.cardId );
+                // var card = board.getItemById( step.uuid );
                 var isMoving = ('position' in data) && ('position' in oldData) && (data.position != oldData.position);
 
                 var isFlipping = ('foldState' in data) && ('foldState' in oldData) && (data.foldState != oldData.foldState);
@@ -269,7 +285,7 @@ class PlayLog {
                 }
                 $.each(data, function (key, value) {
                     log.writeStep(step.message || `Update ${key} to ${value}`);
-                    board.updateItem(step.cardId, key, value);
+                    board.updateItem(step.uuid, key, value);
                 });
                 if (isMoving) {
                     setTimeout(function () {
@@ -286,9 +302,9 @@ class PlayLog {
                 log.writeStep(step.message || ` Shuffle Cards`);
                 // Update from data to cards
                 $.each(data, function (index, item) {
-                    // var card = board.getItemById( item.cardId );
+                    // var card = board.getItemById( item.uuid );
                     $.each(['collection_order', 'order'], function (i, k) {
-                        board.updateItem(item.cardId, k, item[k]);
+                        board.updateItem(item.uuid, k, item[k]);
                     });
                 });
             case 'shuffle_deck':
@@ -296,9 +312,9 @@ class PlayLog {
                 log.writeStep(step.message || ` Shuffle Deck`);
                 // Update from data to cards
                 $.each(data, function (index, item) {
-                    // var card = board.getItemById( item.cardId );
+                    // var card = board.getItemById( item.uuid );
                     $.each(['collection_order', 'order'], function (i, k) {
-                        board.updateItem(item.cardId, k, item[k]);
+                        board.updateItem(item.uuid, k, item[k]);
                     });
                 });
                 var deck = board.getCollectionByPosition(position);
@@ -337,6 +353,11 @@ class PlayLog {
                 log.writeStep(step.message || ``);
                 break;
 
+            case 'update-phase':
+                var phase = data;
+                log.writeStep(step.message || ``);
+                board.setPhase( phase );
+                break;
         }
 
         this.replaytimeout = setTimeout(function () {
@@ -420,6 +441,7 @@ class Card {
         // this.item = item;
         var _default = {
             cardId: 0,
+            uuid: 0,
             name: 'card',
             order: 1,
             collection_order: 1,
@@ -436,6 +458,7 @@ class Card {
             isExtra: 0,
         };
         $.extend(this, _default, item);
+        if( this.uuid == 0 ) { this.uuid = ygoUUID(); }
         this.isExtra && (this.position = 'exdeck'); // if isExtra card then draw it in the extra deck
         // this.isExtra && ( this.canMoveDeck = 0);
         // this.canMoveExDeck = this.isExtra;
@@ -536,7 +559,7 @@ class Card {
         return true;
     }
     afterMove(newPosition) {
-        this.getBoard().writelog('update', this.cardId, {
+        this.getBoard().writelog('update', this.uuid, {
             position: this.position,
             collection_order: this.collection_order,
         }, {
@@ -670,7 +693,7 @@ class Card {
         } else {
             // console.warn( 'Failed to update foldState to ' + newState );
         }
-        result && this.getBoard().writelog('update', this.cardId, {
+        result && this.getBoard().writelog('update', this.uuid, {
             foldState: newState,
         }, {
             foldState: oldFlipState
@@ -700,7 +723,7 @@ class Card {
             // this.html.removeClass('attack defense').addClass(newState);
             this.updateHtml();
 
-            this.getBoard().writelog('update', this.cardId, {
+            this.getBoard().writelog('update', this.uuid, {
                 switchState: newState,
             }, {
                 switchState: oldSwitchState
@@ -712,15 +735,15 @@ class Card {
     }
     target() {
         this.doAnimation('target');
-        this.getBoard().writelog('target', this.cardId, {});
+        this.getBoard().writelog('target', this.uuid, {});
     }
 
     declare() {
         this.doAnimation('declare');
-        this.getBoard().writelog('declare', this.cardId, {});
+        this.getBoard().writelog('declare', this.uuid, {});
     }
     reveal() {
-        this.getBoard().writelog('reveal', this.cardId, {});
+        this.getBoard().writelog('reveal', this.uuid, {});
         // Show image as full screen
         this.doAnimation('reveal');
         if (this.position === 'exdeck') {
@@ -736,8 +759,8 @@ class Card {
         var _card = this;
         var backImageSrc = this.options.imgPath + this.options.backImageSrc;
         var frontImageSrc = this.imageURL || (this.options.imgPath + 'card/' + this.name + '.jpeg');
-        var cardId = this.cardId;
-        var cardElement = $(`<div id="card-${cardId}" class="simulator-card card-id-${cardId}" data-id="${cardId}" title="${_card.name}"/>`);
+        var uuid = this.uuid;
+        var cardElement = $(`<div id="card-${uuid}" class="simulator-card card-id-${uuid}" data-id="${uuid}" title="${_card.name}"/>`);
         // var moveOptions = [
         //     'canMoveHand',
         //     'canMoveSummon',
@@ -832,7 +855,7 @@ class Card {
             case 'summon':
                 // var summonElm = _board.getFreeSummon();
 
-                var summonElm = _board.getCardSlot(_card.cardId);
+                var summonElm = _board.getCardSlot(_card.uuid);
                 if (!summonElm.length) {
                     return false;
                 }
@@ -842,7 +865,7 @@ class Card {
                 break;
             case 'st':
                 // var stElm = _board.getFreeST();
-                var stElm = _board.getCardSlot(_card.cardId);
+                var stElm = _board.getCardSlot(_card.uuid);
                 if (!stElm.length) {
                     return false;
                 }
@@ -852,7 +875,7 @@ class Card {
                 break;
 
             case 'fz':
-                var fzElm = _board.getCardSlot(_card.cardId);
+                var fzElm = _board.getCardSlot(_card.uuid);
                 if (!fzElm.length) {
                     return false;
                 }
@@ -912,6 +935,8 @@ class Card {
 
             case 'declare':
             case 'reveal':
+                var in_class = ( action == 'declare') ? 'animate__zoomInDown' : 'animate__jackInTheBox';
+                var out_class = 'animate__zoomOut';
                 // Show card in full screen;
                 var board = _card.getBoard();
                 var boardElm = board.getBoardElm();
@@ -921,8 +946,8 @@ class Card {
                     'class': 'lightbox-container',
                 });
                 lightbox.append(
-                    `<div class="card-lightbox-inner">
-                            <div class="image-cont animate__animated animate__jackInTheBox">
+                    `<div class="card-lightbox-inner lightbox-inner">
+                            <div class="image-cont animate__animated ${in_class}">
                                 <img src="${_card.imageURL}" data-width="481" data-height="701"  />
                             </div>
                         </div>`,
@@ -930,11 +955,12 @@ class Card {
                 boardElm.append(lightbox);
                 const waitTime = 1000;
                 setTimeout(function () {
-                    lightbox.removeClass('animate__animated animate__jackInTheBox').addClass(' animate__animated animate__zoomOut');
+                    lightbox.removeClass(`animate__animated ${in_class}`).addClass(` animate__animated ${out_class}`);
                     setTimeout(function () {
                         lightbox.remove();
                     }, duration);
                 }, duration + waitTime);
+                break;
 
 
             default:
@@ -1048,8 +1074,8 @@ class Collection {
         // Remove the event when click on card
         // this.menuElm.on('click', '.simulator-card img', function(){
         //     var _cardElm = $(this).closest('.simulator-card');
-        //     var _cardID = _cardElm.data('id');
-        //     var _card = _board.getItemById( _cardID );
+        //     var _uuid = _cardElm.data('id');
+        //     var _card = _board.getItemById( _uuid );
         //     _card.moveTo('hand');
         // } );
 
@@ -1182,12 +1208,12 @@ class Collection {
         // var shuffledArr = items.sort(() => Math.random() - 0.5);
         items.sort(() => Math.random() - 0.5);
         $.each(items, function (index, item) {
-            _board.updateItem(item.cardId, 'collection_order', index + 1);
+            _board.updateItem(item.uuid, 'collection_order', index + 1);
         });
         this.reDraw();
         items.forEach(function (item, index) {
             var itemdata = {};
-            $.each(['cardId', 'collection_order', 'order'], function (i, k) {
+            $.each(['uuid', 'collection_order', 'order'], function (i, k) {
                 itemdata[k] = item[k];
             });
             data.push(itemdata);
@@ -1203,9 +1229,27 @@ class Board {
         this.orgitems = data;
         var defaultOptions = {
             backImageSrc: 'back_card.png',
-            imgPath: 'asset/'
+            imgPath: 'asset/',
+            cardUUIdkey: 'uuid', // Define the field will be the UUID key of the card
         };
         this.options = $.extend(defaultOptions, options);
+        /**
+        DP (Draw Phase)
+        SP (Stand By)
+        M1 (Main Phase 1)
+        BP (Battle Phase)
+        M2 (Main Phase 2)
+        EP (End Phase)
+        */
+
+        this.phases = {
+            dp: 'Draw Phase',
+            sp: 'Stand By',
+            m1: 'Main Phase 1',
+            bp: 'Battle Phase',
+            m2: 'Main Phase 2',
+            ep: 'End Phase'
+        };
         this.init();
         this.deckToHand(5, 'top');
         this.version = '1.0';
@@ -1226,8 +1270,9 @@ class Board {
 
         this.cardMenuElm = $('#cardMenu');
         this.collectionMenuElm = $('#collectionMenu');
-
+        this.currentPhase = Object.keys(this.phases)[0];
         this.initItems(this.orgitems);
+        this.initPhase(this.currentPhase);
         this.initDeck();
         this.initExDeck();
         this.initGraveyard();
@@ -1270,6 +1315,10 @@ class Board {
                 _board.addItem(item);
             }
         });
+    }
+
+    initPhase(){
+        this.setPhase(this.currentPhase );
     }
     initDeck() {
         // this.deck = new Collection( this, 'deck', this.deckElm, this.deckMenuElm,this.options);
@@ -1327,6 +1376,7 @@ class Board {
     events() {
         this.removeHighlight();
         this.selectOrderEvent();
+        this.selectPhases();
 
         return true;
     }
@@ -1382,6 +1432,14 @@ class Board {
             }
         });
     }
+    selectPhases(){
+        var board = this;
+        this.elm.on('click', '.phase-btn', function (e) {
+            // var phase = $(this).data('phase');
+            var phase = $(this).val();
+            phase && board.phases[phase] && board.setPhase(phase);
+        });
+    }
     // END Events
     // Add, update, remove
     validateBeforeAddItem(item) {
@@ -1415,8 +1473,8 @@ class Board {
         // var shuffledArr = items.sort(() => Math.random() - 0.5);
         items.sort(() => Math.random() - 0.5);
         $.each(items, function (index, item) {
-            _board.updateItem(item.cardId, 'collection_order', index + 1);
-            _board.updateItem(item.cardId, 'order', index + 1);
+            _board.updateItem(item.uuid, 'collection_order', index + 1);
+            _board.updateItem(item.uuid, 'order', index + 1);
         });
         if (this.playlog) this.writelog('shuffle', undefined, { ...this.items });
     }
@@ -1592,6 +1650,22 @@ class Board {
     setWaitingActions(data) {
         this.waitingActions = data;
     }
+    setPhase(phase) {
+        if( phase && this.phases[phase] ){
+            
+            if( this.currentPhase != phase ){
+                // writelog(action, id, data, oldData)
+                this.writelog('update-phase', undefined, phase, this.currentPhase);
+            }
+            this.currentPhase = phase;
+            var boardElm = this.elm;
+            boardElm.find('.phase-btn').removeClass('current-phase');
+            boardElm.find('.phase-btn[value="' + phase + '"]').addClass('current-phase');
+            //show a popup text (phase full name) in middle of the screen in 1 or 0.5 second. (similar to declare effect)
+            this.doAnimation('enterPhase');
+            
+        }
+    }
     set(key, value) {
         this[key] = value;
     }
@@ -1661,7 +1735,7 @@ class Board {
 
     getItemById(id) {
         return this.items.filter(function (item) {
-            return item.cardId == id;
+            return item.uuid == id;
         })[0];
     }
     getCard(id) {
@@ -1747,9 +1821,9 @@ class Board {
     getWaitingActions() {
         return this.waitingActions || false;
     }
-    getCardSlot(cardId) {
+    getCardSlot(uuid) {
         var board = this;
-        var card = this.getItemById(cardId);
+        var card = this.getItemById(uuid);
 
         var order = card.get('collection_order');
         var position = card.get('position');
@@ -1843,12 +1917,48 @@ class Board {
 
         return this.elm.find('.' + position + '-slot.card-slot ' + moreClass);
     }
+    doAnimation(action, animation, duration, callback) {
+        var board = this;
+        duration = duration || 1000;
+
+        switch (action) {
+            case 'enterPhase':
+                // Show text in full screen;
+                var boardElm = board.getBoardElm();
+                boardElm.find('#card-lightbox').remove();
+                var lightbox = $('<div></div>', {
+                    'id': 'phase-lightbox',
+                    'class': 'lightbox-container',
+                });
+                lightbox.append(
+                    `<div class="phase-lightbox-inner lightbox-inner">
+                            <div class="image-cont animate__animated animate__zoomIn">
+                                <p class="phase-lightbox-text">${board.phases[board.currentPhase]}</p>
+                            </div>
+                        </div>`,
+                );
+                boardElm.append(lightbox);
+                const waitTime = 1000;
+                setTimeout(function () {
+                    lightbox.removeClass('animate__animated animate__zoomIn').addClass(' animate__animated animate__fadeOut');
+                    setTimeout(function () {
+                        lightbox.remove();
+                    }, duration);
+                }, duration + waitTime);
+                break;
+
+            default:
+                return false;
+        }
+        if (callback) callback();
+    }
 
     copyCardData(cards) {
         var items = [];
         $.each(cards, function (i, item) {
             // Copy the properties from the item to state
             items.push({
+                uuid: item.uuid,
                 cardId: item.cardId,
                 itemBefore: {},
                 isMonster: item.isMonster || false,
@@ -1986,6 +2096,22 @@ class Board {
 
 }
 
+function ygoUUID() { // Public Domain/MIT
+    let d = new Date().getTime();//Timestamp
+    let d2 = (performance && performance.now && (performance.now()*1000)) || 0; //Time in microseconds since page-load or 0 if unsupported
+    return 'xyxy-xxyy-0510-xyyy-xxxx'.replace(/[xy]/g, function(c) {
+      let r = Math.random() * 16; //random number between 0 and 16
+      if(d > 0){ //Use timestamp until depleted
+        r = (d + r)%16 | 0;
+        d = Math.floor(d/16);
+      } else {  //Use microseconds since page-load if supported
+        r = (d2 + r)%16 | 0;
+        d2 = Math.floor(d2/16);
+      }
+      return (c==='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+  }
+
 function parseDataFromOther(data) {
     var cards = [];
     var input = { ...data };
@@ -2004,6 +2130,7 @@ function parseDataFromOther(data) {
                 card[newKey] = card[key];
                 delete (card[key]);
             });
+            card.uuid = ygoUUID();
             // console.log(card, card.orgID);
             switch (card.type) {
                 case "Link Monster":
@@ -2018,7 +2145,7 @@ function parseDataFromOther(data) {
                 case "Synchro Pendulum Monster":
                 case "Synchro Pendulum Monster":
                     card.isMonster = true;
-                    card.isST = true;
+                    card.isST = false;
                     card.isSpell = false;
                     card.isTrap = false;
 
@@ -2057,7 +2184,7 @@ function parseDataFromOther(data) {
                 case "Spirit Monster":
                 case "Spirit Monster":
                     card.isMonster = true;
-                    card.isST = true;
+                    card.isST = false;
                     card.isSpell = false;
                     card.isTrap = false;
                     break;
