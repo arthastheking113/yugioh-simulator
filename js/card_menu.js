@@ -159,6 +159,8 @@ class CardMenu extends MenuBase {
                 'to-deck-top',
                 'to-summon-atk',
                 'to-summon-def',
+                'to-exdeck',
+                'to-exdeck-fu',
                 'to-graveyard',
                 'to-hand',
             ],
@@ -195,10 +197,13 @@ class CardMenu extends MenuBase {
                 'to-deck-top',
                 'to-summon-atk',
                 'to-summon-def',
+                'to-exdeck',
+                'to-exdeck-fu',
                 'to-banish',
                 'to-banish-fold',
                 'to-hand',
                 'to-graveyard',
+                'to-st', // st, atk, normal
 
             ],
             exdeck: [
@@ -226,6 +231,8 @@ class CardMenu extends MenuBase {
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
+                'to-deck-bottom',
+                'to-deck-top',
                 'set',
                 'to-graveyard',
             ],
@@ -242,6 +249,8 @@ class CardMenu extends MenuBase {
                 'to-hand',
                 'to-exdeck',
                 'to-exdeck-fu',
+                'to-deck-bottom',
+                'to-deck-top',
                 'to-graveyard',
                 'this-set',
                 'this-active',
@@ -254,7 +263,7 @@ class CardMenu extends MenuBase {
                 'to-graveyard',
                 'set',
                 'active',
-
+                'this-declare',
             ]
         }
 
