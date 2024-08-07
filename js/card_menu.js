@@ -264,7 +264,6 @@ class CardMenu extends MenuBase {
                 'set',
                 'active',
                 'this-declare',
-
             ]
         }
 

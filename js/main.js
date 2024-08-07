@@ -41,13 +41,14 @@ if (isDebug) {
 }
 $(document).ready(function () {
     toolsEvent();
-    setCardSize();
+    // setCardSize();
+    $('html').scrollTop( $('#playtest').offset().top - 20 );
 
 });
-$(window).resize(function () {
-    setCardSize();
+// $(window).resize(function () {
+//     setCardSize();
 
-});
+// });
 function sleep(ms, message) {
     if (message) console.log(message);
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -60,6 +61,6 @@ function setCardSize() {
     cardSlots.width(cardSlot.width());
 }
 var _clickCard = 0;
-$('body').on('click', '.card', function (event) {
+$('body').on('click', '.simulator-card', function (event) {
     _clickCard = $(this).data('id');
 });
