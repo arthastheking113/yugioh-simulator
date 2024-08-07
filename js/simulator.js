@@ -2145,7 +2145,7 @@ function parseDataFromOther(data) {
                 case "Synchro Pendulum Monster":
                 case "Synchro Pendulum Monster":
                     card.isMonster = true;
-                    card.isST = false;
+                    card.isST = true;
                     card.isSpell = false;
                     card.isTrap = false;
 
@@ -2184,7 +2184,7 @@ function parseDataFromOther(data) {
                 case "Spirit Monster":
                 case "Spirit Monster":
                     card.isMonster = true;
-                    card.isST = false;
+                    card.isST = true;
                     card.isSpell = false;
                     card.isTrap = false;
                     break;
