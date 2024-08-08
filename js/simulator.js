@@ -951,6 +951,7 @@ class Card {
             case 'target':
                 animation = animation || 'bounceIn';
                 animation = 'animate__animated animate__' + animation;
+                this.playSoundAnimation( action );
                 this.html.addClass(animation);
                 setTimeout(function () {
                     _card.html.removeClass(animation);
@@ -1731,9 +1732,22 @@ class Board {
             var boardElm = this.elm;
             boardElm.find('.phase-btn').removeClass('current-phase');
             boardElm.find('.phase-btn[value="' + phase + '"]').addClass('current-phase');
+
+            this.playSoundAnimation('phase');
             //show a popup text (phase full name) in middle of the screen in 1 or 0.5 second. (similar to declare effect)
             this.doAnimation('enterPhase');
             
+        }
+    }
+    playSoundAnimation( action, delay ){
+        var board = this.getBoard();
+        var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect' );
+        console.log( action, soundElm );
+        if( soundElm.length ){
+            delay = delay||100;
+            setTimeout( function(){
+                soundElm[0].play();
+            }, delay);
         }
     }
     setSkill(skill) {
