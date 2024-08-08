@@ -378,11 +378,12 @@
     gap: 10px;
 }
 
-#playtest .actions {
-    text-align: center;
-}
-#playtest .actions .input {
-    margin: 1rem;
+#playtest .actions .tools,
+#playtest .actions .action-btns {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 10px;
 }
 
 body .ui-dialog .menu-dialog {
@@ -466,6 +467,18 @@ body .ui-widget-overlay {
     .play-board .lightbox-container .lightbox-inner .phase-lightbox-text {
         font-size: 4rem;
     }
+}
+.play-board .lightbox-container .lightbox-inner .skill-lightbox-text {
+    font-size: 2rem;
+    font-weight: 600;
+}
+@media (min-width: 768px) {
+    .play-board .lightbox-container .lightbox-inner .skill-lightbox-text {
+        font-size: 2.5rem;
+    }
+}
+.play-board .lightbox-container .lightbox-inner .skill-lightbox-text .skill-name {
+    color: deepskyblue;
 }
 
 .move-container {
@@ -602,4 +615,9 @@ body .ui-widget-overlay {
     100% {
         background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
     }
+}
+:root {
+    --animate-duration: 0.5s;
+    --animate-delay: 0.5s;
+    --animate-repeat: 1 ;
 }

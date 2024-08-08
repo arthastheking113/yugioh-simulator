@@ -50,6 +50,7 @@
     <link rel="stylesheet" media="screen" href="css/theme.min.css?v=1.4" integrity="">
     <script src="js/iconify.min.js?v=1.0.7" integrity=""></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" integrity=""></script>
+    <link rel="stylesheet" href="css/animate.min.css?v=4.1.1" integrity="" />
     <link rel="stylesheet" href="css/theme.css?v=1.5" integrity="" />
     <link rel="stylesheet" href="css/tournamentStyle.css?v=1.4" integrity="" />
     <link rel="stylesheet" href="css/app.css" integrity="" />
@@ -95,11 +96,16 @@
                 aria-hidden='true'></i> Play Test Deck</a> -->
         <div id="playtest" class="play-board" x-title="Play test Alpha">
             <div class="game-board" id="game-board">
-                <div class="actions">
-                    <input type="button" value="Start Again" id="new">
-                    <!-- <input type="button" value="Rút bài" id="deal"> -->
-                    <!-- <input type="button" value="Xáo bài" id="shuffle"> -->
-                    <div class="tools">
+                <div class="game-resource hidden">
+                    <audio class="animation-sound declare-sound-effect" src="sound/declare-sound-effect.mp3"></audio>
+                </div>
+                <div class="row actions">
+                    <div class="col col12 action-btns">
+                        <input type="button" value="Start Again" id="new">
+                        <!-- <input type="button" value="Rút bài" id="deal"> -->
+                        <!-- <input type="button" value="Xáo bài" id="shuffle"> -->
+                    </div>
+                    <div class="tools col col-12">
                         <img src="asset/coin.png" alt="" class="coin">
                         <img src="asset/dice.png" alt="" class="dice">
                         <div style="display:inline-block; width: 80px;">
@@ -333,7 +339,6 @@
     <script src="js/theme.js" integrity=""></script>
 
     <script src="js/removeBackDrop.js" integrity=""></script>
-    <link rel="stylesheet" href="css/animate.min.css?v=4.1.1" integrity="" />
 
 
 </body>
