@@ -469,10 +469,12 @@ $white-color: #efefef;
 }
 
 #playtest .actions {
-    text-align: center;
-
-    .input {
-        margin: 1rem;
+    .tools,
+    .action-btns{
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 10px;
     }
 }
 
@@ -572,6 +574,18 @@ body {
 
                 @media (min-width: 768px){
                     font-size: 4rem;
+                }
+            }
+            .skill-lightbox-text{
+                font-size: 2rem;
+                font-weight: 600;
+
+                @media (min-width: 768px){
+                    font-size: 2.5rem;
+                }
+
+                .skill-name{
+                    color: deepskyblue;
                 }
             }
         }
@@ -804,4 +818,9 @@ body {
     100% {
         background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
     }
+}
+:root {
+    --animate-duration: 0.5s;
+    --animate-delay: 0.5s;
+    --animate-repeat: 1
 }

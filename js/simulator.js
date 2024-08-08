@@ -113,7 +113,11 @@ class PlayLog {
                 this.isStarted = true;
                 this.steps = [];
                 var initData = board.copyCardData(data);
-                data = initData;
+                data = {
+                    items: initData,
+                    currentPhase: board.currentPhase,
+                    skill: board.skill,
+                };
                 break;
 
             case 'stopRecord':
@@ -179,7 +183,13 @@ class PlayLog {
 
             case 'update-phase':
                 var phase = data;
-                message += `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Enter ${board.phases[phase]}</span> </p>`;
+                message += `<p class="log-step"> <span class="new-state"> Enter ${board.phases[phase]}</span> </p>`;
+                uuid = undefined;
+                break;
+
+            case 'active-skill':
+                var skill = board.getActiveSkill();
+                message += `<p class="log-step"> <span class="new-state"> Activate ${skill}</span> </p>`;
                 uuid = undefined;
                 break;
         }
@@ -190,7 +200,7 @@ class PlayLog {
         //         action: 'update-phase',
         //         uuid: undefined,
         //         data: board.currentPhase,
-        //         message: `<p class="log-step" data-shuffle="yes"> <span class="new-state"> Enter ${board.phases[board.currentPhase]}</span> </p>`;,
+        //         message: `<p class="log-step"> <span class="new-state"> Enter ${board.phases[board.currentPhase]}</span> </p>`;,
         //     });
         // }
 
@@ -228,8 +238,11 @@ class PlayLog {
     // replay
     replay() {
         playLog = this;
+        var board = this.getBoard();
+        board.beforeReplay();
         if (!this.hasRecord()) {
             this.writeStep(`<p class="highlight-log">No Records found</p>`);
+            this.stopReplay();
             return false;
         }
 
@@ -339,11 +352,15 @@ class PlayLog {
                 break;
 
             case 'startRecord':
-                initData = { ...data };
+                var initData = { ...data.items };
+                var phase = data.currentPhase;
+                var skill = data.skill;
                 this.messageElm.empty();
                 board.emptyBoard();
                 sleep(2000, 'wait 2s');
                 initData && board.setItems(initData);
+                board.setPhase(phase);
+                board.setSkill(skill);
                 log.writeStep(`<p class="highlight-log">START REPLAY</p>`);
                 log.writeStep(step.message || `Initialized board`);
                 // debugger;
@@ -357,6 +374,12 @@ class PlayLog {
                 var phase = data;
                 log.writeStep(step.message || ``);
                 board.setPhase( phase );
+                break;
+                break;
+
+            case 'active-skill':
+                log.writeStep(step.message || ``);
+                board.activateSkill( );
                 break;
         }
 
@@ -404,6 +427,8 @@ class PlayLog {
 
         playLog.elm.find('.pause-button').addClass('hidden');
         playLog.elm.find('.resume-button').addClass('hidden');
+        var board = this.getBoard();
+        board.afterReplay();
     }
     pauseReplay() {
         if (this.isRePlaying) {
@@ -953,6 +978,7 @@ class Card {
                         </div>`,
                 );
                 boardElm.append(lightbox);
+                this.playSoundAnimation( action );
                 const waitTime = 1000;
                 setTimeout(function () {
                     lightbox.removeClass(`animate__animated ${in_class}`).addClass(` animate__animated ${out_class}`);
@@ -967,6 +993,18 @@ class Card {
                 return false;
         }
         if (callback) callback();
+    }
+
+    playSoundAnimation( action, delay ){
+        var board = this.getBoard();
+        var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect' );
+        console.log( action, soundElm );
+        if( soundElm.length ){
+            delay = delay||100;
+            setTimeout( function(){
+                soundElm[0].play();
+            }, delay);
+        }
     }
     startMoveAnimation() {
         var card = this;
@@ -1231,6 +1269,7 @@ class Board {
             backImageSrc: 'back_card.png',
             imgPath: 'asset/',
             cardUUIdkey: 'uuid', // Define the field will be the UUID key of the card
+            defaultPhase: 'm1'
         };
         this.options = $.extend(defaultOptions, options);
         /**
@@ -1270,7 +1309,7 @@ class Board {
 
         this.cardMenuElm = $('#cardMenu');
         this.collectionMenuElm = $('#collectionMenu');
-        this.currentPhase = Object.keys(this.phases)[0];
+        this.currentPhase = this.options.defaultPhase||'m1';
         this.initItems(this.orgitems);
         this.initPhase(this.currentPhase);
         this.initDeck();
@@ -1279,8 +1318,7 @@ class Board {
         this.initBanish();
 
         this.initMenus();
-
-
+        this.initSkill();
 
         this.shuffleCards();
         this.events();
@@ -1371,13 +1409,29 @@ class Board {
         this.cardMenu = new CardMenu(this.cardMenuElm);
         this.collectionMenu = new CollectionMenu(this.collectionMenuElm);
     }
+    initSkill() {
+        var board = this;
+        board.skill = {
+            activated: false,
+            name: (board.skill && board.skill.name) || ( board.options.skill ||"" )
+        };
+        if (board.skill.name ) {
+            board.skillBtn = $('<input>', {
+                value: `Activate ${board.skill.name}`,
+                type: 'button',
+                class: 'skill-btn'
+            });
+            board.elm.find('.actions').find('.skill-btn').remove();
+            board.elm.find('.actions').find('.action-btns').append(board.skillBtn);
+        }
+    }
 
     // START Events
     events() {
         this.removeHighlight();
         this.selectOrderEvent();
         this.selectPhases();
-
+        this.skillEvents();
         return true;
     }
     removeHighlight() {
@@ -1439,6 +1493,19 @@ class Board {
             var phase = $(this).val();
             phase && board.phases[phase] && board.setPhase(phase);
         });
+    }
+    skillEvents(){
+        var board = this;
+        board.skillBtn && board.skillBtn.on('click', function () {
+            board.activateSkill();
+        });
+    }
+    beforeReplay(){
+        this.skillBtn.fadeOut();
+    }
+    afterReplay(){
+        this.skillBtn.fadeIn();
+
     }
     // END Events
     // Add, update, remove
@@ -1651,6 +1718,9 @@ class Board {
         this.waitingActions = data;
     }
     setPhase(phase) {
+        if( !(phase && this.phases[phase] ) ) {
+            phase = 'm1';
+        }
         if( phase && this.phases[phase] ){
             
             if( this.currentPhase != phase ){
@@ -1666,6 +1736,21 @@ class Board {
             
         }
     }
+    setSkill(skill) {
+        var board = this;
+        var defaultSkill = {
+            name: '',
+            activated: false,
+        };
+        board.skill = $.extend(defaultSkill, skill);
+        board.options.skill = board.skill.name;
+        board.skillBtn.val("Activate " + board.skill.name);
+    }
+    activateSkill(){
+        this.skill.activated = true;
+        this.writelog('active-skill');
+        this.doAnimation('activateSkill');
+    }
     set(key, value) {
         this[key] = value;
     }
@@ -1678,6 +1763,9 @@ class Board {
             }
         });
         return _free;
+    }
+    getActiveSkill(){
+        return this.skill.activated && this.skill.name;
     }
 
     // Check SS / ST board free only one slot
@@ -1919,8 +2007,8 @@ class Board {
     }
     doAnimation(action, animation, duration, callback) {
         var board = this;
-        duration = duration || 1000;
-
+        duration = duration || 500;
+        var waitTime = 500;
         switch (action) {
             case 'enterPhase':
                 // Show text in full screen;
@@ -1938,7 +2026,6 @@ class Board {
                         </div>`,
                 );
                 boardElm.append(lightbox);
-                const waitTime = 1000;
                 setTimeout(function () {
                     lightbox.removeClass('animate__animated animate__zoomIn').addClass(' animate__animated animate__fadeOut');
                     setTimeout(function () {
@@ -1946,6 +2033,35 @@ class Board {
                     }, duration);
                 }, duration + waitTime);
                 break;
+
+            case 'activateSkill':
+                // Show text in full screen;
+                var boardElm = board.getBoardElm();
+                boardElm.find('#card-lightbox').remove();
+                var skillLightbox = $('<div></div>', {
+                    'id': 'skill-lightbox',
+                    'class': 'lightbox-container',
+                });
+                skillLightbox.append(
+                    `<div class="skill-lightbox-inner lightbox-inner">
+                            <div class="image-cont animate__animated animate__zoomIn">
+                                <p class="skill-lightbox-text">
+                                    Activate 
+                                    <span class="skill-name">${board.skill.name}</span>
+                                </p>
+                            </div>
+                        </div>`,
+                );
+                boardElm.append(skillLightbox);
+                setTimeout(function () {
+                    skillLightbox.removeClass('animate__animated animate__zoomIn').addClass(' animate__animated animate__fadeOut');
+                    setTimeout(function () {
+                        skillLightbox.remove();
+                    }, duration);
+                }, duration + waitTime);
+                break;
+
+
 
             default:
                 return false;
@@ -2020,7 +2136,9 @@ class Board {
             items: items,
             version: board.version,
             playLogData: playLogData,
-        }
+            currentPhase: board.currentPhase,
+            skill: board.skill,
+        };
         type = (type || 'array').toLowerCase();
         switch (type) {
             case 'json':
@@ -2041,6 +2159,8 @@ class Board {
         var data = board.checkData(state);
         var items = board.parseDataFromState(data);
         board.setItems(items);
+        board.setPhase(state.currentPhase);
+        board.setSkill(state.skill);
         var playLog = board.get('playlog');
         if ('playLogData' in state) {
             for (const [key, value] of Object.entries(state.playLogData)) {
@@ -2096,7 +2216,7 @@ class Board {
 
 }
 
-function ygoUUID() { // Public Domain/MIT
+function ygoUUID() {
     let d = new Date().getTime();//Timestamp
     let d2 = (performance && performance.now && (performance.now()*1000)) || 0; //Time in microseconds since page-load or 0 if unsupported
     return 'xyxy-xxyy-0510-xyyy-xxxx'.replace(/[xy]/g, function(c) {
@@ -2226,13 +2346,14 @@ $(document).ready(function () {
     $.getJSON(jsonUrl, function (data) {
         // Biến data chứa dữ liệu JSON được trả về từ URL
         // Bạn có thể làm gì đó với dữ liệu này ở đây
-        const cards = data;
-        var data = parseDataFromOther(cards);
+        const json = data;
+        var data = parseDataFromOther(json);
         if (!data) {
             wv_showError('Wrong data');
         }
         board = new Board($('#playtest'), data, {
             isDebug: isDebug,
+            skill: json.skill||"",
         });
     }).fail(function () {
         wv_showError('Get JSON data failed');
