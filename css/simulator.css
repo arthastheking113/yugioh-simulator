@@ -279,6 +279,15 @@
     height: 102px;
     background-color: transparent;
     perspective: 1000px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    /* background-color: #001528; */
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.085);
+    border-radius: 0.4375rem;
     /* Animation */
     /* END Animation */
 }
