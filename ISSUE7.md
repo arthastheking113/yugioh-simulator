@@ -104,3 +104,17 @@
 - When Overlay card send `To Grave`/`To Deck`/`Banish`/`To Ex Deck`/`To Hand` (all other zones):
     - Send the top card to that zone.
     - Send all cards under it `To Grave`
+
+
+## 6. User Chat Input
+
+- User want to manually add custom log
+- Add a chat input under logs
+- Ex: ![image info](./issue/chat.PNG)
+- When user enter chat:
+    - Add to Log
+    - When Recording combo:
+        - Save user chat to log
+
+- When playing combo contain user chat:
+    - Show user chat in log in the same order.
