@@ -819,6 +819,16 @@ body {
         background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
     }
 }
+
+.simulator-water-mark p {
+    position: absolute;
+    bottom: -10px; /* or whatever */
+    right: 8px; /* or whatever, position according to taste */
+    opacity: 0.5; /* Firefox, Chrome, Safari, Opera, IE >= 9 (preview) */
+    filter: alpha(opacity=50); /* for <= IE 8 */
+    font-size: small;
+}
+
 :root {
     --animate-duration: 0.5s;
     --animate-delay: 0.5s;
