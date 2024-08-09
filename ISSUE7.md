@@ -118,3 +118,15 @@
 
 - When playing combo contain user chat:
     - Show user chat in log in the same order.
+
+## 7. Make Field Zone menu same as ST Menu
+
+- Currently, menu of a card in Field Zone is different than ST zone.
+
+- Field Zone need to function same as ST zone.
+
+- Current Field Zone Menu:
+- ![image info](./issue/menu-1.PNG)
+
+- Current ST Zone:
+- ![image info](./issue/menu-2.PNG)
