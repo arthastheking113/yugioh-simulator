@@ -218,6 +218,7 @@ class CardMenu extends MenuBase {
                 'to-graveyard',
             ],
             summon: [
+                'overlay',
                 'this-declare',
                 'detact',
                 'move',
@@ -235,6 +236,10 @@ class CardMenu extends MenuBase {
                 'to-deck-top',
                 'set',
                 'to-graveyard',
+            ],
+            overlap: [
+                'detach',
+                'banish-fu'
             ],
             st: [
                 'this-declare',
@@ -257,13 +262,24 @@ class CardMenu extends MenuBase {
 
             ],
             'fz': [ // Field zone 
-                'move',
-                'to-hand',
-                'this-target',
-                'to-graveyard',
-                'set',
-                'active',
                 'this-declare',
+                'detact',
+                'move',
+                'this-target',
+                'to-banish',
+                'to-banish-fold',
+                'to-summon-atk',
+                'to-summon-def',
+                'this-flip',
+                'to-hand',
+                'to-exdeck',
+                'to-exdeck-fu',
+                'to-deck-bottom',
+                'to-deck-top',
+                'to-graveyard',
+                'this-set',
+                'this-active',
+
             ]
         }
 
@@ -304,12 +320,15 @@ class CardMenu extends MenuBase {
         return this.card;
     }
     updateMenu() {
-
-        var card = this.getCard();
-        var ul = this.element.find('ul');
+        var menu = this;
+        var card = menu.getCard();
+        var ul = menu.element.find('ul');
         ul.find('li a').hide();
         var pos = card.position;
-        var list = this.menuList[pos];
+        var list = menu.menuList[pos];
+        if( card.isOverlap ) {
+            list = menu.menuList['overlap'];
+        }
 
         if (list) {
             for (var i = 0; i < list.length; i++) {
@@ -349,6 +368,20 @@ class CardMenu extends MenuBase {
                     menuElm.hide();
                 }
             }
+            if( menu_tag.id == 'overlay' && card.position == 'summon' ) {
+                if( menu.checkOverlayMenu(card) ) {
+                    menuElm.show();
+                } else {
+                    menuElm.hide();
+                }
+                if( card.isOverlay ){
+                    menuElm.hide();
+                }
+            }
+            if( ( menu_tag.id == 'this-atk' && card.switchState == 'attack' ) 
+             || ( menu_tag.id == 'this-def' && card.switchState == 'defense' ) ) {
+                menuElm.hide();
+            }
 
         });
         if (this.isSmallScreen()) {
@@ -356,8 +389,11 @@ class CardMenu extends MenuBase {
         } else {
             ul.find('li #this-view').hide();
         }
+        
 
-
+    }
+    checkOverlayMenu( card ){
+        return card.canDoOverlay( );
     }
 
     updateMenuOLD() {
@@ -447,10 +483,10 @@ class CardMenu extends MenuBase {
                 </a>
             </li>
 
-        <!-- 'detack' -->
+        <!-- 'detach' -->
             <li class="menuItem">
-                <a href="javascript:void(0)" id="detack" data-target="graveyard,atk">
-                    Detack
+                <a href="javascript:void(0)" id="detach" data-target="detach">
+                    Detach
                 </a>
             </li>
 
@@ -460,6 +496,16 @@ class CardMenu extends MenuBase {
                     To hand
                 </a>
             </li>
+
+        <!-- 'overlay' -->
+            
+            <li class="menuItem">
+                <a href="javascript:void(0)" id="overlay" data-target="overlay">
+                    Overlay
+                </a>
+            </li>
+
+        <!-- 'this-reveal' -->
 
         <!-- 'this-declare' -->
             
@@ -484,6 +530,35 @@ class CardMenu extends MenuBase {
                     Banish
                 </a>
             </li>
+        <!-- overlap menu 'detach', 'banish-fu' -->
+        <!-- 'detach' -->
+
+            <li class="menuItem">
+                <a href="javascript:void(0)" id="detach" data-target="detach">
+                    Detach
+                </a>
+            </li>
+
+        <!-- 'banish-fu' -->
+
+            <li class="menuItem">
+                <a href="javascript:void(0)" id="banish-fu" data-target="banish-fu">
+                    Banish FU
+                </a>
+            </li>
+
+        <!-- 'to-ss-fd' -->
+
+            <li class="menuItem">
+                <a href="javascript:void(0)" id="to-ss-fd" data-target="summon,fd,normal">
+                    SS FD
+                </a>
+            </li>
+
+        <!-- 'to-ss-def' -->
+
+            <li class="menuItem">
+                <a href="javascript:void(0)" id="to-ss-def" data-
 
         <!-- 'to-banish-fold' -->
             <li class="menuItem">
@@ -582,10 +657,27 @@ class CardMenu extends MenuBase {
             var card = menu.getCard();
             var board = card.getBoard();
             var target = $(this).data('target');
-            console.log(target);
+            
+            // Clear waiting actions 
+            board.setWaitingActions(null);
+            board.setWaitingOverlay(null);
             if (target == 'this,view') {
                 // Not a play step 
                 menu.cardInformationsPopup();
+            }
+
+            switch( target ) {
+                case 'overlay':
+                    return board.startDoOverlay( card );
+                    break;
+
+                case 'detach':
+                    return card.detachOverlap();
+                    break;
+                case 'banish-fu':
+                    return card.goBanishOverlap( card );
+                    break;
+            
             }
 
             target = target.split(',');
@@ -612,7 +704,6 @@ class CardMenu extends MenuBase {
             if (newPosition == 'this' && newState == 'move') {
                 order = false;
                 var free = board.isSS_STFreeOne(card);
-                // cần thêm 1 position tên là 'fz'
                 if (free) {
                     order = free.data('order');
                     newPosition = free.data('position');
