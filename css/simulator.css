@@ -235,6 +235,15 @@
     width: 100%;
     height: 100%;
     z-index: 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    /* background-color: #001528; */
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.085);
+    border-radius: 0.4375rem;
 }
 #playtest .card-slot-row .holder-slot .description,
 #playtest .card-slot-row .holder-slot .collection-count {
@@ -257,12 +266,87 @@
 #playtest .card-slot-row .holder-slot.desk {
     height: 200px;
 }
-#playtest .card-slot-row .holder-slot.card-slot.highlight {
+#playtest .card-slot-row .holder-slot.card-slot.overlay-highlight, #playtest .card-slot-row .holder-slot.card-slot.highlight {
     background-image: linear-gradient(90deg, silver 50%, transparent 50%), linear-gradient(90deg, silver 50%, transparent 50%), linear-gradient(0deg, silver 50%, transparent 50%), linear-gradient(0deg, silver 50%, transparent 50%);
     background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
     background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
     background-position: left top, right bottom, left bottom, right top;
     animation: border-dance 0.4s infinite linear;
+}
+#playtest .card-slot-row .holder-slot.waiting-overlay, #playtest .card-slot-row .holder-slot.waiting-overlay .simulator-card {
+    cursor: url("/asset/icon/pointer_overlay.png"), auto;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card {
+    position: absolute;
+    top: 0;
+    left: 0px;
+    transition: 0.2s ease;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card + .simulator-card {
+    left: -14px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(2) {
+    left: -4px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(3) {
+    left: 2px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(4) {
+    left: 6px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(5) {
+    left: 8px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(6) {
+    left: 8px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(7) {
+    left: 6px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(8) {
+    left: 2px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(9) {
+    left: -4px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(10) {
+    left: -12px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(11) {
+    left: -22px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(12) {
+    left: -34px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(13) {
+    left: -48px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(14) {
+    left: -64px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(15) {
+    left: -82px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(16) {
+    left: -102px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(17) {
+    left: -124px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(18) {
+    left: -148px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(19) {
+    left: -174px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card:nth-last-child(20) {
+    left: -202px;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card.defense {
+    left: 0;
+}
+#playtest .card-slot-row .holder-slot.overlay-slot .simulator-card.overlap:hover {
+    margin-top: -15px;
 }
 @media (max-width: 767px) {
     #playtest .card-slot-row .holder-slot .collection-count {
@@ -279,15 +363,6 @@
     height: 102px;
     background-color: transparent;
     perspective: 1000px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    word-wrap: break-word;
-    /* background-color: #001528; */
-    background-clip: border-box;
-    border: 1px solid rgba(0, 0, 0, 0.085);
-    border-radius: 0.4375rem;
     /* Animation */
     /* END Animation */
 }
@@ -625,7 +700,6 @@ body .ui-widget-overlay {
         background-position: left 15px top, right 15px bottom, left bottom 15px, right top 15px;
     }
 }
-
 .simulator-water-mark p {
     position: absolute;
     bottom: -10px; /* or whatever */

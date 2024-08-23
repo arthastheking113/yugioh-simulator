@@ -158,6 +158,15 @@ class PlayLog {
                 });
                 break;
 
+            case 'overlay':
+                message += `<p class="log-step"> Overlay card <span class="log-card-name" data-id="${card.uuid}" data-order="${data.order}">${card.name}</span></p>`;
+                break;
+            
+            case 'detach':
+                message += `<p class="log-step"> Detach card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
+                break;
+    
+
             case 'target':
                 message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
                 break;
@@ -351,6 +360,16 @@ class PlayLog {
 
                 break;
 
+            case 'overlay':
+                log.writeStep(step.message || ``);
+                board.overlayCard(card.uuid, data.order);
+                break;
+            
+            case 'detach':
+                log.writeStep(step.message || ``);
+                card.detachOverlap();
+                break;
+
             case 'startRecord':
                 var initData = { ...data.items };
                 var phase = data.currentPhase;
@@ -374,7 +393,6 @@ class PlayLog {
                 var phase = data;
                 log.writeStep(step.message || ``);
                 board.setPhase( phase );
-                break;
                 break;
 
             case 'active-skill':
@@ -564,14 +582,14 @@ class Card {
         newState = newState || 'normal'; // normal / fold 
 
         //1 
-        return true;
+        return this.foldState != newState;
     }
 
     canSwitch(newState) {
         newState = newState || 'attack'; // attack / defense
 
-        //1 
-        return true;
+        
+        return this.switchState != newState;
     }
 
     getNewOffset() {
@@ -601,7 +619,7 @@ class Card {
     }
 
     // Biến order chỉ dùng cho summon và ST / FZ
-    moveTo(newPosition, isTop, order, animation, duration) {
+    moveTo(newPosition, isTop, order, fireEvent = true) {
         if (!['hand', 'deck', 'exdeck', 'graveyard', 'summon', 'st', 'banish', 'fz'].includes(newPosition)) return false;
 
         var _card = this;
@@ -609,6 +627,7 @@ class Card {
         var result = false;
         if (typeof isTop == 'undefined') isTop = true;
         var oldPosition = _card.position;
+        var isOverlay = _card.isOverlay||false;;
         if (!_card.beforeMove(newPosition)) return false;
 
         //1
@@ -689,13 +708,19 @@ class Card {
         if (willRemove.length) {
             willRemove.remove();
         }
-        _card.afterMove(newPosition);
+        fireEvent && _card.afterMove(newPosition);
         setTimeout(function () {
             _card.moveAnimation(moveContainer);
             setTimeout(function () {
                 _card.endBoardAnimation(moveContainer);
                 _card.appendToBoard(); // End animation of the card
             }, 400);
+
+            if( isOverlay ) {
+                _card.isOverlay = false;
+                _card.detachAllOverlap();
+                board.checkOverlaySlot( _card.collection_order );
+            }
         }, 5);
         return result;
     }
@@ -704,7 +729,7 @@ class Card {
     fold(newState, animation, duration) {
         if (!['normal', 'fold'].includes(newState)) return false;
         var result = false;
-        if (this.canFlip(newState) && this.foldState != newState) {
+        if (this.canFlip(newState)) {
 
             if (animation) this.doAnimation(newState, animation, duration);
             var oldFlipState = this.foldState;
@@ -757,6 +782,25 @@ class Card {
         }
 
         return result;
+    }
+    setDataOverlap( new_order ) {
+        var card = this;
+        card.isOverlap = true;
+        card.isOverlay = false;
+        card.overlap_order = new_order;
+        card.switchState = 'attack';
+        card.foldState = 'normal';
+        card.updateHtml();
+    }
+
+    setDataOverlay( new_order ) {
+        var card = this;
+        card.isOverlap = false;
+        card.isOverlay = true;
+        card.overlap_order = new_order;
+        // card.switchState = 'attack';
+        card.foldState = 'normal';
+        card.updateHtml();
     }
     target() {
         this.doAnimation('target');
@@ -853,11 +897,20 @@ class Card {
             'switchState',
             'position',
         ];
-        cardElement.removeClass('normal fold attack defense deck exdeck graveyard banish summon st hand fz');
+        cardElement.removeClass('normal fold attack defense deck exdeck graveyard banish summon st hand fz overlay overlap');
         states.forEach(function (stateName) {
             if (_card[stateName]) {
                 cardElement.addClass(_card[stateName]);
                 cardElement.data(stateName, _card[stateName]);
+            }
+        });
+        var overlaps = {
+            'isOverlay': 'overlay',
+            'isOverlap': 'overlap'
+        };
+        Object.entries(overlaps).forEach( function([stateName, className]) {
+            if (_card[stateName]) {
+                cardElement.addClass(className);
             }
         });
 
@@ -1074,6 +1127,52 @@ class Card {
         this.html.css('visibility', 'visible');
         moveContainer && moveContainer.remove();
     }
+
+    /* The functions for Overlay feature */
+    canDoOverlay(){
+        var card = this;
+        var board = card.getBoard();
+
+        if( card.position != 'summon' ) return false;
+        if( board.canDoOverlay(card) ) return true;
+
+        return false;
+
+    }
+
+    detachAllOverlap(){
+        var card = this; // overlay card
+        var board = card.getBoard();
+        var order = card.itemBefore.collection_order;
+        // console.log( order );
+        var overlapCards = board.getItemsByOrder( order );
+        if( overlapCards.length ) {
+            overlapCards.forEach(function(overlapCard){
+                overlapCard.detachOverlap();
+            });
+        }
+        return true;
+    }
+
+    detachOverlap(){
+        // target = 'graveyard,atk';
+        var card = this;
+        var board = card.getBoard();
+        board.updateCardbyAction(card, 'graveyard', '', '', '', false);
+        board.writelog('detach', card.uuid);
+        board.checkOverlaySlot( card.itemBefore.collection_order );
+        return true;
+
+    }
+    goBanishOverlap(){
+        var card = this;
+        var board = card.getBoard();
+        board.updateCardbyAction(card, 'banish', '', '', '');
+        board.checkOverlaySlot( card.itemBefore.collection_order );
+        return true;
+    }
+
+    /* END The functions for Overlay feature */
 }
 
 // Desk, ExDeck, Graveyar, Banish
@@ -1339,6 +1438,7 @@ class Board {
         var board = this;
         this.items = [];
         this.elm.find('.simulator-card').remove();
+        this.elm.find('.card-slot').removeClass('overlay-slot');
         $.each(['deckMenuElm', 'exDeckMenuElm', 'graveyardMenuElm', 'banishMenuElm', 'cardMenuElm', 'collectionMenuElm'], function (index, elm) {
             board[elm].find('.collection-container').empty();
         });
@@ -1429,11 +1529,60 @@ class Board {
 
     // START Events
     events() {
+        this.removeOverlayHighlight();
+        this.selectOverlayEvent();
         this.removeHighlight();
         this.selectOrderEvent();
         this.selectPhases();
         this.skillEvents();
         return true;
+    }
+    removeOverlayHighlight() {
+        var board = this;
+        board.elm.on('click', function (e) {
+            var willRemove = false;
+            var _elm = $(e.target);
+            if (_elm.closest('.ui-dialog').length) {
+                return;
+            }
+            if (_elm.closest('.card-slot.highlight').length) {
+                return;
+            }
+            if (_elm.closest('.ui-dialog').length) {
+                return;
+            }
+            willRemove = true;
+
+            var highlightElms = board.elm.find('.card-slot.overlay-highlight');
+            if (highlightElms) {
+                $.each(highlightElms, function (index, highlight) {
+                    // console.warn('remove highlighting' + this.classes)
+                    $(highlight).removeClass('waiting-overlay overlay-highlight'); 
+                });
+                board.setWaitingActions(false);
+            }
+        });
+    }
+    selectOverlayEvent() {
+        var board = this;
+        this.elm.on('click', '.waiting-overlay', function (e) {
+            var _this = $(this);
+            var order = _this.data('order');
+            var getWaitingOverlay = board.getWaitingOverlay();
+            var card = getWaitingOverlay.card;
+            if (order) { 
+                board.overlayCard( card.uuid, order );
+                if (this.playlog)  this.writelog('overlay', card.uuid, {order: order, position: newPosition});
+            }
+            var highlightElms = board.elm.find('.card-slot.overlay-highlight');
+            if (highlightElms) {
+                $.each(highlightElms, function (index, highlight) {
+                    // console.warn('remove highlighting' + this.classes)
+                    $(highlight).removeClass('waiting-overlay overlay-highlight'); 
+                });
+                board.setWaitingActions(false);
+            }
+        });
     }
     removeHighlight() {
         var board = this;
@@ -1576,11 +1725,23 @@ class Board {
         var items = this.items.filter(function (item) {
             return item.position == position;
         });
+        
         items.sort(function (a, b) {
             return a.collection_order > b.collection_order ? 1 : -1;
         });
-        items.forEach(function (item, index) {
-            item.collection_order = index + 1;
+        if (! ['summon', 'st', 'fz'].includes(position)) {
+            items.forEach(function (item, index) {
+                item.collection_order = index + 1;
+            });
+        }
+        return items;
+    }
+    getItemsByOrder( order ) {
+        var items = this.items.filter(function (item) {
+            return item.collection_order == order;
+        });
+        items.sort(function (a, b) {
+            return ( (a.overlap_order||1 ) > (b.overlap_order||1) ) ? 1 : -1;
         });
         return items;
     }
@@ -1650,6 +1811,7 @@ class Board {
         this.writelog('startRecord', undefined, { ... this.getItems() }, {});
     }
     writelog(action, id, data, oldData) {
+        // console.warn('writelog', action, id, data, oldData);
         return this.playlog.addStep(action, id, data, oldData || {});
     }
     stopLog() {
@@ -1658,7 +1820,7 @@ class Board {
     }
 
     // this is private function. do not call from outside
-    updateCardbyAction(card, newPosition, order, newState, isFD) {
+    updateCardbyAction(card, newPosition, order, newState, isFD, fireEvent = true) {
         var isTop = true;
         if (newState) {
             switch (newState) {
@@ -1711,12 +1873,16 @@ class Board {
             }
         }
         if (newPosition != 'this') {
-            card.moveTo(newPosition, isTop, order);
+            card.moveTo(newPosition, isTop, order, fireEvent);
         }
         return true;
     }
     setWaitingActions(data) {
+        var board = this;
         this.waitingActions = data;
+        if( ! data ){
+            board.elm.find('.card-slot.highlight').removeClass('highlight');
+        }
     }
     setPhase(phase) {
         if( !(phase && this.phases[phase] ) ) {
@@ -2105,6 +2271,10 @@ class Board {
                 switchState: item.switchState,
                 imageURL: item.imageURL,
                 description: item.description,
+                isOverlap: item.isOverlap||0,
+                isOverlay: item.isOverlay||0,
+                overlap_order: item.overlap_order||0,
+                
             });
         });
 
@@ -2131,6 +2301,125 @@ class Board {
             return new_obj;
         }
     }
+
+    /**
+     * The functions for Overlay feature
+     * the events were defined in the events group
+     * selectOverlayEvent
+     * removeOverlayHighlight
+     */
+
+    /**
+     * 
+     * @param {Card} card the card to overlay
+     */
+    canDoOverlay( card ){
+        if( card.isOverlay || card.isOverlap ) return false;
+        var board = this;
+        var card_order = card.collection_order;
+        var canBeOverlayCards = board.canBeOverlayCards(card_order);
+        return canBeOverlayCards.length;
+
+    }
+    // Only overlay on summon
+    canBeOverlayCards( exclude ){
+        var board = this;
+        var canbeOverlayCards = board.getSummonItems().filter(function( card ) { 
+            return ( card.collection_order != exclude ) && ( !(card.collection_order.includes('ex')) );
+        });
+        return canbeOverlayCards;
+    }
+    
+    setWaitingOverlay(data) {
+        this.waitingOverlay = data;
+        var board = this;
+        this.waitingActions = data;
+        if( ! data ){
+            board.elm.find('.card-slot.highlight').removeClass('highlight');
+        }
+    }
+    getWaitingOverlay() {
+        return this.waitingOverlay || false;
+    }
+
+    // Chưa làm: nếu chỉ có 1 slot canBeOverlayCards thì đè luôn khỏi chờ
+    selectOverlay() {
+        var waitingOverlay = this.getWaitingOverlay();
+        var card = waitingOverlay.card;
+        var canBeOverlayCards = waitingOverlay.canBeOverlayCards;
+        canBeOverlayCards.forEach( _overlaycard => {
+            var slot = _overlaycard.html.closest('.card-slot');
+            slot.addClass('waiting-overlay overlay-highlight');
+        });
+    }
+
+    startDoOverlay( card ){
+        var board = this;
+        var card_order = card.collection_order;
+        var canBeOverlayCards = board.canBeOverlayCards(card_order);
+        if( canBeOverlayCards.length ){
+            board.setWaitingOverlay({
+                card: card,
+                canBeOverlayCards: canBeOverlayCards,
+            });
+            board.selectOverlay();
+        }
+
+        return false;
+    }
+
+    overlayCard( card_uuid, order ){
+        var card = this.getCard(card_uuid);
+        var position = 'summon';
+        var slot = board.getCardHolder(position).filter( function( index, cslot ){
+            return $(cslot).data('order') == order;
+        });
+        this._updateOverlay(slot, card, order)
+    }
+
+    /* Non public function. Please call overlayCard(uuid, order) */
+    _updateOverlay(slot, card, order){
+        var board = this;
+
+        var overlapCards = board.getItemsByOrder( order );
+        var max_order = 0;
+        slot.addClass('overlay-slot');
+        if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
+            overlapCard.setDataOverlap( index+1 );
+            max_order = overlapCard.overlap_order;
+        });
+        card.setDataOverlay(max_order+1);
+
+        // Before animation 
+
+        card.collection_order = order;
+        card.updateHtml();
+
+        // Animation 
+
+
+        card.html.appendTo( slot );
+
+        // End animation
+    }
+
+    checkOverlaySlot( order ) {
+        var board = this;
+        var slot = board.getCardHolder('summon').filter( function( index, cslot ){
+            return $(cslot).data('order') == order;
+        });
+        var cards = board.getItemsByOrder( order );
+        console.log(cards, slot);
+        if( cards.length > 1 ) {
+            slot.addClass('overlay-slot');
+        } else {
+            slot.removeClass('overlay-slot');
+        }
+
+    }
+
+
+    /* END The functions for Overlay feature */
 
     // Export and import state
     exportState(type = 'array') {

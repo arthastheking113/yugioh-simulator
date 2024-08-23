@@ -304,6 +304,7 @@ $white-color: #efefef;
                 height: 200px;
             }
 
+            &.card-slot.overlay-highlight,
             &.card-slot.highlight {
                 // animation: moving-border 4s ease infinite;
                 // border-style: solid;
@@ -319,6 +320,59 @@ $white-color: #efefef;
                 background-position: left top, right bottom, left bottom, right top;
                 animation: border-dance 0.4s infinite linear;
 
+            }
+            &.waiting-overlay,
+            &.waiting-overlay .simulator-card {
+                cursor: url('/asset/icon/pointer_overlay.png'), auto;
+                // cursor: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/9632/meh.png"), auto;
+        
+            }
+            // &.overlay-slot {
+                // position: relative;
+                // display: flex;
+                // justify-content: center;
+                // align-items: center;
+                // flex-direction: row-reverse;
+                
+                // .simulator-card {
+                //     min-width: 10px;
+                //     max-width: 100%;
+                //     height: 100%;
+                //     .card-imgs{
+                //         img{
+                //             height: 100%;
+                //             width: auto;
+                //             max-width: initial;
+                //         }
+                //     }
+                //     &.defense
+                // }
+                
+            // }
+            &.overlay-slot {
+                .simulator-card {
+                    position: absolute;
+                    top: 0;
+                    left: 0px;
+                    transition: 0.2s ease;
+
+                    + .simulator-card {
+                        left: -14px;
+                    }
+                    
+                    @for $i from 2 through 20 {
+                        &:nth-last-child(#{$i}) {
+                            left: #{(10-$i) * ($i - 1) - 12}px;
+                        }
+                    }
+                    &.defense{
+                        left: 0;
+                    }
+                    &.overlap:hover{
+                        margin-top:  - 15px;
+                    }
+                      
+                }
             }
 
             @media (max-width: 767px) {
