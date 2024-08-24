@@ -84,7 +84,7 @@
     border: 1px solid #efefef;
     border-radius: 4px;
     padding: 10px;
-    padding-bottom: 25px;
+    padding-bottom: 65px;
     font-size: 11px;
     color: #efefef;
     overflow: hidden;
@@ -94,6 +94,9 @@
 .play-board-container .log-message .log-step {
     max-width: 350px;
 }
+.play-board-container .log-message-container {
+    position: relative;
+}
 .play-board-container .log-message-container .card-key {
     color: #b4b4ed;
 }
@@ -102,6 +105,35 @@
 }
 .play-board-container .log-message-container .log-card-name {
     color: red;
+}
+.play-board-container .log-message-container .log-message-fotter {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+.play-board-container .log-message-container .log-message-fotter .input {
+    width: 100%;
+    padding: 10px;
+}
+.play-board-container .log-message-container .log-message-fotter .chat-input {
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    background: transparent;
+    line-height: 1em;
+    padding: 12px;
+    width: 100%;
+}
+.play-board-container .log-message-container .log-message-fotter .chat-btn {
+    height: 100%;
+    aspect-ratio: 1/1;
+    top: 0;
+    right: 0;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
 }
 .play-board-container .log-message-header {
     display: flex;
