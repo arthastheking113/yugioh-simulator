@@ -94,7 +94,7 @@ $white-color: #efefef;
         border: 1px solid $white-color;
         border-radius: 4px;
         padding: 10px;
-        padding-bottom: 25px;
+        padding-bottom: 65px;
         font-size: 11px;
         color: $white-color;
         overflow: hidden;
@@ -107,6 +107,8 @@ $white-color: #efefef;
     }
 
     .log-message-container {
+
+        position: relative;
         .card-key {
             color: #b4b4ed
         }
@@ -117,6 +119,41 @@ $white-color: #efefef;
 
         .log-card-name {
             color: red;
+        }
+        
+        .log-message-fotter{
+            position: absolute;
+            // Display absolute at bottom of the parent container. full width
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            // border-radius: 4px;
+            
+            .input{
+                width: 100%;
+                padding: 10px
+            }
+            .chat-input{
+                display: block;
+                border: 1px solid rgba(255,255,255, 0.35) !important;
+                background: transparent;
+                // border-radius: 0 0 5px 5px;
+                line-height: 1em;
+                padding: 12px;
+                width: 100%;
+            }
+            .chat-btn{
+                height: 100%;
+                aspect-ratio: 1/1;
+                top: 0;
+                right: 0;
+                position: absolute;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 1.5em;
+            }
+
         }
     }
 

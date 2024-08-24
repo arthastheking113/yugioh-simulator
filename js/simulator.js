@@ -85,6 +85,37 @@ class PlayLog {
         playLog.elm.find('.resume-button').off('click').on('click', function () {
             playLog.resumeReplay();
         });
+        playLog.chatEvents();
+    }
+    chatEvents() {
+        var playLog = this;
+        console.log('chatEvents');
+
+        playLog.elm.on('click', '.chat-btn', function (e) {
+            console.log('click');
+            var chatInput = playLog.elm.find('.chat-input');
+            var chatMessage = chatInput.val();
+            chatInput.val('');
+            // escape message by html tag
+            chatMessage = $('<div/>').text(chatMessage).html();
+            
+            
+            chatMessage && playLog.addStep('chat', undefined, `${chatMessage}`, undefined);
+        });
+
+        // Event when press enter
+        playLog.elm.on('keyup', '.chat-input', function (e) {
+            if (e.which === 13) {
+                var chatInput = playLog.elm.find('.chat-input');
+                var chatMessage = chatInput.val();
+                chatInput.val('');
+                // escape message by html tag
+                chatMessage = $('<div/>').text(chatMessage).html();
+                
+                
+                chatMessage && playLog.addStep('chat', undefined, `${chatMessage}`, undefined);
+            }
+        });
     }
     async setInitItems(items) {
         this.initItems = items;
@@ -199,6 +230,13 @@ class PlayLog {
             case 'active-skill':
                 var skill = board.getActiveSkill();
                 message += `<p class="log-step"> <span class="new-state"> Activate ${skill}</span> </p>`;
+                uuid = undefined;
+                break;
+                break;
+
+            case 'chat':
+                var player_name = board.get('player');
+                message += `<p class="log-step"> <span class="card-key"> ${player_name}: </span> <span class="new-state"> ${data}</span> </p>`;
                 uuid = undefined;
                 break;
         }
@@ -398,6 +436,10 @@ class PlayLog {
             case 'active-skill':
                 log.writeStep(step.message || ``);
                 board.activateSkill( );
+                break;
+
+            case 'chat':
+                log.writeStep(step.message || ``);
                 break;
         }
 
@@ -1158,6 +1200,7 @@ class Card {
         // target = 'graveyard,atk';
         var card = this;
         var board = card.getBoard();
+        card.isOverlap = false;
         board.updateCardbyAction(card, 'graveyard', '', '', '', false);
         board.writelog('detach', card.uuid);
         board.checkOverlaySlot( card.itemBefore.collection_order );
@@ -1167,6 +1210,7 @@ class Card {
     goBanishOverlap(){
         var card = this;
         var board = card.getBoard();
+        card.isOverlap = false;
         board.updateCardbyAction(card, 'banish', '', '', '');
         board.checkOverlaySlot( card.itemBefore.collection_order );
         return true;
@@ -1369,9 +1413,12 @@ class Board {
             backImageSrc: 'back_card.png',
             imgPath: 'asset/',
             cardUUIdkey: 'uuid', // Define the field will be the UUID key of the card
-            defaultPhase: 'm1'
+            defaultPhase: 'm1',
+            player: 'Player',
         };
         this.options = $.extend(defaultOptions, options);
+
+        this.player = this.options.player;
         /**
         DP (Draw Phase)
         SP (Stand By)
@@ -1850,7 +1897,11 @@ class Board {
                     newPosition = 'st';
                     // order = 5;
                     card.fold('normal');
+                    break;
 
+                case 'detach':
+                    card.isOverlap = false;
+                    break;
 
             }
         } else {
@@ -2415,6 +2466,10 @@ class Board {
         } else {
             slot.removeClass('overlay-slot');
         }
+        if( cards.length == 1){
+            cards[0].isOverlay = false;
+            cards[0].isOverlap = false;
+        }
 
     }
 
@@ -2677,7 +2732,16 @@ $(document).ready(function () {
     }
     logHeightTimeOut = 0;
     function setLogHeight() {
-        logMessage.height(playBoard.height() - logMessage.parent().siblings().first().outerHeight(true));
+        var elms = logMessage.parent().siblings();
+        var m_height = 0;
+        var padding = parseInt( logMessage.css( 'paddingTop') ) + parseInt( logMessage.css( 'paddingBottom' ) ) + parseInt( logMessage.css( 'borderTopWidth') ) + parseInt( logMessage.css( 'borderBottomWidth') );
+ 
+        elms.length && elms.each(function () {
+            if( !['fixed', 'absolute'].includes( $(this).css('position') ) ) {
+                m_height += parseInt( $(this).outerHeight(true) );
+            }
+        });
+        logMessage.height( parseInt( playBoard.outerHeight()) - m_height - padding );
         if (lcardinformations.length) {
             lcardinformations.height(playBoard.outerHeight(true) - 10);
             var descriptonsHeight = playBoard.height() - lcardinformations.find('.lcard-header').outerHeight(true);
