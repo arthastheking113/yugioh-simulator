@@ -2466,6 +2466,10 @@ class Board {
         } else {
             slot.removeClass('overlay-slot');
         }
+        if( cards.length == 1){
+            cards[0].isOverlay = false;
+            cards[0].isOverlap = false;
+        }
 
     }
 
