@@ -374,9 +374,6 @@ class CardMenu extends MenuBase {
                 } else {
                     menuElm.hide();
                 }
-                if( card.isOverlay ){
-                    menuElm.hide();
-                }
             }
             if( ( menu_tag.id == 'this-atk' && card.switchState == 'attack' ) 
              || ( menu_tag.id == 'this-def' && card.switchState == 'defense' ) ) {

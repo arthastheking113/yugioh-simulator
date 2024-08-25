@@ -89,10 +89,10 @@ class PlayLog {
     }
     chatEvents() {
         var playLog = this;
-        console.log('chatEvents');
+        // console.log('chatEvents');
 
         playLog.elm.on('click', '.chat-btn', function (e) {
-            console.log('click');
+            // console.log('click');
             var chatInput = playLog.elm.find('.chat-input');
             var chatMessage = chatInput.val();
             chatInput.val('');
@@ -122,6 +122,7 @@ class PlayLog {
     }
     async addStep(action, uuid, data, oldData) {
         // if(( !this.isStarted) && (action != 'startRecord') ) return false;
+        // console.log( action, uuid, data, oldData );
         if (this.isRePlaying) return false;
         var message = '';
         var board = this.Board;
@@ -1187,7 +1188,7 @@ class Card {
         var board = card.getBoard();
         var order = card.itemBefore.collection_order;
         // console.log( order );
-        var overlapCards = board.getItemsByOrder( order );
+        var overlapCards = board.getItemsByCollectionOrder( order );
         if( overlapCards.length ) {
             overlapCards.forEach(function(overlapCard){
                 overlapCard.detachOverlap();
@@ -1610,6 +1611,8 @@ class Board {
             }
         });
     }
+
+    // Do overlay when select the target 
     selectOverlayEvent() {
         var board = this;
         this.elm.on('click', '.waiting-overlay', function (e) {
@@ -1619,7 +1622,7 @@ class Board {
             var card = getWaitingOverlay.card;
             if (order) { 
                 board.overlayCard( card.uuid, order );
-                if (this.playlog)  this.writelog('overlay', card.uuid, {order: order, position: newPosition});
+                if (board.playlog)  board.writelog('overlay', card.uuid, {order: order, uuid: card.uuid});
             }
             var highlightElms = board.elm.find('.card-slot.overlay-highlight');
             if (highlightElms) {
@@ -1783,9 +1786,9 @@ class Board {
         }
         return items;
     }
-    getItemsByOrder( order ) {
+    getItemsByCollectionOrder( collection_order ) {
         var items = this.items.filter(function (item) {
-            return item.collection_order == order;
+            return item.collection_order == collection_order;
         });
         items.sort(function (a, b) {
             return ( (a.overlap_order||1 ) > (b.overlap_order||1) ) ? 1 : -1;
@@ -2365,7 +2368,7 @@ class Board {
      * @param {Card} card the card to overlay
      */
     canDoOverlay( card ){
-        if( card.isOverlay || card.isOverlap ) return false;
+        if( card.isOverlap ) return false;
         var board = this;
         var card_order = card.collection_order;
         var canBeOverlayCards = board.canBeOverlayCards(card_order);
@@ -2384,9 +2387,9 @@ class Board {
     setWaitingOverlay(data) {
         this.waitingOverlay = data;
         var board = this;
-        this.waitingActions = data;
+        // this.waitingActions = data;
         if( ! data ){
-            board.elm.find('.card-slot.highlight').removeClass('highlight');
+            board.elm.find('.card-slot.overlay-highlight').removeClass('overlay-highlight');
         }
     }
     getWaitingOverlay() {
@@ -2419,20 +2422,45 @@ class Board {
         return false;
     }
 
-    overlayCard( card_uuid, order ){
-        var card = this.getCard(card_uuid);
+    overlayCard( card_uuid, new_order ){
+        var board = this;
+        var card = board.getCard(card_uuid);
+        var currentOrder = card.collection_order;
+        var cards = board.getItemsByCollectionOrder( currentOrder );
+        // console.log(card, cards);
         var position = 'summon';
         var slot = board.getCardHolder(position).filter( function( index, cslot ){
-            return $(cslot).data('order') == order;
+            return $(cslot).data('order') == new_order;
         });
-        this._updateOverlay(slot, card, order)
+        if( cards.length ){
+            cards.forEach( _card => {
+                if( _card.uuid != card_uuid ){
+                    board._updateOverlap(slot, _card, new_order);
+
+                }
+            });
+        }
+        board._updateOverlay(slot, card, new_order)
     }
 
+    /* Non public function. Please call overlayCard(uuid, order) */
+    _updateOverlap(slot, card, new_order){
+        var board = this;
+        var slot = $(slot);
+        var overlapCards = board.getItemsByCollectionOrder( new_order );
+        var max_order = 0;
+        if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
+            max_order = Math.max( max_order, overlapCard.overlap_order );
+        });
+        card.collection_order = new_order;
+        card.setDataOverlap(max_order+1);
+        card.html.appendTo( slot );
+    }
     /* Non public function. Please call overlayCard(uuid, order) */
     _updateOverlay(slot, card, order){
         var board = this;
 
-        var overlapCards = board.getItemsByOrder( order );
+        var overlapCards = board.getItemsByCollectionOrder( order );
         var max_order = 0;
         slot.addClass('overlay-slot');
         if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
@@ -2459,8 +2487,8 @@ class Board {
         var slot = board.getCardHolder('summon').filter( function( index, cslot ){
             return $(cslot).data('order') == order;
         });
-        var cards = board.getItemsByOrder( order );
-        console.log(cards, slot);
+        var cards = board.getItemsByCollectionOrder( order );
+        // console.log(cards, slot);
         if( cards.length > 1 ) {
             slot.addClass('overlay-slot');
         } else {
