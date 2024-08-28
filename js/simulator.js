@@ -270,6 +270,7 @@ class PlayLog {
         let step = this.steps[this.pointer++] || 0;
         if (!step) return false;
         step['isLastStep'] = isLast;
+        step['nextStep'] = isLast ? 0 : this.steps[this.pointer+1];
         return step;
     }
     hasRecord() {
@@ -340,21 +341,25 @@ class PlayLog {
                     waitTime = 5;
                 }
                 var overlapCards = [];
+                var isOverlay = false;
+                var isMoveWithAllOverlap = false;
+                var isDetachAllOverlap = false;
                 if (isMoving) {
-                    var isOverlay = card.isOverlay||false;;
-                    var isMoveAllOverlap = isOverlay && data.position == 'summon';
-                    var moveContainer = card.startMoveAnimation(isMoveAllOverlap);
-                    card.startBoardAnimation(moveContainer, isMoveAllOverlap);
-                    if( isMoveAllOverlap ) {
-                        overlapCards = board.getItemsByCollectionOrder( card.collection_order );
-                        waitTime = 5;
+                    isOverlay = card.isOverlay||false;;
+                    isMoveWithAllOverlap = isOverlay && data.position == 'summon';
+                    isDetachAllOverlap = isOverlay && data.position != 'summon';
+                    var moveContainer = card.startMoveAnimation(isMoveWithAllOverlap);
+                    card.startBoardAnimation(moveContainer, isMoveWithAllOverlap);
+                    if( isOverlay ) {
+                        overlapCards = board.getItemsByCollectionOrder( card.collection_order ).filter( item => {
+                            return item.uuid != card.uuid;
+                        });
                     }
                 }
-                console.log( card, card.isOverlay, overlapCards );
                 $.each(data, function (key, value) {
                     log.writeStep(step.message || `Update ${key} to ${value}`);
                     board.updateItem(step.uuid, key, value);
-                    if( key == 'collection_order' ) {
+                    if( isMoveWithAllOverlap && (key == 'collection_order') ) {
                         overlapCards.forEach(card => {
                             card.collection_order = value;
                         });
@@ -365,14 +370,17 @@ class PlayLog {
                         card.moveAnimation(moveContainer);
                         setTimeout(function () {
                             card.appendToBoard(); // End animation of the card
-                            overlapCards.forEach(card => {
+                            isMoveWithAllOverlap && overlapCards.forEach(card => {
                                 card.appendToBoard();
                             });
                             overlapCards.length && board.checkOverlaySlot( card.collection_order );
                             card.endBoardAnimation(moveContainer);
+                            
                         }, 400);
+                        overlapCards.forEach(function(overlapCard){
+                            overlapCard.detachOverlap( false );
+                        });
                     }, 5);
-                // card.moveTo(data.position,  )
                 }
 
                 break;
@@ -424,7 +432,7 @@ class PlayLog {
             case 'detach':
                 log.writeStep(step.message || ``);
                 card.detachOverlap();
-                waitTime = 5;
+                // waitTime = 5;
                 break;
 
             case 'startRecord':
@@ -1238,19 +1246,19 @@ class Card {
         var overlapCards = board.getItemsByCollectionOrder( order );
         if( overlapCards.length ) {
             overlapCards.forEach(function(overlapCard){
-                overlapCard.detachOverlap();
+                overlapCard.detachOverlap( false );
             });
         }
         return true;
     }
 
-    detachOverlap(){
+    detachOverlap( writelog = true){
         // target = 'graveyard,atk';
         var card = this;
         var board = card.getBoard();
         card.isOverlap = false;
         board.updateCardbyAction(card, 'graveyard', '', '', '', false);
-        board.writelog('detach', card.uuid);
+        writelog && board.writelog('detach', card.uuid);
         board.checkOverlaySlot( card.itemBefore.collection_order );
         return true;
 
