@@ -377,7 +377,7 @@ class PlayLog {
                             card.endBoardAnimation(moveContainer);
                             
                         }, 400);
-                        overlapCards.forEach(function(overlapCard){
+                        isDetachAllOverlap && overlapCards.forEach(function(overlapCard){
                             overlapCard.detachOverlap( false );
                         });
                     }, 5);
