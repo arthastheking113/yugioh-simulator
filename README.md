@@ -12,7 +12,7 @@ This is a modular on https://metaduelist.com/ to show a combo.
 
 ## Export Board State
 
-- `exportState(type = 'array' || 'json')`
+- `board.exportState(type = 'array' || 'json')`
 
 ## Import Board State
 
