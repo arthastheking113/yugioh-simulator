@@ -571,7 +571,6 @@ class Card {
         };
         $.extend(this, _default, item);
         if( this.uuid == 0 ) { this.uuid = ygoUUID(); }
-        this.isExtra && (this.position = 'exdeck'); // if isExtra card then draw it in the extra deck
         // this.isExtra && ( this.canMoveDeck = 0);
         // this.canMoveExDeck = this.isExtra;
         this.options = options;
@@ -2771,6 +2770,7 @@ function parseDataFromOther(data) {
         $.each(input.extraDeck, function (index, card) {
 
             card.isExtra = true;
+            card.position = 'exdeck'; //if isExtra card then draw it in the extra deck
             card = mapkey(card);
             cards.push(card);
 
