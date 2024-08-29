@@ -89,10 +89,8 @@ class PlayLog {
     }
     chatEvents() {
         var playLog = this;
-        console.log('chatEvents');
 
         playLog.elm.on('click', '.chat-btn', function (e) {
-            console.log('click');
             var chatInput = playLog.elm.find('.chat-input');
             var chatMessage = chatInput.val();
             chatInput.val('');
@@ -122,6 +120,7 @@ class PlayLog {
     }
     async addStep(action, uuid, data, oldData) {
         // if(( !this.isStarted) && (action != 'startRecord') ) return false;
+        // console.log( action, uuid, data, oldData );
         if (this.isRePlaying) return false;
         var message = '';
         var board = this.Board;
@@ -271,6 +270,7 @@ class PlayLog {
         let step = this.steps[this.pointer++] || 0;
         if (!step) return false;
         step['isLastStep'] = isLast;
+        step['nextStep'] = isLast ? 0 : this.steps[this.pointer+1];
         return step;
     }
     hasRecord() {
@@ -332,28 +332,54 @@ class PlayLog {
             case 'update':
                 // var card = board.getItemById( step.uuid );
                 var isMoving = ('position' in data) && ('position' in oldData) && (data.position != oldData.position);
-
+                var inCollectionMoving = ('collection_order' in data) && ('collection_order' in oldData) && (data.collection_order != oldData.collection_order);
+                isMoving = isMoving || inCollectionMoving;
                 var isFlipping = ('foldState' in data) && ('foldState' in oldData) && (data.foldState != oldData.foldState);
                 var isRorating = ('switchState' in data) && ('switchState' in oldData) && (data.switchState != oldData.switchState);
                 if (isFlipping || isRorating) {
                     // No waiting time
                     waitTime = 5;
                 }
+                var overlapCards = [];
+                var isOverlay = false;
+                var isMoveWithAllOverlap = false;
+                var isDetachAllOverlap = false;
                 if (isMoving) {
-                    var moveContainer = card.startMoveAnimation();
-                    card.startBoardAnimation(moveContainer);
+                    isOverlay = card.isOverlay||false;;
+                    isMoveWithAllOverlap = isOverlay && data.position == 'summon';
+                    isDetachAllOverlap = isOverlay && data.position != 'summon';
+                    var moveContainer = card.startMoveAnimation(isMoveWithAllOverlap);
+                    card.startBoardAnimation(moveContainer, isMoveWithAllOverlap);
+                    if( isOverlay ) {
+                        overlapCards = board.getItemsByCollectionOrder( card.collection_order ).filter( item => {
+                            return item.uuid != card.uuid;
+                        });
+                    }
                 }
                 $.each(data, function (key, value) {
                     log.writeStep(step.message || `Update ${key} to ${value}`);
                     board.updateItem(step.uuid, key, value);
+                    if( isMoveWithAllOverlap && (key == 'collection_order') ) {
+                        overlapCards.forEach(card => {
+                            card.collection_order = value;
+                        });
+                    }
                 });
                 if (isMoving) {
                     setTimeout(function () {
                         card.moveAnimation(moveContainer);
                         setTimeout(function () {
-                            card.endBoardAnimation(moveContainer);
                             card.appendToBoard(); // End animation of the card
+                            isMoveWithAllOverlap && overlapCards.forEach(card => {
+                                card.appendToBoard();
+                            });
+                            overlapCards.length && board.checkOverlaySlot( card.collection_order );
+                            card.endBoardAnimation(moveContainer);
+                            
                         }, 400);
+                        isDetachAllOverlap && overlapCards.forEach(function(overlapCard){
+                            overlapCard.detachOverlap( false );
+                        });
                     }, 5);
                 }
 
@@ -406,6 +432,7 @@ class PlayLog {
             case 'detach':
                 log.writeStep(step.message || ``);
                 card.detachOverlap();
+                // waitTime = 5;
                 break;
 
             case 'startRecord':
@@ -544,7 +571,6 @@ class Card {
         };
         $.extend(this, _default, item);
         if( this.uuid == 0 ) { this.uuid = ygoUUID(); }
-        this.isExtra && (this.position = 'exdeck'); // if isExtra card then draw it in the extra deck
         // this.isExtra && ( this.canMoveDeck = 0);
         // this.canMoveExDeck = this.isExtra;
         this.options = options;
@@ -670,9 +696,14 @@ class Card {
         if (typeof isTop == 'undefined') isTop = true;
         var oldPosition = _card.position;
         var isOverlay = _card.isOverlay||false;;
+        var isMoveAllOverlap = isOverlay && newPosition == 'summon';
+        
         if (!_card.beforeMove(newPosition)) return false;
 
-        //1
+        var overlapCards = isMoveAllOverlap ?
+            overlapCards = board.getItemsByCollectionOrder( _card.collection_order ) : 
+            [];
+
         // Nếu oldPosition là hand thì lưu thẻ cha để remove
         var willRemove = [];
         if (oldPosition == 'hand') {
@@ -682,8 +713,8 @@ class Card {
             // 1
             result = true;
 
-            var moveContainer = _card.startMoveAnimation();
-            _card.startBoardAnimation(moveContainer);
+            var moveContainer = _card.startMoveAnimation(isMoveAllOverlap);
+            _card.startBoardAnimation(moveContainer, isMoveAllOverlap);
 
             var newOrder = 0;
             var newCollection = _card.getBoard().getCollectionByPosition(newPosition);
@@ -700,6 +731,9 @@ class Card {
                 }
             } else {
                 _card.collection_order = newOrder;
+                // overlapCards.forEach(card => {
+                //     card.collection_order = newOrder; moveAnimation
+                // });
             }
             if (['summon', 'st', 'fz'].includes(newPosition)) {
                 order = order || 1;
@@ -708,6 +742,10 @@ class Card {
                 if (!_slot.find('.simulator-card').length) {
                     _continue = 0;
                     _card.collection_order = order;
+                    overlapCards.forEach(card => {
+                        card.collection_order = order;
+                    });
+                    board.checkOverlaySlot( order );
                 } else {
                     console.warn('No Space to move card');
                     _card.endBoardAnimation(moveContainer);
@@ -738,6 +776,10 @@ class Card {
                 console.warn('Not moved');
                 _card.endBoardAnimation(moveContainer);
                 return false;
+            } else{
+                overlapCards.forEach(card => {
+                    card.appendToBoard();
+                });
             }
 
             // Cập nhật lại collection
@@ -751,17 +793,21 @@ class Card {
             willRemove.remove();
         }
         fireEvent && _card.afterMove(newPosition);
-        setTimeout(function () {
+        setTimeout(function () {    
             _card.moveAnimation(moveContainer);
             setTimeout(function () {
                 _card.endBoardAnimation(moveContainer);
                 _card.appendToBoard(); // End animation of the card
             }, 400);
 
-            if( isOverlay ) {
-                _card.isOverlay = false;
-                _card.detachAllOverlap();
-                board.checkOverlaySlot( _card.collection_order );
+            if( isOverlay) {
+                if( newPosition != 'summon') {
+                    _card.isOverlay = false;
+                    _card.detachAllOverlap();
+                    board.checkOverlaySlot( _card.collection_order );
+                } else {
+                    
+                }
             }
         }, 5);
         return result;
@@ -921,6 +967,7 @@ class Card {
     }
     updateHtml() {
         var _card = this;
+        var board = _card.getBoard();
         var cardElement = _card.html;
 
         var typeCards = [
@@ -980,7 +1027,11 @@ class Card {
                     return false;
                 }
                 _card.updateHtml();
-                _card.html.appendTo(summonElm);
+                if( _card.isOverlap|| 0 ) {
+                    _card.html.prependTo(summonElm);
+                } else {
+                    _card.html.appendTo(summonElm);
+                }
 
                 break;
             case 'st':
@@ -1094,7 +1145,6 @@ class Card {
     playSoundAnimation( action, delay ){
         var board = this.getBoard();
         var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect' );
-        console.log( action, soundElm );
         if( soundElm.length ){
             delay = delay||100;
             setTimeout( function(){
@@ -1102,11 +1152,13 @@ class Card {
             }, delay);
         }
     }
-    startMoveAnimation() {
+    startMoveAnimation( moveParent = false) {
         var card = this;
         var board = card.getBoard();
         var oldPosition = card.position;
-        var clone = card.html.clone();
+        var clone = {};
+        var orgElm =  moveParent ?  card.html.parent() : card.html;
+        var clone = orgElm.clone();
         var offset = [];
         var collection = board.getCollectionByPosition(oldPosition);
         if (collection) {
@@ -1116,8 +1168,8 @@ class Card {
         }
         clone.attr('id', '');
         clone.css({
-            width: card.html.width(),
-            height: card.html.height(),
+            width: orgElm.width(),
+            height: orgElm.height(),
         });
 
         var moveContainer = $('<div class="move-container"></div>');
@@ -1160,13 +1212,17 @@ class Card {
         clone.addClass(card.html[0].classList.value);
         return true;
     }
-    startBoardAnimation(moveContainer) {
+    startBoardAnimation(moveContainer, isSiblings = false) {
         this.html.css('visibility', 'hidden');
+        var siblings = isSiblings && this.html.siblings();
+        siblings && siblings.css('visibility', 'hidden');
         moveContainer && moveContainer.show();
 
     }
     endBoardAnimation(moveContainer) {
         this.html.css('visibility', 'visible');
+        var siblings = this.html.siblings();
+        siblings && siblings.css('visibility', 'visible');
         moveContainer && moveContainer.remove();
     }
 
@@ -1186,23 +1242,22 @@ class Card {
         var card = this; // overlay card
         var board = card.getBoard();
         var order = card.itemBefore.collection_order;
-        // console.log( order );
-        var overlapCards = board.getItemsByOrder( order );
+        var overlapCards = board.getItemsByCollectionOrder( order );
         if( overlapCards.length ) {
             overlapCards.forEach(function(overlapCard){
-                overlapCard.detachOverlap();
+                overlapCard.detachOverlap( false );
             });
         }
         return true;
     }
 
-    detachOverlap(){
+    detachOverlap( writelog = true){
         // target = 'graveyard,atk';
         var card = this;
         var board = card.getBoard();
         card.isOverlap = false;
         board.updateCardbyAction(card, 'graveyard', '', '', '', false);
-        board.writelog('detach', card.uuid);
+        writelog && board.writelog('detach', card.uuid);
         board.checkOverlaySlot( card.itemBefore.collection_order );
         return true;
 
@@ -1502,6 +1557,14 @@ class Board {
             }
         });
     }
+    checkOverlayWhenInit(){
+        this.items.forEach(card => {
+            if( card.isOverlay ) {
+                let cardSlot = card.html.closest('.card-slot');
+                cardSlot && cardSlot.addClass('overlay-slot');
+            }
+        });
+    }
 
     initPhase(){
         this.setPhase(this.currentPhase );
@@ -1610,6 +1673,8 @@ class Board {
             }
         });
     }
+
+    // Do overlay when select the target 
     selectOverlayEvent() {
         var board = this;
         this.elm.on('click', '.waiting-overlay', function (e) {
@@ -1619,7 +1684,7 @@ class Board {
             var card = getWaitingOverlay.card;
             if (order) { 
                 board.overlayCard( card.uuid, order );
-                if (this.playlog)  this.writelog('overlay', card.uuid, {order: order, position: newPosition});
+                if (board.playlog)  board.writelog('overlay', card.uuid, {order: order, uuid: card.uuid});
             }
             var highlightElms = board.elm.find('.card-slot.overlay-highlight');
             if (highlightElms) {
@@ -1783,9 +1848,9 @@ class Board {
         }
         return items;
     }
-    getItemsByOrder( order ) {
+    getItemsByCollectionOrder( collection_order ) {
         var items = this.items.filter(function (item) {
-            return item.collection_order == order;
+            return item.collection_order == collection_order;
         });
         items.sort(function (a, b) {
             return ( (a.overlap_order||1 ) > (b.overlap_order||1) ) ? 1 : -1;
@@ -1823,8 +1888,8 @@ class Board {
 
     setItems(items) {
         this.orgitems = Object.values(items);
-        // console.log( this.orgitems)
         this.initItems();
+        this.checkOverlayWhenInit();
     }
     get(key, defaultValue) {
         if (typeof this[key] != 'undefined') {
@@ -1959,7 +2024,6 @@ class Board {
     playSoundAnimation( action, delay ){
         var board = this.getBoard();
         var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect' );
-        console.log( action, soundElm );
         if( soundElm.length ){
             delay = delay||100;
             setTimeout( function(){
@@ -2365,7 +2429,7 @@ class Board {
      * @param {Card} card the card to overlay
      */
     canDoOverlay( card ){
-        if( card.isOverlay || card.isOverlap ) return false;
+        if( card.isOverlap ) return false;
         var board = this;
         var card_order = card.collection_order;
         var canBeOverlayCards = board.canBeOverlayCards(card_order);
@@ -2376,7 +2440,7 @@ class Board {
     canBeOverlayCards( exclude ){
         var board = this;
         var canbeOverlayCards = board.getSummonItems().filter(function( card ) { 
-            return ( card.collection_order != exclude ) && ( !(card.collection_order.includes('ex')) );
+            return ( card.collection_order != exclude ) ;
         });
         return canbeOverlayCards;
     }
@@ -2384,9 +2448,9 @@ class Board {
     setWaitingOverlay(data) {
         this.waitingOverlay = data;
         var board = this;
-        this.waitingActions = data;
+        // this.waitingActions = data;
         if( ! data ){
-            board.elm.find('.card-slot.highlight').removeClass('highlight');
+            board.elm.find('.card-slot.overlay-highlight').removeClass('overlay-highlight');
         }
     }
     getWaitingOverlay() {
@@ -2419,20 +2483,44 @@ class Board {
         return false;
     }
 
-    overlayCard( card_uuid, order ){
-        var card = this.getCard(card_uuid);
+    overlayCard( card_uuid, new_order ){
+        var board = this;
+        var card = board.getCard(card_uuid);
+        var currentOrder = card.collection_order;
+        var cards = board.getItemsByCollectionOrder( currentOrder );
         var position = 'summon';
         var slot = board.getCardHolder(position).filter( function( index, cslot ){
-            return $(cslot).data('order') == order;
+            return $(cslot).data('order') == new_order;
         });
-        this._updateOverlay(slot, card, order)
+        if( cards.length ){
+            cards.forEach( _card => {
+                if( _card.uuid != card_uuid ){
+                    board._updateOverlap(slot, _card, new_order);
+
+                }
+            });
+        }
+        board._updateOverlay(slot, card, new_order)
     }
 
+    /* Non public function. Please call overlayCard(uuid, order) */
+    _updateOverlap(slot, card, new_order){
+        var board = this;
+        var slot = $(slot);
+        var overlapCards = board.getItemsByCollectionOrder( new_order );
+        var max_order = 0;
+        if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
+            max_order = Math.max( max_order, overlapCard.overlap_order );
+        });
+        card.collection_order = new_order;
+        card.setDataOverlap(max_order+1);
+        card.html.appendTo( slot );
+    }
     /* Non public function. Please call overlayCard(uuid, order) */
     _updateOverlay(slot, card, order){
         var board = this;
 
-        var overlapCards = board.getItemsByOrder( order );
+        var overlapCards = board.getItemsByCollectionOrder( order );
         var max_order = 0;
         slot.addClass('overlay-slot');
         if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
@@ -2459,8 +2547,7 @@ class Board {
         var slot = board.getCardHolder('summon').filter( function( index, cslot ){
             return $(cslot).data('order') == order;
         });
-        var cards = board.getItemsByOrder( order );
-        console.log(cards, slot);
+        var cards = board.getItemsByCollectionOrder( order );
         if( cards.length > 1 ) {
             slot.addClass('overlay-slot');
         } else {
@@ -2609,7 +2696,6 @@ function parseDataFromOther(data) {
                 delete (card[key]);
             });
             card.uuid = ygoUUID();
-            // console.log(card, card.orgID);
             switch (card.type) {
                 case "Link Monster":
                 case "Fusion Monster":
@@ -2684,6 +2770,7 @@ function parseDataFromOther(data) {
         $.each(input.extraDeck, function (index, card) {
 
             card.isExtra = true;
+            card.position = 'exdeck'; //if isExtra card then draw it in the extra deck
             card = mapkey(card);
             cards.push(card);
 
