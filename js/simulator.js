@@ -1763,10 +1763,10 @@ class Board {
         });
     }
     beforeReplay(){
-        this.skillBtn.fadeOut();
+        this.skillBtn?.fadeOut();
     }
     afterReplay(){
-        this.skillBtn.fadeIn();
+        this.skillBtn?.fadeIn();
 
     }
     // END Events
@@ -2039,7 +2039,7 @@ class Board {
         };
         board.skill = $.extend(defaultSkill, skill);
         board.options.skill = board.skill.name;
-        board.skillBtn.val("Activate " + board.skill.name);
+        board.skillBtn?.val("Activate " + board.skill.name);
     }
     activateSkill(){
         this.skill.activated = true;
