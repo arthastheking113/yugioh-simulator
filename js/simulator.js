@@ -307,7 +307,7 @@ class PlayLog {
         this.playStep();
     }
     addOverlay() {
-        this.overlay.fadeIn('300');
+        // this.overlay.fadeIn('300');
     }
     playStep() {
         // console.warn('Play step', this.pointer);
@@ -375,6 +375,13 @@ class PlayLog {
                             });
                             overlapCards.length && board.checkOverlaySlot( card.collection_order );
                             card.endBoardAnimation(moveContainer);
+                            if( oldData.position || data.position ){
+                                [oldData.position, data.position].forEach(position => {
+                                    if( ! position ) return;
+                                    var collection = board.getCollectionByPosition(position); 
+                                    collection && collection.drawOnBoard(); 
+                                });
+                            }
                             
                         }, 400);
                         isDetachAllOverlap && overlapCards.forEach(function(overlapCard){
@@ -534,7 +541,7 @@ class PlayLog {
         return false;
     }
     removeOverlay() {
-        this.overlay.fadeOut('300');
+        // this.overlay.fadeOut('300');
     }
     // reset
     reset() {
@@ -1512,12 +1519,12 @@ class Board {
         this.cardMenuElm = $('#cardMenu');
         this.collectionMenuElm = $('#collectionMenu');
         this.currentPhase = this.options.defaultPhase||'m1';
-        this.initItems(this.orgitems);
         this.initPhase(this.currentPhase);
         this.initDeck();
         this.initExDeck();
         this.initGraveyard();
         this.initBanish();
+        this.initItems(this.orgitems);
 
         this.initMenus();
         this.initSkill();
@@ -1538,15 +1545,15 @@ class Board {
     // Remove all Item and HTML elements
     emptyBoard() {
         var board = this;
-        this.items = [];
-        this.elm.find('.simulator-card').remove();
-        this.elm.find('.card-slot').removeClass('overlay-slot');
+        board.items = [];
+        board.elm.find('.simulator-card').remove();
+        board.elm.find('.card-slot').removeClass('overlay-slot');
         $.each(['deckMenuElm', 'exDeckMenuElm', 'graveyardMenuElm', 'banishMenuElm', 'cardMenuElm', 'collectionMenuElm'], function (index, elm) {
             board[elm].find('.collection-container').empty();
         });
-
-
-        // $('.collection-count').children().first().empty().text( 0 );
+        $.each( board.elm.find('.collection-count'), function(i, collectionElm) {
+            $(collectionElm).children().first().empty().text('');
+        }); 
     }
     initItems() {
         var _board = this;
@@ -1763,10 +1770,10 @@ class Board {
         });
     }
     beforeReplay(){
-        this.skillBtn?.fadeOut();
+        this.skillBtn.fadeOut();
     }
     afterReplay(){
-        this.skillBtn?.fadeIn();
+        this.skillBtn.fadeIn();
 
     }
     // END Events
@@ -2039,7 +2046,7 @@ class Board {
         };
         board.skill = $.extend(defaultSkill, skill);
         board.options.skill = board.skill.name;
-        board.skillBtn?.val("Activate " + board.skill.name);
+        board.skillBtn.val("Activate " + board.skill.name);
     }
     activateSkill(){
         this.skill.activated = true;
