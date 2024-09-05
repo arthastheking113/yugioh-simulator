@@ -96,8 +96,8 @@ class PlayLog {
             chatInput.val('');
             // escape message by html tag
             chatMessage = $('<div/>').text(chatMessage).html();
-            
-            
+
+
             chatMessage && playLog.addStep('chat', undefined, `${chatMessage}`, undefined);
         });
 
@@ -109,8 +109,8 @@ class PlayLog {
                 chatInput.val('');
                 // escape message by html tag
                 chatMessage = $('<div/>').text(chatMessage).html();
-                
-                
+
+
                 chatMessage && playLog.addStep('chat', undefined, `${chatMessage}`, undefined);
             }
         });
@@ -191,11 +191,11 @@ class PlayLog {
             case 'overlay':
                 message += `<p class="log-step"> Overlay card <span class="log-card-name" data-id="${card.uuid}" data-order="${data.order}">${card.name}</span></p>`;
                 break;
-            
+
             case 'detach':
                 message += `<p class="log-step"> Detach card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
                 break;
-    
+
 
             case 'target':
                 message += `<p class="log-step"> Target card <span class="log-card-name" data-id="${card.uuid}">${card.name}</span></p>`;
@@ -270,7 +270,7 @@ class PlayLog {
         let step = this.steps[this.pointer++] || 0;
         if (!step) return false;
         step['isLastStep'] = isLast;
-        step['nextStep'] = isLast ? 0 : this.steps[this.pointer+1];
+        step['nextStep'] = isLast ? 0 : this.steps[this.pointer + 1];
         return step;
     }
     hasRecord() {
@@ -345,13 +345,13 @@ class PlayLog {
                 var isMoveWithAllOverlap = false;
                 var isDetachAllOverlap = false;
                 if (isMoving) {
-                    isOverlay = card.isOverlay||false;;
+                    isOverlay = card.isOverlay || false;;
                     isMoveWithAllOverlap = isOverlay && data.position == 'summon';
                     isDetachAllOverlap = isOverlay && data.position != 'summon';
                     var moveContainer = card.startMoveAnimation(isMoveWithAllOverlap);
                     card.startBoardAnimation(moveContainer, isMoveWithAllOverlap);
-                    if( isOverlay ) {
-                        overlapCards = board.getItemsByCollectionOrder( card.collection_order ).filter( item => {
+                    if (isOverlay) {
+                        overlapCards = board.getItemsByCollectionOrder(card.collection_order).filter(item => {
                             return item.uuid != card.uuid;
                         });
                     }
@@ -359,7 +359,7 @@ class PlayLog {
                 $.each(data, function (key, value) {
                     log.writeStep(step.message || `Update ${key} to ${value}`);
                     board.updateItem(step.uuid, key, value);
-                    if( isMoveWithAllOverlap && (key == 'collection_order') ) {
+                    if (isMoveWithAllOverlap && (key == 'collection_order')) {
                         overlapCards.forEach(card => {
                             card.collection_order = value;
                         });
@@ -373,19 +373,19 @@ class PlayLog {
                             isMoveWithAllOverlap && overlapCards.forEach(card => {
                                 card.appendToBoard();
                             });
-                            overlapCards.length && board.checkOverlaySlot( card.collection_order );
+                            overlapCards.length && board.checkOverlaySlot(card.collection_order);
                             card.endBoardAnimation(moveContainer);
-                            if( oldData.position || data.position ){
+                            if (oldData.position || data.position) {
                                 [oldData.position, data.position].forEach(position => {
-                                    if( ! position ) return;
-                                    var collection = board.getCollectionByPosition(position); 
-                                    collection && collection.drawOnBoard(); 
+                                    if (!position) return;
+                                    var collection = board.getCollectionByPosition(position);
+                                    collection && collection.drawOnBoard();
                                 });
                             }
-                            
+
                         }, 400);
-                        isDetachAllOverlap && overlapCards.forEach(function(overlapCard){
-                            overlapCard.detachOverlap( false );
+                        isDetachAllOverlap && overlapCards.forEach(function (overlapCard) {
+                            overlapCard.detachOverlap(false);
                         });
                     }, 5);
                 }
@@ -435,7 +435,7 @@ class PlayLog {
                 log.writeStep(step.message || ``);
                 board.overlayCard(card.uuid, data.order);
                 break;
-            
+
             case 'detach':
                 log.writeStep(step.message || ``);
                 card.detachOverlap();
@@ -464,12 +464,12 @@ class PlayLog {
             case 'update-phase':
                 var phase = data;
                 log.writeStep(step.message || ``);
-                board.setPhase( phase );
+                board.setPhase(phase);
                 break;
 
             case 'active-skill':
                 log.writeStep(step.message || ``);
-                board.activateSkill( );
+                board.activateSkill();
                 break;
 
             case 'chat':
@@ -577,7 +577,7 @@ class Card {
             isExtra: 0,
         };
         $.extend(this, _default, item);
-        if( this.uuid == 0 ) { this.uuid = ygoUUID(); }
+        if (this.uuid == 0) { this.uuid = ygoUUID(); }
         // this.isExtra && ( this.canMoveDeck = 0);
         // this.canMoveExDeck = this.isExtra;
         this.options = options;
@@ -663,7 +663,7 @@ class Card {
     canSwitch(newState) {
         newState = newState || 'attack'; // attack / defense
 
-        
+
         return this.switchState != newState;
     }
 
@@ -702,13 +702,13 @@ class Card {
         var result = false;
         if (typeof isTop == 'undefined') isTop = true;
         var oldPosition = _card.position;
-        var isOverlay = _card.isOverlay||false;;
+        var isOverlay = _card.isOverlay || false;;
         var isMoveAllOverlap = isOverlay && newPosition == 'summon';
-        
+
         if (!_card.beforeMove(newPosition)) return false;
 
         var overlapCards = isMoveAllOverlap ?
-            overlapCards = board.getItemsByCollectionOrder( _card.collection_order ) : 
+            overlapCards = board.getItemsByCollectionOrder(_card.collection_order) :
             [];
 
         // Nếu oldPosition là hand thì lưu thẻ cha để remove
@@ -752,7 +752,7 @@ class Card {
                     overlapCards.forEach(card => {
                         card.collection_order = order;
                     });
-                    board.checkOverlaySlot( order );
+                    board.checkOverlaySlot(order);
                 } else {
                     console.warn('No Space to move card');
                     _card.endBoardAnimation(moveContainer);
@@ -783,7 +783,7 @@ class Card {
                 console.warn('Not moved');
                 _card.endBoardAnimation(moveContainer);
                 return false;
-            } else{
+            } else {
                 overlapCards.forEach(card => {
                     card.appendToBoard();
                 });
@@ -800,20 +800,20 @@ class Card {
             willRemove.remove();
         }
         fireEvent && _card.afterMove(newPosition);
-        setTimeout(function () {    
+        setTimeout(function () {
             _card.moveAnimation(moveContainer);
             setTimeout(function () {
                 _card.endBoardAnimation(moveContainer);
                 _card.appendToBoard(); // End animation of the card
             }, 400);
 
-            if( isOverlay) {
-                if( newPosition != 'summon') {
+            if (isOverlay) {
+                if (newPosition != 'summon') {
                     _card.isOverlay = false;
                     _card.detachAllOverlap();
-                    board.checkOverlaySlot( _card.collection_order );
+                    board.checkOverlaySlot(_card.collection_order);
                 } else {
-                    
+
                 }
             }
         }, 5);
@@ -878,7 +878,7 @@ class Card {
 
         return result;
     }
-    setDataOverlap( new_order ) {
+    setDataOverlap(new_order) {
         var card = this;
         card.isOverlap = true;
         card.isOverlay = false;
@@ -888,7 +888,7 @@ class Card {
         card.updateHtml();
     }
 
-    setDataOverlay( new_order ) {
+    setDataOverlay(new_order) {
         var card = this;
         card.isOverlap = false;
         card.isOverlay = true;
@@ -1004,7 +1004,7 @@ class Card {
             'isOverlay': 'overlay',
             'isOverlap': 'overlap'
         };
-        Object.entries(overlaps).forEach( function([stateName, className]) {
+        Object.entries(overlaps).forEach(function ([stateName, className]) {
             if (_card[stateName]) {
                 cardElement.addClass(className);
             }
@@ -1034,7 +1034,7 @@ class Card {
                     return false;
                 }
                 _card.updateHtml();
-                if( _card.isOverlap|| 0 ) {
+                if (_card.isOverlap || 0) {
                     _card.html.prependTo(summonElm);
                 } else {
                     _card.html.appendTo(summonElm);
@@ -1104,7 +1104,7 @@ class Card {
             case 'target':
                 animation = animation || 'bounceIn';
                 animation = 'animate__animated animate__' + animation;
-                this.playSoundAnimation( action );
+                this.playSoundAnimation(action);
                 this.html.addClass(animation);
                 setTimeout(function () {
                     _card.html.removeClass(animation);
@@ -1114,7 +1114,7 @@ class Card {
 
             case 'declare':
             case 'reveal':
-                var in_class = ( action == 'declare') ? 'animate__zoomInDown' : 'animate__jackInTheBox';
+                var in_class = (action == 'declare') ? 'animate__zoomInDown' : 'animate__jackInTheBox';
                 var out_class = 'animate__zoomOut';
                 // Show card in full screen;
                 var board = _card.getBoard();
@@ -1132,7 +1132,7 @@ class Card {
                         </div>`,
                 );
                 boardElm.append(lightbox);
-                this.playSoundAnimation( action );
+                this.playSoundAnimation(action);
                 const waitTime = 1000;
                 setTimeout(function () {
                     lightbox.removeClass(`animate__animated ${in_class}`).addClass(` animate__animated ${out_class}`);
@@ -1149,22 +1149,22 @@ class Card {
         if (callback) callback();
     }
 
-    playSoundAnimation( action, delay ){
+    playSoundAnimation(action, delay) {
         var board = this.getBoard();
-        var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect' );
-        if( soundElm.length ){
-            delay = delay||100;
-            setTimeout( function(){
+        var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect');
+        if (soundElm.length) {
+            delay = delay || 100;
+            setTimeout(function () {
                 soundElm[0].play();
             }, delay);
         }
     }
-    startMoveAnimation( moveParent = false) {
+    startMoveAnimation(moveParent = false) {
         var card = this;
         var board = card.getBoard();
         var oldPosition = card.position;
         var clone = {};
-        var orgElm =  moveParent ?  card.html.parent() : card.html;
+        var orgElm = moveParent ? card.html.parent() : card.html;
         var clone = orgElm.clone();
         var offset = [];
         var collection = board.getCollectionByPosition(oldPosition);
@@ -1234,47 +1234,47 @@ class Card {
     }
 
     /* The functions for Overlay feature */
-    canDoOverlay(){
+    canDoOverlay() {
         var card = this;
         var board = card.getBoard();
 
-        if( card.position != 'summon' ) return false;
-        if( board.canDoOverlay(card) ) return true;
+        if (card.position != 'summon') return false;
+        if (board.canDoOverlay(card)) return true;
 
         return false;
 
     }
 
-    detachAllOverlap(){
+    detachAllOverlap() {
         var card = this; // overlay card
         var board = card.getBoard();
         var order = card.itemBefore.collection_order;
-        var overlapCards = board.getItemsByCollectionOrder( order );
-        if( overlapCards.length ) {
-            overlapCards.forEach(function(overlapCard){
-                overlapCard.detachOverlap( false );
+        var overlapCards = board.getItemsByCollectionOrder(order);
+        if (overlapCards.length) {
+            overlapCards.forEach(function (overlapCard) {
+                overlapCard.detachOverlap(false);
             });
         }
         return true;
     }
 
-    detachOverlap( writelog = true){
+    detachOverlap(writelog = true) {
         // target = 'graveyard,atk';
         var card = this;
         var board = card.getBoard();
         card.isOverlap = false;
         board.updateCardbyAction(card, 'graveyard', '', '', '', false);
         writelog && board.writelog('detach', card.uuid);
-        board.checkOverlaySlot( card.itemBefore.collection_order );
+        board.checkOverlaySlot(card.itemBefore.collection_order);
         return true;
 
     }
-    goBanishOverlap(){
+    goBanishOverlap() {
         var card = this;
         var board = card.getBoard();
         card.isOverlap = false;
         board.updateCardbyAction(card, 'banish', '', '', '');
-        board.checkOverlaySlot( card.itemBefore.collection_order );
+        board.checkOverlaySlot(card.itemBefore.collection_order);
         return true;
     }
 
@@ -1518,7 +1518,7 @@ class Board {
 
         this.cardMenuElm = $('#cardMenu');
         this.collectionMenuElm = $('#collectionMenu');
-        this.currentPhase = this.options.defaultPhase||'m1';
+        this.currentPhase = this.options.defaultPhase || 'm1';
         this.initPhase(this.currentPhase);
         this.initDeck();
         this.initExDeck();
@@ -1551,9 +1551,9 @@ class Board {
         $.each(['deckMenuElm', 'exDeckMenuElm', 'graveyardMenuElm', 'banishMenuElm', 'cardMenuElm', 'collectionMenuElm'], function (index, elm) {
             board[elm].find('.collection-container').empty();
         });
-        $.each( board.elm.find('.collection-count'), function(i, collectionElm) {
+        $.each(board.elm.find('.collection-count'), function (i, collectionElm) {
             $(collectionElm).children().first().empty().text('');
-        }); 
+        });
     }
     initItems() {
         var _board = this;
@@ -1564,17 +1564,17 @@ class Board {
             }
         });
     }
-    checkOverlayWhenInit(){
+    checkOverlayWhenInit() {
         this.items.forEach(card => {
-            if( card.isOverlay ) {
+            if (card.isOverlay) {
                 let cardSlot = card.html.closest('.card-slot');
                 cardSlot && cardSlot.addClass('overlay-slot');
             }
         });
     }
 
-    initPhase(){
-        this.setPhase(this.currentPhase );
+    initPhase() {
+        this.setPhase(this.currentPhase);
     }
     initDeck() {
         // this.deck = new Collection( this, 'deck', this.deckElm, this.deckMenuElm,this.options);
@@ -1631,9 +1631,9 @@ class Board {
         var board = this;
         board.skill = {
             activated: false,
-            name: (board.skill && board.skill.name) || ( board.options.skill ||"" )
+            name: (board.skill && board.skill.name) || (board.options.skill || "")
         };
-        if (board.skill.name ) {
+        if (board.skill.name) {
             board.skillBtn = $('<input>', {
                 value: `Activate ${board.skill.name}`,
                 type: 'button',
@@ -1674,7 +1674,7 @@ class Board {
             if (highlightElms) {
                 $.each(highlightElms, function (index, highlight) {
                     // console.warn('remove highlighting' + this.classes)
-                    $(highlight).removeClass('waiting-overlay overlay-highlight'); 
+                    $(highlight).removeClass('waiting-overlay overlay-highlight');
                 });
                 board.setWaitingActions(false);
             }
@@ -1689,15 +1689,15 @@ class Board {
             var order = _this.data('order');
             var getWaitingOverlay = board.getWaitingOverlay();
             var card = getWaitingOverlay.card;
-            if (order) { 
-                board.overlayCard( card.uuid, order );
-                if (board.playlog)  board.writelog('overlay', card.uuid, {order: order, uuid: card.uuid});
+            if (order) {
+                board.overlayCard(card.uuid, order);
+                if (board.playlog) board.writelog('overlay', card.uuid, { order: order, uuid: card.uuid });
             }
             var highlightElms = board.elm.find('.card-slot.overlay-highlight');
             if (highlightElms) {
                 $.each(highlightElms, function (index, highlight) {
                     // console.warn('remove highlighting' + this.classes)
-                    $(highlight).removeClass('waiting-overlay overlay-highlight'); 
+                    $(highlight).removeClass('waiting-overlay overlay-highlight');
                 });
                 board.setWaitingActions(false);
             }
@@ -1755,7 +1755,7 @@ class Board {
             }
         });
     }
-    selectPhases(){
+    selectPhases() {
         var board = this;
         this.elm.on('click', '.phase-btn', function (e) {
             // var phase = $(this).data('phase');
@@ -1763,16 +1763,16 @@ class Board {
             phase && board.phases[phase] && board.setPhase(phase);
         });
     }
-    skillEvents(){
+    skillEvents() {
         var board = this;
         board.skillBtn && board.skillBtn.on('click', function () {
             board.activateSkill();
         });
     }
-    beforeReplay(){
+    beforeReplay() {
         this.skillBtn?.fadeOut();
     }
-    afterReplay(){
+    afterReplay() {
         this.skillBtn?.fadeIn();
 
     }
@@ -1844,23 +1844,23 @@ class Board {
         var items = this.items.filter(function (item) {
             return item.position == position;
         });
-        
+
         items.sort(function (a, b) {
             return a.collection_order > b.collection_order ? 1 : -1;
         });
-        if (! ['summon', 'st', 'fz'].includes(position)) {
+        if (!['summon', 'st', 'fz'].includes(position)) {
             items.forEach(function (item, index) {
                 item.collection_order = index + 1;
             });
         }
         return items;
     }
-    getItemsByCollectionOrder( collection_order ) {
+    getItemsByCollectionOrder(collection_order) {
         var items = this.items.filter(function (item) {
             return item.collection_order == collection_order;
         });
         items.sort(function (a, b) {
-            return ( (a.overlap_order||1 ) > (b.overlap_order||1) ) ? 1 : -1;
+            return ((a.overlap_order || 1) > (b.overlap_order || 1)) ? 1 : -1;
         });
         return items;
     }
@@ -2003,17 +2003,17 @@ class Board {
     setWaitingActions(data) {
         var board = this;
         this.waitingActions = data;
-        if( ! data ){
+        if (!data) {
             board.elm.find('.card-slot.highlight').removeClass('highlight');
         }
     }
     setPhase(phase) {
-        if( !(phase && this.phases[phase] ) ) {
+        if (!(phase && this.phases[phase])) {
             phase = 'm1';
         }
-        if( phase && this.phases[phase] ){
-            
-            if( this.currentPhase != phase ){
+        if (phase && this.phases[phase]) {
+
+            if (this.currentPhase != phase) {
                 // writelog(action, id, data, oldData)
                 this.writelog('update-phase', undefined, phase, this.currentPhase);
             }
@@ -2025,15 +2025,15 @@ class Board {
             this.playSoundAnimation('phase');
             //show a popup text (phase full name) in middle of the screen in 1 or 0.5 second. (similar to declare effect)
             this.doAnimation('enterPhase');
-            
+
         }
     }
-    playSoundAnimation( action, delay ){
+    playSoundAnimation(action, delay) {
         var board = this.getBoard();
-        var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect' );
-        if( soundElm.length ){
-            delay = delay||100;
-            setTimeout( function(){
+        var soundElm = board.elm.find('.animation-sound').filter('.' + action + '-sound-effect');
+        if (soundElm.length) {
+            delay = delay || 100;
+            setTimeout(function () {
                 soundElm[0].play();
             }, delay);
         }
@@ -2048,7 +2048,7 @@ class Board {
         board.options.skill = board.skill.name;
         board.skillBtn?.val("Activate " + board.skill.name);
     }
-    activateSkill(){
+    activateSkill() {
         this.skill.activated = true;
         this.writelog('active-skill');
         this.doAnimation('activateSkill');
@@ -2066,7 +2066,7 @@ class Board {
         });
         return _free;
     }
-    getActiveSkill(){
+    getActiveSkill() {
         return this.skill.activated && this.skill.name;
     }
 
@@ -2393,10 +2393,10 @@ class Board {
                 switchState: item.switchState,
                 imageURL: item.imageURL,
                 description: item.description,
-                isOverlap: item.isOverlap||0,
-                isOverlay: item.isOverlay||0,
-                overlap_order: item.overlap_order||0,
-                
+                isOverlap: item.isOverlap || 0,
+                isOverlay: item.isOverlay || 0,
+                overlap_order: item.overlap_order || 0,
+
             });
         });
 
@@ -2435,8 +2435,8 @@ class Board {
      * 
      * @param {Card} card the card to overlay
      */
-    canDoOverlay( card ){
-        if( card.isOverlap ) return false;
+    canDoOverlay(card) {
+        if (card.isOverlap) return false;
         var board = this;
         var card_order = card.collection_order;
         var canBeOverlayCards = board.canBeOverlayCards(card_order);
@@ -2444,19 +2444,19 @@ class Board {
 
     }
     // Only overlay on summon
-    canBeOverlayCards( exclude ){
+    canBeOverlayCards(exclude) {
         var board = this;
-        var canbeOverlayCards = board.getSummonItems().filter(function( card ) { 
-            return ( card.collection_order != exclude ) ;
+        var canbeOverlayCards = board.getSummonItems().filter(function (card) {
+            return (card.collection_order != exclude);
         });
         return canbeOverlayCards;
     }
-    
+
     setWaitingOverlay(data) {
         this.waitingOverlay = data;
         var board = this;
         // this.waitingActions = data;
-        if( ! data ){
+        if (!data) {
             board.elm.find('.card-slot.overlay-highlight').removeClass('overlay-highlight');
         }
     }
@@ -2469,17 +2469,17 @@ class Board {
         var waitingOverlay = this.getWaitingOverlay();
         var card = waitingOverlay.card;
         var canBeOverlayCards = waitingOverlay.canBeOverlayCards;
-        canBeOverlayCards.forEach( _overlaycard => {
+        canBeOverlayCards.forEach(_overlaycard => {
             var slot = _overlaycard.html.closest('.card-slot');
             slot.addClass('waiting-overlay overlay-highlight');
         });
     }
 
-    startDoOverlay( card ){
+    startDoOverlay(card) {
         var board = this;
         var card_order = card.collection_order;
         var canBeOverlayCards = board.canBeOverlayCards(card_order);
-        if( canBeOverlayCards.length ){
+        if (canBeOverlayCards.length) {
             board.setWaitingOverlay({
                 card: card,
                 canBeOverlayCards: canBeOverlayCards,
@@ -2490,18 +2490,18 @@ class Board {
         return false;
     }
 
-    overlayCard( card_uuid, new_order ){
+    overlayCard(card_uuid, new_order) {
         var board = this;
         var card = board.getCard(card_uuid);
         var currentOrder = card.collection_order;
-        var cards = board.getItemsByCollectionOrder( currentOrder );
+        var cards = board.getItemsByCollectionOrder(currentOrder);
         var position = 'summon';
-        var slot = board.getCardHolder(position).filter( function( index, cslot ){
+        var slot = board.getCardHolder(position).filter(function (index, cslot) {
             return $(cslot).data('order') == new_order;
         });
-        if( cards.length ){
-            cards.forEach( _card => {
-                if( _card.uuid != card_uuid ){
+        if (cards.length) {
+            cards.forEach(_card => {
+                if (_card.uuid != card_uuid) {
                     board._updateOverlap(slot, _card, new_order);
 
                 }
@@ -2511,30 +2511,30 @@ class Board {
     }
 
     /* Non public function. Please call overlayCard(uuid, order) */
-    _updateOverlap(slot, card, new_order){
+    _updateOverlap(slot, card, new_order) {
         var board = this;
         var slot = $(slot);
-        var overlapCards = board.getItemsByCollectionOrder( new_order );
+        var overlapCards = board.getItemsByCollectionOrder(new_order);
         var max_order = 0;
-        if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
-            max_order = Math.max( max_order, overlapCard.overlap_order );
+        if (overlapCards.length) overlapCards.forEach(function (overlapCard, index) {
+            max_order = Math.max(max_order, overlapCard.overlap_order);
         });
         card.collection_order = new_order;
-        card.setDataOverlap(max_order+1);
-        card.html.appendTo( slot );
+        card.setDataOverlap(max_order + 1);
+        card.html.appendTo(slot);
     }
     /* Non public function. Please call overlayCard(uuid, order) */
-    _updateOverlay(slot, card, order){
+    _updateOverlay(slot, card, order) {
         var board = this;
 
-        var overlapCards = board.getItemsByCollectionOrder( order );
+        var overlapCards = board.getItemsByCollectionOrder(order);
         var max_order = 0;
         slot.addClass('overlay-slot');
-        if( overlapCards.length ) overlapCards.forEach( function( overlapCard, index ){
-            overlapCard.setDataOverlap( index+1 );
+        if (overlapCards.length) overlapCards.forEach(function (overlapCard, index) {
+            overlapCard.setDataOverlap(index + 1);
             max_order = overlapCard.overlap_order;
         });
-        card.setDataOverlay(max_order+1);
+        card.setDataOverlay(max_order + 1);
 
         // Before animation 
 
@@ -2544,23 +2544,23 @@ class Board {
         // Animation 
 
 
-        card.html.appendTo( slot );
+        card.html.appendTo(slot);
 
         // End animation
     }
 
-    checkOverlaySlot( order ) {
+    checkOverlaySlot(order) {
         var board = this;
-        var slot = board.getCardHolder('summon').filter( function( index, cslot ){
+        var slot = board.getCardHolder('summon').filter(function (index, cslot) {
             return $(cslot).data('order') == order;
         });
-        var cards = board.getItemsByCollectionOrder( order );
-        if( cards.length > 1 ) {
+        var cards = board.getItemsByCollectionOrder(order);
+        if (cards.length > 1) {
             slot.addClass('overlay-slot');
         } else {
             slot.removeClass('overlay-slot');
         }
-        if( cards.length == 1){
+        if (cards.length == 1) {
             cards[0].isOverlay = false;
             cards[0].isOverlap = false;
         }
@@ -2670,19 +2670,19 @@ class Board {
 
 function ygoUUID() {
     let d = new Date().getTime();//Timestamp
-    let d2 = (performance && performance.now && (performance.now()*1000)) || 0; //Time in microseconds since page-load or 0 if unsupported
-    return 'xyxy-xxyy-0510-xyyy-xxxx'.replace(/[xy]/g, function(c) {
-      let r = Math.random() * 16; //random number between 0 and 16
-      if(d > 0){ //Use timestamp until depleted
-        r = (d + r)%16 | 0;
-        d = Math.floor(d/16);
-      } else {  //Use microseconds since page-load if supported
-        r = (d2 + r)%16 | 0;
-        d2 = Math.floor(d2/16);
-      }
-      return (c==='x' ? r : (r&0x3|0x8)).toString(16);
+    let d2 = (performance && performance.now && (performance.now() * 1000)) || 0; //Time in microseconds since page-load or 0 if unsupported
+    return 'xyxy-xxyy-0510-xyyy-xxxx'.replace(/[xy]/g, function (c) {
+        let r = Math.random() * 16; //random number between 0 and 16
+        if (d > 0) { //Use timestamp until depleted
+            r = (d + r) % 16 | 0;
+            d = Math.floor(d / 16);
+        } else {  //Use microseconds since page-load if supported
+            r = (d2 + r) % 16 | 0;
+            d2 = Math.floor(d2 / 16);
+        }
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
-  }
+}
 
 function parseDataFromOther(data) {
     var cards = [];
@@ -2805,7 +2805,7 @@ $(document).ready(function () {
         }
         board = new Board($('#playtest'), data, {
             isDebug: isDebug,
-            skill: json.skill||"",
+            skill: json.skill || "",
         });
     }).fail(function () {
         wv_showError('Get JSON data failed');
@@ -2828,14 +2828,14 @@ $(document).ready(function () {
     function setLogHeight() {
         var elms = logMessage.parent().siblings();
         var m_height = 0;
-        var padding = parseInt( logMessage.css( 'paddingTop') ) + parseInt( logMessage.css( 'paddingBottom' ) ) + parseInt( logMessage.css( 'borderTopWidth') ) + parseInt( logMessage.css( 'borderBottomWidth') );
- 
+        var padding = parseInt(logMessage.css('paddingTop')) + parseInt(logMessage.css('paddingBottom')) + parseInt(logMessage.css('borderTopWidth')) + parseInt(logMessage.css('borderBottomWidth'));
+
         elms.length && elms.each(function () {
-            if( !['fixed', 'absolute'].includes( $(this).css('position') ) ) {
-                m_height += parseInt( $(this).outerHeight(true) );
+            if (!['fixed', 'absolute'].includes($(this).css('position'))) {
+                m_height += parseInt($(this).outerHeight(true));
             }
         });
-        logMessage.height( parseInt( playBoard.outerHeight()) - m_height - padding );
+        logMessage.height(parseInt(playBoard.outerHeight()) - m_height - padding);
         if (lcardinformations.length) {
             lcardinformations.height(playBoard.outerHeight(true) - 10);
             var descriptonsHeight = playBoard.height() - lcardinformations.find('.lcard-header').outerHeight(true);
