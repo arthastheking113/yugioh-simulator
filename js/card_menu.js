@@ -21,7 +21,7 @@ class MenuBase {
         var w = $('.st-slot').first().width();
         this.dialog = this.element.dialog({
             minWidth: 100,
-            minHeight: 60,
+            minHeight: 0,
             width: w,
             height: 'auto',
             modal: false,
@@ -47,12 +47,19 @@ class MenuBase {
         // This is an abstract function
     }
     show() {
-        this.beforeShow();
-        this.dialog.dialog('open');
-        this.afterShow();
+        if( this.beforeShow() ){
+            this.dialog.dialog('open');
+            this.afterShow();
+        }
     }
+
+    /**
+     * Check before show the menu
+     * If this function return false, the menu will not be shown
+     */
     beforeShow() {
         // This is an abstract function
+        return true;
     }
     afterShow() {
         // This is an abstract function
@@ -285,6 +292,18 @@ class CardMenu extends MenuBase {
 
     }
     beforeShow() {
+        var menu = this;
+        var menuItems = menu.element.find('ul').find('li a').filter( function (i, item) {
+            return $(item).css('display') != 'none';
+        });
+        if( !menuItems.length ) {
+            // console.log('No menu items');
+            return false;
+        }
+        var playlog = menu.card.Board.playlog;
+        if( playlog.isRePlaying && !playlog.isPausing) {
+            return false;
+        }
         var card = this.getCard();
         var cardElm = card.html;
         var _board = card.getBoard();
@@ -309,6 +328,7 @@ class CardMenu extends MenuBase {
                 });
             }
         }
+        return true;
 
     }
     setCard(card) {
@@ -381,7 +401,11 @@ class CardMenu extends MenuBase {
             }
 
         });
-        if (this.isSmallScreen()) {
+        if( card.getBoard().playlog.isRePlaying ) {
+            var ul = menu.element.find('ul');
+            ul.find('li a').hide();
+        }
+        if (menu.isSmallScreen()) {
             ul.find('li #this-view').show();
         } else {
             ul.find('li #this-view').hide();
@@ -797,7 +821,18 @@ class CollectionMenu extends MenuBase {
         // This is an abstract function
     }
     beforeShow() {
+        var menu = this;
         var collection = this.getCollection();
+        var menuItems = menu.element.find('ul').find('li a').filter( function (i, item) {
+            return $(item).css('display') != 'none';
+        });
+        if( !menuItems.length ) {
+            return false;
+        }
+        var playlog = collection.Board.playlog;
+        if( playlog.isRePlaying && !playlog.isPausing) {
+            return false;
+        }
         var collectionElm = collection.elm;
         this.element.dialog('option', 'appendTo', '#' + collectionElm.attr('id'));
         this.element.dialog('option', 'position', {
@@ -805,9 +840,20 @@ class CollectionMenu extends MenuBase {
             at: "center top",
             of: '#' + collectionElm.attr('id')
         });
+
+        return true;
     }
     updateMenu() {
-        // Foe Extra deck: Hide all, only show "View" item
+        // For Extra deck: Hide all, only show "View" item
+        var menu = this;
+        var collection = this.getCollection();
+        var ul = menu.element.find('ul');
+        if( collection.getBoard().playlog.isRePlaying ) {
+            ul.find('li a').hide();
+            ul.find('li #this-open').show();
+        } else {
+            ul.find('li a').show();
+        }
     }
     drawHtml() {
         //List actions: View, Banish FD, Banish T., Mill, Shuffle, Draw
@@ -815,7 +861,7 @@ class CollectionMenu extends MenuBase {
         ul.empty();
         // View, Banish FD, Banish T., Mill, Shuffle, Draw
         ul.append(`
-            <li class="menuItem"><a href="javascript:void(0)" data-position="this" data-switch-state="" data-target="this,open">View</a></li>
+            <li class="menuItem"><a href="javascript:void(0)" data-position="this" data-switch-state="" id="this-open" data-target="this,open">View</a></li>
             <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,normal">Banish</a></li>
             <li class="menuItem"><a href="javascript:void(0)" data-position="banish" data-switch-state="" data-target="banish,fold">Banish FD</a></li>
             <li class="menuItem"><a href="javascript:void(0)" data-position="graveyard" data-switch-state="" data-target="graveyard">Mill</a></li>
