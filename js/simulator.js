@@ -266,6 +266,8 @@ class PlayLog {
     }
     // get next step
     step() {
+        var boardElm = this.getBoard().getBoardElm();
+        if (!$('body').find(boardElm).length) return false;
         let isLast = this.isLastStep();
         let step = this.steps[this.pointer++] || 0;
         if (!step) return false;
