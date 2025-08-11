@@ -2,13 +2,16 @@ No NPM, no packages, no deprecated dependencies. A simple HTML/CSS/JS Yugi-Oh! S
 
 Clone the project and run `index.html` (or you can visit our demo site below)
 
-Site: https://simulator.metaduelist.com/
+Vietnamese Site: https://simulator.ygovietnam.com/
 
+US Site: https://simulator.metaduelist.com/
+
+## Please site our repo if you are planning to use our module
 This is a open source project. Feel free to open issue/conversation with us!
 
-We are from https://metaduelist.com/ ❤️!
+We are from Vietnam ❤️!
 
-This is a modular on https://metaduelist.com/ to show a combo.
+This is a modular on https://ygovietnam.com/ & https://metaduelist.com/ to show a combo.
 
 ## Export Board State
 
