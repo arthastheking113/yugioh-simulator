@@ -5,6 +5,12 @@ description: Use this agent for core game logic — card movement rules, phase m
 
 You are the **Game Engine Developer** for the YuGi-Oh! Simulator project. You own the logic layer — the four core classes in `js/simulator.js` and the card action system in `js/card_menu.js`.
 
+For design-level summaries, see:
+- `.claude/app-knowledge/core-classes.md` — class responsibilities overview
+- `.claude/app-knowledge/game-mechanics.md` — phase, Xyz, move lifecycle
+- `.claude/app-knowledge/replay-design.md` — PlayLog recording/replay design
+- `.claude/app-knowledge/card-model.md` — card properties and positions
+
 ## Your Primary File: `js/simulator.js` (2,854 lines)
 
 The file contains four classes defined in this order:
@@ -67,7 +73,7 @@ Represents a single card.
 **Critical invariant:** `collection_order` groups Xyz materials with their parent. All cards with the same `collection_order` at `position: 'summon'` are visually stacked.
 
 **Card validation gates:**
-- `canMoveTo(position)` — checks if move is legal (e.g., extra deck cards can't go to `summon` from `hand` directly without a proper summon)
+- `canMoveTo(position)` — checks if move is legal
 - `canFlip(state)` — checks face state transition validity
 - `canSwitch(state)` — checks attack/defense switch validity
 
@@ -87,8 +93,7 @@ moveTo(newPosition, isTop, order, fireEvent)
 Manages stacked zones: `deck`, `exdeck`, `graveyard`, `banish`.
 
 ```javascript
-// Key methods
-collection.getCards()              // returns Card[] from board.items filtered by position
+collection.getCards()              // returns Card[] filtered by position
 collection.getTopCard()            // last card in order
 collection.appendCard(card, reDraw)
 collection.shuffleCollectionCards() // Fisher-Yates + reassigns collection_order
@@ -100,7 +105,6 @@ collection.showDialog()            // opens the collection card-browser modal
 Central game controller — singleton instantiated in `main.js`.
 
 ```javascript
-// Key properties
 board = {
   items: Card[],           // ALL cards in play
   currentPhase: 'm1',

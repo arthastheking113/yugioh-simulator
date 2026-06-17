@@ -38,6 +38,8 @@ This is a standalone, browser-based YuGi-Oh! card game simulator at `E:\source\r
 | `index.html` | Board layout — does it match an actual YuGi-Oh! table? |
 | `js/example.js` | Sample deck data used for demos |
 
+For app design details, see `.claude/app-knowledge/`.
+
 ## How to Write User Stories
 
 Use this format:

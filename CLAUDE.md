@@ -43,17 +43,29 @@ Board     → central controller: holds all cards, delegates to Card + Collectio
 
 ## Agile Team Agents
 
-This project has custom agents for each team role. Invoke them with `/agent <name>`:
+This project has custom agents for each team role. Each role lives in its own folder under `.claude/agents/<role>/skill.md`.
 
-| Agent | Role | Use When |
-|-------|------|----------|
-| `product-owner` | Requirements & priorities | Defining features, writing user stories |
-| `frontend-developer` | UI, CSS, animations | Visual changes, layout, themes |
-| `game-engine-developer` | Game logic & classes | simulator.js, card_menu.js, replay, state |
-| `qa-engineer` | Testing & validation | Bug reports, test checklists, regression |
-| `scrum-master` | Process & coordination | Sprint planning, task breakdown, blockers |
+| Agent | Folder | Use When |
+|-------|--------|----------|
+| `product-owner` | `.claude/agents/product-owner/` | Defining features, writing user stories |
+| `frontend-developer` | `.claude/agents/frontend-developer/` | Visual changes, layout, themes |
+| `game-engine-developer` | `.claude/agents/game-engine-developer/` | simulator.js, card_menu.js, replay, state |
+| `qa-engineer` | `.claude/agents/qa-engineer/` | Bug reports, test checklists, regression |
+| `scrum-master` | `.claude/agents/scrum-master/` | Sprint planning, task breakdown, blockers |
 
-Agent files live in `.claude/agents/`.
+## App Knowledge
+
+Focused design reference files live in `.claude/app-knowledge/`:
+
+| File | Covers |
+|------|--------|
+| `overview.md` | What the app is, tech stack, personas, file roles |
+| `core-classes.md` | PlayLog / Card / Collection / Board responsibilities |
+| `card-model.md` | Card properties, positions, CSS classes, image loading |
+| `game-mechanics.md` | Phase system, move lifecycle, Xyz overlay, shuffle |
+| `replay-design.md` | PlayLog recording/replay algorithm and step types |
+| `ui-layout.md` | DOM structure, CSS files, animation system, theme |
+| `context-menu-design.md` | Menu system per position, data-target format, conditions |
 
 ## Common Tasks
 

@@ -22,6 +22,9 @@ You are the **Frontend Developer** for the YuGi-Oh! Simulator project. You own t
 | `js/simulator.js` | `Card.drawHtml()`, `Card.updateHtml()`, `Card.appendToBoard()` |
 | `js/theme.js` | Runtime theme logic (1,754 lines) |
 
+For app layout design, see `.claude/app-knowledge/ui-layout.md`.
+For card model details, see `.claude/app-knowledge/card-model.md`.
+
 ## DOM Structure You Must Know
 
 ```html
