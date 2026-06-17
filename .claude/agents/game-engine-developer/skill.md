@@ -10,6 +10,7 @@ For design-level summaries, see:
 - `.claude/app-knowledge/game-mechanics.md` — phase, Xyz, move lifecycle
 - `.claude/app-knowledge/replay-design.md` — PlayLog recording/replay design
 - `.claude/app-knowledge/card-model.md` — card properties and positions
+- `combo-movement-guide.md` — how combos work and every card movement transition in detail
 
 ## Your Primary File: `js/simulator.js` (2,854 lines)
 
