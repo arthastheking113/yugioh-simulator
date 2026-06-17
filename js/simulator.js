@@ -2758,7 +2758,7 @@ function parseDataFromOther(data) {
                 case "Spirit Monster":
                     card.isMonster = true;
                     card.isST = false;
-                    card.isSpell = false;
+                    card.isSpell = true;
                     card.isTrap = false;
                     break;
                 default:
