@@ -28,30 +28,32 @@ For card model details, see `.claude/app-knowledge/card-model.md`.
 ## DOM Structure You Must Know
 
 ```html
-.game-board
-  ├── .card-slot-row           ← field zone + graveyard row
-  │   ├── #field-zone          ← fz position (1 slot)
-  │   ├── .summon-slot[data-order="1..5"]   ← monster zones
-  │   ├── .st-slot[data-order="1..5"]       ← spell/trap zones
-  │   └── .graveyard-zone
-  ├── #hand-board              ← hand cards (dynamic)
-  ├── .extra-deck-zone
-  ├── .deck-zone
-  └── .phase-container         ← DP/SP/M1/BP/M2/EP buttons
+#game-board.game-board
+  ├── .card-slot-row > .phase-container
+  │       └── input.phase-btn[value="dp|sp|m1|bp|m2|ep"] × 6   ← phase key = the `value` attr
+  ├── .card-slot-row     ← extra monster zones + banish:
+  │       .summon-slot.summonex-slot[data-order="exss1"|"exss2"], #banish-slot.card-collection-slot
+  ├── #field.card-slot-row   ← field + main monster zones + graveyard:
+  │       .fz-slot[data-order="fz1"], .summon-slot[data-order="ss1".."ss5"], #graveyard-slot.card-collection-slot
+  ├── .card-slot-row     ← extra deck + S/T zones + deck:
+  │       #extra-deck-slot.card-collection-slot, .st-slot[data-order="st1".."st5"], #deck-slot.card-collection-slot
+  └── #hand > .hand-board#hand-board   ← hand cards (each in a .hand-card-container)
 ```
+
+Every slot is a `.holder-slot.card-slot`; individual zones carry a `data-order` token (`ss1`–`ss5`, `exss1`/`exss2`, `st1`–`st5`, `fz1`). There is no `#field-zone`/`.graveyard-zone`/`.extra-deck-zone`/`.deck-zone` — those names never existed.
 
 ## Card CSS Classes
 
-A card element carries these meaningful classes:
-- `.card-item` — base class for all cards
-- `.fold-state-normal` / `.fold-state-fold` — face-up vs face-down
-- `.switch-state-attack` / `.switch-state-defense` — rotation
-- `.is-monster` / `.is-spell` / `.is-trap` / `.is-st` — card type
-- `.is-overlay` — Xyz material card
-- `.is-overlap` — Xyz monster with attached materials
-- `.position-hand` / `.position-summon` / `.position-st` etc.
-- `.card-targeted` — targeting animation active
-- `.card-declared` — declare animation active
+A card element carries these meaningful classes (verified against `drawHtml`/`updateHtml` + `css/simulator.css` — the names are the bare property values):
+- `.simulator-card` — base class for all cards (also `.card-id-{uuid}`)
+- `.normal` / `.fold` — face-up vs face-down
+- `.attack` / `.defense` — battle position (`.defense` rotates 90°)
+- `.isMonster` / `.isSpell` / `.isTrap` / `.isST` — card type (literal names)
+- `.overlap` — this card IS an Xyz material (beneath)
+- `.overlay` — this card IS the Xyz monster carrying materials (on top)
+- `.hand` / `.summon` / `.st` / `.fz` / `.deck` / `.exdeck` / `.graveyard` / `.banish` — position value
+
+There are no `.card-item`, `.fold-state-*`, `.switch-state-*`, `.position-*`, `.is-*`, `.card-targeted`, or `.card-declared` classes. Effect animations use Animate.css classes injected by `doAnimation()`. The holder slot gets `.overlay-slot` for an Xyz pile.
 
 ## Animation System
 
@@ -77,7 +79,7 @@ card.doAnimation('target')  // adds CSS animation class briefly
 
 ## Defense Position
 
-Defense position cards rotate 90°. This is handled by `.switch-state-defense` CSS class. When `switchState === 'defense'`, the card slot must accommodate the rotated aspect ratio.
+Defense position cards rotate 90°. This is handled by the `.defense` CSS class. When `switchState === 'defense'`, the card slot must accommodate the rotated aspect ratio.
 
 ## Card Image Loading
 
@@ -102,7 +104,7 @@ jQuery UI Touch Punch (`js/jquery.ui.touch-punch.min.js`) enables drag-drop on t
 
 ## Common Pitfalls
 
-- Changing `.card-item` dimensions breaks the defense rotation calculation
+- Changing `.simulator-card` dimensions breaks the defense rotation calculation
 - Overlay cards sit at lower z-index than their parent Xyz card
 - Hand cards use flex layout; adding margin/padding shifts all cards
 - Phase announcement uses `position: fixed` — test it doesn't clip on small screens

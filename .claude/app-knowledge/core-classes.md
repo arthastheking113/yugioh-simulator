@@ -47,5 +47,5 @@ Board (singleton)
 | **Individual** | `summon` (1–5), `st` (1–5), `fz` | Each card in its own numbered slot |
 
 `collection_order` means different things per zone type:
-- In individual zones → the slot number (1–5)
+- In individual zones → the slot's `data-order` token (`ss1`–`ss5`, `exss1`/`exss2`, `st1`–`st5`, `fz1`)
 - In collection zones → sequential index for ordering

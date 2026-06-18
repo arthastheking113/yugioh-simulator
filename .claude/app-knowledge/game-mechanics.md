@@ -58,22 +58,24 @@ The most complex mechanic. An Xyz monster in a `summon` slot can have "material"
 **Attach flow (`board.overlayCard(uuid, new_order)`):**
 1. Collect all cards at the same `collection_order` as the Xyz card
 2. Move all to `new_order` slot
-3. Set main Xyz card: `isOverlap = true`
-4. Set each material: `isOverlay = true`, `overlap_order = N` (1, 2, 3…)
+3. Set main Xyz card: `isOverlay = true`, `overlap_order = max + 1` (highest)
+4. Set each material: `isOverlap = true`, `overlap_order = N` (1, 2, 3…)
 5. Add `.overlay-slot` CSS class to the DOM slot element
 
 **Detach flow (`board.detachOverlay(uuid)`):**
 1. Move material to graveyard
 2. Decrement `overlap_order` of remaining materials
-3. If no materials remain: set Xyz card `isOverlap = false`
+3. If no materials remain: set Xyz card `isOverlay = false`
 
 **State invariant:**
 
-| Property | Main Xyz card | Material card |
-|----------|:------------:|:-------------:|
-| `isOverlap` | `true` | `false` |
-| `isOverlay` | `false` | `true` |
-| `overlap_order` | `0` | `1`, `2`, `3`… |
+| Property | Main Xyz card (on top) | Material card (beneath) |
+|----------|:----------------------:|:-----------------------:|
+| `isOverlap` | `false` | `true` |
+| `isOverlay` | `true` | `false` |
+| `overlap_order` | `max + 1` (highest) | `1`, `2`, `3`… |
+
+> Verified against `setDataOverlap`/`setDataOverlay` in `simulator.js`: **`isOverlap === true` marks a MATERIAL**, **`isOverlay === true` marks the XYZ MONSTER** that carries them. (The names read backwards from intuition.)
 
 `collection_order` must be the same value for the Xyz card and all its materials — this is how they're visually grouped in the slot.
 

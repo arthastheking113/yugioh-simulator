@@ -151,12 +151,12 @@ Represents a single card. Each card manages its own DOM element and animations.
 | Property | Type | Values | Meaning |
 |----------|------|--------|---------|
 | `cardId` | Number | e.g. `48130397` | Card database ID |
-| `uuid` | String | UUID v4 | Unique instance ID |
+| `uuid` | String | custom (not RFC-4122) | Unique instance ID; template `'xyxy-xxyy-0510-xyyy-xxxx'` |
 | `name` | String | card name | Display name |
 | `position` | String | see Positions | Current zone |
 | `foldState` | String | `normal`, `fold` | Face-up / face-down |
 | `switchState` | String | `attack`, `defense` | Battle position |
-| `collection_order` | Number | 1–5 / auto | Slot in zone or collection index |
+| `collection_order` | Number or String | `"ss3"` / `7` | Slot token in individual zones; numeric index in collections |
 | `isSpell` | Boolean | | Is a spell card |
 | `isTrap` | Boolean | | Is a trap card |
 | `isMonster` | Boolean | | Is a monster card |
@@ -164,9 +164,9 @@ Represents a single card. Each card manages its own DOM element and animations.
 | `isExtra` | Boolean | | Belongs to extra deck |
 | `imageURL` | String | URL or `''` | Card art source |
 | `description` | String | card text | Shown in info panel |
-| `isOverlay` | Boolean | | True if Xyz material |
-| `isOverlap` | Boolean | | True if has Xyz materials attached |
-| `overlap_order` | Number | 1, 2, 3… | Stacking position of this material |
+| `isOverlap` | Boolean | | True if this card IS an Xyz material (beneath) |
+| `isOverlay` | Boolean | | True if this card IS the Xyz monster carrying materials (on top) |
+| `overlap_order` | Number | 0, 1, 2, 3… | Stacking position: materials `1..N`, the Xyz monster gets `max + 1` |
 
 #### Lifecycle: `moveTo(newPosition, isTop, order, fireEvent)`
 
@@ -299,8 +299,8 @@ board.importState(state)
 | `hand` | Player hand | Unlimited | Displayed at bottom |
 | `deck` | Main deck | Unlimited | Collection (stacked) |
 | `exdeck` | Extra deck | Unlimited | Collection (stacked) |
-| `summon` | Monster zones | 5 slots | `collection_order` = slot 1–5 |
-| `st` | Spell/trap zones | 5 slots | `collection_order` = slot 1–5 |
+| `summon` | Monster zones | 5 slots | `collection_order` = slot token `ss1`–`ss5` (+ `exss1`/`exss2`) |
+| `st` | Spell/trap zones | 5 slots | `collection_order` = slot token `st1`–`st5` |
 | `fz` | Field zone | 1 slot | |
 | `graveyard` | Graveyard | Unlimited | Collection (stacked) |
 | `banish` | Banished zone | Unlimited | Collection (stacked) |
@@ -316,15 +316,17 @@ board.importState(state)
 
 | `foldState` | CSS Class | Meaning |
 |-------------|-----------|---------|
-| `normal` | `.fold-state-normal` | Face-up (card art visible) |
-| `fold` | `.fold-state-fold` | Face-down (card back shown) |
+| `normal` | `.normal` | Face-up (card art visible) |
+| `fold` | `.fold` | Face-down (card back shown) |
 
 ### Switch State (battle position)
 
 | `switchState` | CSS Class | Visual |
 |---------------|-----------|--------|
-| `attack` | `.switch-state-attack` | Upright |
-| `defense` | `.switch-state-defense` | Rotated 90° |
+| `attack` | `.attack` | Upright |
+| `defense` | `.defense` | Rotated 90° |
+
+> The card element itself is `.simulator-card` (not `.card-item`); position adds a bare class like `.summon`/`.hand`, and Xyz cards add `.overlap` (material) / `.overlay` (monster). No `.fold-state-*`/`.switch-state-*`/`.position-*` classes exist.
 
 ---
 
@@ -342,8 +344,8 @@ Player selects Monster A + Material B, triggers Overlay:
 
 board.overlayCard(uuid_A, 2)
   → Move Monster A and Material B to slot 2
-  → Monster A: isOverlap = true  (has materials)
-  → Material B: isOverlay = true, overlap_order = 1
+  → Monster A:   isOverlay = true  (it is the Xyz monster carrying materials), overlap_order = max+1
+  → Material B:  isOverlap = true  (it is a material), overlap_order = 1
   → DOM slot 2 gets class .overlay-slot
 
 After overlay:
@@ -356,16 +358,18 @@ After overlay:
 board.detachOverlay(uuid_material)
   → Move material to graveyard
   → Decrement overlap_order of remaining materials
-  → If no materials left: Monster A.isOverlap = false
+  → If no materials left: Monster A.isOverlay = false
 ```
 
 ### State Properties
 
-| Property | On main Xyz card | On material card |
-|----------|-----------------|-----------------|
-| `isOverlap` | `true` | `false` |
-| `isOverlay` | `false` | `true` |
-| `overlap_order` | `0` | `1`, `2`, `3`… |
+| Property | On main Xyz card (on top) | On material card (beneath) |
+|----------|:-------------------------:|:--------------------------:|
+| `isOverlap` | `false` | `true` |
+| `isOverlay` | `true` | `false` |
+| `overlap_order` | `max + 1` (highest) | `1`, `2`, `3`… |
+
+> Verified: **`isOverlap === true` is a MATERIAL**; **`isOverlay === true` is the XYZ MONSTER** carrying materials (the flag names read backwards from intuition). Set by `setDataOverlap`/`setDataOverlay` in `simulator.js`.
 
 ---
 
@@ -533,25 +537,25 @@ setPhase(phase)
 
 ```html
 body
-└── .game-container
-    ├── .game-board
-    │   ├── .top-row
-    │   │   ├── #extra-deck-zone        ← exdeck Collection
-    │   │   └── .opponent-area          ← (visual only, no logic)
-    │   ├── .field-row
-    │   │   ├── #field-zone             ← fz position
-    │   │   ├── .summon-slot[data-order="1"] ... [data-order="5"]
-    │   │   ├── .st-slot[data-order="1"] ... [data-order="5"]
-    │   │   └── .graveyard-zone         ← graveyard Collection
-    │   ├── #deck-zone                  ← deck Collection
-    │   └── #hand-board                 ← hand cards (flex row)
-    ├── .phase-container
-    │   └── .phase-btn[data-phase="dp|sp|m1|bp|m2|ep"] × 6
-    ├── .log-message-container          ← replay log messages
-    └── .lcard-informations             ← card info panel (hover)
+└── .play-board-container
+    ├── #playtest.play-board > #game-board.game-board
+    │   ├── .game-resource.hidden        ← <audio> sound effects (declare/reveal/target/phase)
+    │   ├── .row.actions                 ← #new button, coin/dice tools
+    │   ├── .card-slot-row > .phase-container
+    │   │       └── input.phase-btn[value="dp|sp|m1|bp|m2|ep"] × 6   ← phase key is the `value`
+    │   ├── .card-slot-row               ← extra monster zones + banish:
+    │   │       .summon-slot.summonex-slot[data-order="exss1"|"exss2"], #banish-slot.card-collection-slot
+    │   ├── #field.card-slot-row         ← field + main monster zones + graveyard:
+    │   │       .fz-slot[data-order="fz1"], .summon-slot[data-order="ss1".."ss5"], #graveyard-slot.card-collection-slot
+    │   ├── .card-slot-row               ← extra deck + S/T zones + deck:
+    │   │       #extra-deck-slot.card-collection-slot, .st-slot[data-order="st1".."st5"], #deck-slot.card-collection-slot
+    │   └── #hand > .hand-board#hand-board   ← hand cards (each wrapped in .hand-card-container)
+    ├── aside.play-board-side > .log-message-container   ← record/replay controls, #log-message, chat
+    ├── aside.play-board-side.lcard-informations         ← card info panel (hover)
+    └── #cardMenu / #collectionMenu / #deckmenu / #extradeckmenu / #graveyardmenu / #banishmenu
 ```
 
-Each card's DOM element (`<div class="card-item ...">`) is inserted into the appropriate slot element by `card.appendToBoard()`.
+Each card's DOM element (`<div class="simulator-card card-id-{uuid}" ...>` — NOT `.card-item`) is inserted into the appropriate slot by `card.appendToBoard()`; individual-zone slots are matched via `.card-slot[data-order="<collection_order>"]`.
 
 ---
 
@@ -633,13 +637,13 @@ Never directly mutate `card.someProperty`. Always go through `board.updateItem(u
 
 Adding a new card property? Update both `exportState()` (to serialize it) and `importState()` (to restore it). Otherwise imported/replayed states will be missing the field.
 
-### Rule: `collection_order` = slot number for individual zones
+### Rule: `collection_order` = slot token for individual zones
 
-For `summon` and `st`, `collection_order` is the slot number (1–5). For collections (deck, graveyard, etc.), it's a sequential index used for ordering. Don't mix these up.
+For `summon`, `st`, and `fz`, `collection_order` is the target slot's `data-order` **token string** (`ss1`–`ss5`, `exss1`/`exss2`, `st1`–`st5`, `fz1`) — verified in `index.html` and the sample data. For collections (deck, graveyard, etc.), it's a numeric index (new tops get `previousTop + 2`). Don't mix these up.
 
 ### Card UUID
 
-Generated by `ygoUUID()` — a custom implementation using `Date.now()` + `performance.now()` microseconds. Format follows UUID v4. Auto-assigned in `board.addItem()` if not provided.
+Generated by `ygoUUID()` — a custom implementation using `Date.now()` + `performance.now()` microseconds. It is **not** standard UUID v4; the actual template is `'xyxy-xxyy-0510-xyyy-xxxx'`. Auto-assigned in the `Card` constructor (and defensively in `board.addItem()`) when `uuid` is `0`.
 
 ### No Build Step
 

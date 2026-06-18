@@ -57,7 +57,7 @@ Represents a single card.
   position: 'deck'|'hand'|'summon'|'st'|'fz'|'graveyard'|'banish'|'exdeck',
   foldState: 'normal'|'fold',
   switchState: 'attack'|'defense',
-  collection_order: Number,  // slot position within zone (1–5 for summon/st)
+  collection_order: Number|String,  // collection: numeric index; individual zone: slot token ("ss3","st4","fz1")
   isSpell: Boolean,
   isTrap: Boolean,
   isMonster: Boolean,
@@ -65,8 +65,8 @@ Represents a single card.
   isExtra: Boolean,
   imageURL: String,
   description: String,
-  isOverlay: Boolean,    // true = this card IS an Xyz material
-  isOverlap: Boolean,    // true = this card HAS Xyz materials on it
+  isOverlap: Boolean,    // true = this card IS an Xyz material (sits beneath the monster)
+  isOverlay: Boolean,    // true = this card IS the Xyz monster carrying materials (on top)
   overlap_order: Number  // material's stacking position
 }
 ```
@@ -198,7 +198,7 @@ Action mapping:
 ```javascript
 function ygoUUID() {
   // Uses Date.now() + performance.now() microseconds
-  // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  // Template: 'xyxy-xxyy-0510-xyyy-xxxx'  (custom, NOT standard UUID v4)
 }
 ```
 
@@ -208,7 +208,7 @@ function ygoUUID() {
 2. Every user-triggered action must write a step to `PlayLog` via `board.playlog.writelog(step)` — replay depends on this
 3. `canMoveTo()` / `canFlip()` / `canSwitch()` must be checked before any state change
 4. `emptyBoard()` must clear both `board.items[]` and the DOM — never just one
-5. `collection_order` for summon/ST zones must be 1–5 (slot numbers), never 0
+5. `collection_order` for summon/ST/FZ zones must be the slot's `data-order` token (`ss1`–`ss5`, `exss1`/`exss2`, `st1`–`st5`, `fz1`), never `0`
 
 ## Common Bugs to Watch
 
