@@ -4,27 +4,29 @@
 
 ```html
 body
-└── .game-container
-    ├── .game-board
-    │   ├── .top-row
-    │   │   ├── #extra-deck-zone          ← exdeck Collection (stacked)
-    │   │   └── .opponent-area            ← visual only, no logic
-    │   ├── .field-row
-    │   │   ├── #field-zone               ← fz position (1 slot)
-    │   │   ├── .summon-slot[data-order="1..5"]   ← monster zones
-    │   │   ├── .st-slot[data-order="1..5"]       ← spell/trap zones
-    │   │   └── .graveyard-zone           ← graveyard Collection
-    │   ├── #deck-zone                    ← deck Collection
-    │   └── #hand-board                   ← hand cards (flex row, dynamic)
-    ├── .phase-container
-    │   └── .phase-btn[data-phase="dp|sp|m1|bp|m2|ep"] × 6
-    ├── .log-message-container            ← replay step log messages
-    └── .lcard-informations               ← card info panel (shown on hover)
+└── .play-board-container
+    ├── #playtest.play-board > #game-board.game-board
+    │   ├── .game-resource.hidden        ← <audio> sound effects (declare/reveal/target/phase)
+    │   ├── .row.actions                 ← #new button, coin/dice tools
+    │   ├── .card-slot-row > .phase-container
+    │   │       └── input.phase-btn[value="dp|sp|m1|bp|m2|ep"] × 6   ← phase key is the `value` attr (no data-phase)
+    │   ├── .card-slot-row               ← extra monster zones + banish:
+    │   │       .summon-slot.summonex-slot[data-order="exss1"|"exss2"], #banish-slot.card-collection-slot
+    │   ├── #field.card-slot-row         ← field + main monster zones + graveyard:
+    │   │       .fz-slot[data-order="fz1"], .summon-slot[data-order="ss1".."ss5"], #graveyard-slot.card-collection-slot
+    │   ├── .card-slot-row               ← extra deck + S/T zones + deck:
+    │   │       #extra-deck-slot.card-collection-slot, .st-slot[data-order="st1".."st5"], #deck-slot.card-collection-slot
+    │   └── #hand > .hand-board#hand-board   ← hand cards (each in a .hand-card-container)
+    ├── aside.play-board-side > .log-message-container   ← replay/record controls, #log-message, chat
+    ├── aside.play-board-side.lcard-informations         ← card info panel (shown on hover)
+    └── #cardMenu / #collectionMenu / #deckmenu / #extradeckmenu / #graveyardmenu / #banishmenu
 ```
+
+> Every slot is a `.holder-slot.card-slot`; individual zones add `.summon-slot`/`.summonex-slot`/`.st-slot`/`.fz-slot` + a `data-order` token; collection zones add `.card-collection-slot` with a `.collection-count` badge. There is **no** `.game-container`/`.top-row`/`.field-row`/`#field-zone`/`#deck-zone` — those never existed.
 
 ## Card DOM Element
 
-Each card is a `<div class="card-item ...">` inserted into the appropriate slot by `card.appendToBoard()`. The full class list reflects the card's current state — see `card-model.md` for the full class mapping.
+Each card is a `<div class="simulator-card card-id-{uuid}" ...>` (NOT `.card-item`) inserted into the appropriate slot by `card.appendToBoard()`. The full class list reflects the card's current state — see `card-model.md` for the verified class mapping (`.normal`/`.fold`, `.attack`/`.defense`, position value, `.overlap`/`.overlay`).
 
 ## CSS File Responsibilities
 
@@ -47,7 +49,7 @@ Each card is a `<div class="card-item ...">` inserted into the appropriate slot 
 |-----------|-----------|---------|
 | Card movement | jQuery `.animate()` on a position clone | 400ms |
 | Card flip | CSS class swap (fold state) | 5ms (immediate) |
-| Defense rotation | CSS class swap `.switch-state-defense` | Instant |
+| Defense rotation | CSS class swap `.defense` | Instant |
 | Target / Declare / Reveal | Animate.css class injection | ~600ms |
 | Phase announcement | `position: fixed` overlay + zoom CSS | 1000ms |
 | Skill activation | Same as phase announcement | 1000ms |
@@ -56,7 +58,7 @@ Each card is a `<div class="card-item ...">` inserted into the appropriate slot 
 
 ## Defense Position
 
-`.switch-state-defense` rotates the card 90°. Card slots must accommodate the rotated aspect ratio — changing `.card-item` width/height without adjusting the slot container will break defense position display.
+`.defense` rotates the card 90°. Card slots must accommodate the rotated aspect ratio — changing `.simulator-card` width/height without adjusting the slot container will break defense position display.
 
 ## Xyz Overlay Visual
 
@@ -67,7 +69,7 @@ When cards are overlaid:
 
 ## Hand Layout
 
-`#hand-board` uses flexbox. Cards space evenly as more are added. Adding margin/padding to `.card-item` shifts all hand cards — test with full 5+ card hands.
+`#hand-board` uses flexbox. Cards space evenly as more are added. Adding margin/padding to `.simulator-card` shifts all hand cards — test with full 5+ card hands.
 
 ## Mobile
 

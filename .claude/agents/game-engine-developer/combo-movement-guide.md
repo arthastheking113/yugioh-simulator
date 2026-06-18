@@ -66,7 +66,7 @@ Every arrow is a `card.moveTo(destination)` call.
         isTop=true  → collection_order = topCard.collection_order + 2
         isTop=false → collection_order = 0 (bottom)
    └─ individual zone (summon/st/fz):
-        collection_order = the slot number (1–5)
+        collection_order = the slot's data-order token (e.g. "ss3", "st4", "fz1")
 
 6. card.position = newPosition
 
@@ -122,12 +122,12 @@ card.moveTo('hand', true, null, true)
 
 ```javascript
 card.moveTo('summon', false, slotNumber, true)
-// slotNumber = 1–5, isTop=false (irrelevant for individual zone)
+// slotNumber = a slot token like "ss3" (NOT an integer 1–5); isTop irrelevant for individual zones
 ```
 
 **What changes:**
 - `card.position`: `'hand'` → `'summon'`
-- `card.collection_order`: set to `slotNumber` (1–5)
+- `card.collection_order`: set to `slotNumber` (a slot token, e.g. "ss3")
 - `card.switchState`: stays `'attack'` (or `'defense'` if Set)
 - `card.foldState`: stays `'normal'` (or `'fold'` if Set)
 
@@ -165,7 +165,7 @@ card.moveTo('fz', false, null, true)
 
 **canMoveTo guard:** `card.isSpell` must be `true` AND field zone must be empty.
 
-**DOM change:** Card appended to `#field-zone` element.
+**DOM change:** Card appended to the field-zone slot `.fz-slot.card-slot[data-order="fz1"]`.
 
 ---
 
@@ -323,10 +323,10 @@ card.moveTo('deck', false, null, true)  // bottom of deck
 | → graveyard | unchanged | reset to `attack` | new top |
 | → banish | unchanged | reset to `attack` | new top |
 | from banish → anywhere | **forced `normal`** | reset to `attack` | new position |
-| → summon | unchanged | unchanged | slot number (1–5) |
-| → st | unchanged | unchanged | slot number (1–5) |
+| → summon | unchanged | unchanged | slot token (ss1–ss5, exss1/exss2) |
+| → st | unchanged | reset to `attack` | slot token (st1–st5) |
 | → exdeck | unchanged | reset to `attack` | new top |
-| → fz | unchanged | unchanged | 0 |
+| → fz | unchanged | reset to `attack` | fz1 |
 
 ---
 
