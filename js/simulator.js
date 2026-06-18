@@ -2750,11 +2750,9 @@ function parseDataFromOther(data) {
                 case "Ritual Monster":
                 case "Pendulum Effect Fusion Monster":
                 case "Union Effect Monster":
-                case "Spirit Monster":
                 case "Pendulum Tuner Effect Monster":
                 case "Gemini Monster":
                 case "Pendulum Flip Effect Monster":
-                case "Spirit Monster":
                 case "Spirit Monster":
                     card.isMonster = true;
                     card.isST = false;
