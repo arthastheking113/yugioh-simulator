@@ -76,6 +76,9 @@ class PlayLog {
             playLog.elm.find('.start-record-button').removeClass('hidden');
             playLog.elm.find('.stop-record-button').addClass('hidden');
 
+            // Combo graph: auto-generate from the just-recorded combo.
+            if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
+
         });
 
         playLog.elm.find('.pause-button').off('click').on('click', function () {
@@ -2627,6 +2630,8 @@ class Board {
                 playLog[key] = value;
             }
         }
+        // Combo graph: load the graph for the imported combo.
+        if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
     }
 
     // Check if inpput state is JSON or string of JSON data
@@ -2813,6 +2818,8 @@ $(document).ready(function () {
             isDebug: isDebug,
             skill: json.skill || "",
         });
+        // Combo graph: load the graph alongside the board JSON.
+        if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
     }).fail(function () {
         wv_showError('Get JSON data failed');
 

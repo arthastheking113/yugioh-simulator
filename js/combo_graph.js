@@ -346,6 +346,10 @@ class ComboGraph {
         }
     });
 
+    // Public refresh: (re)build the graph from the current board state.
+    // Called on Stop Record and whenever board JSON is loaded.
+    window.comboGraphRefresh = generate;
+
     // Hooks invoked from simulator.js during replay.
     window.comboGraphOnReplayStart = function () {
         var g = getGraph();
