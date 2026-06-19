@@ -2808,6 +2808,26 @@ function wv_showError(msg) {
 $(document).ready(function () {
     const isDebug = urlParams.get('debug');
 
+    // --- Load a saved board state from the local board.json file ---------------
+    // board.json is a full board export (items + playLogData) produced by
+    // board.exportState(). We restore it with importState(), which also brings
+    // back the recorded combo (so it can be replayed and shown in the combo
+    // graph). importState() itself triggers the combo-graph refresh.
+    $.getJSON('board.json', function (state) {
+        board = new Board($('#playtest'), state.items, {
+            isDebug: isDebug,
+            skill: (state.skill && state.skill.name) || "",
+        });
+        board.importState(state);
+    }).fail(function () {
+        wv_showError('Get board.json data failed');
+    });
+
+    // --- Original: load the sample deck from the live API ----------------------
+    // Kept on purpose. If you'd rather fetch the deck from the API than load the
+    // local board.json above, comment out the board.json loader and un-comment
+    // this block instead.
+    /*
     var jsonUrl = 'https://ygovietnamcdn.azureedge.net/storage/Assets/sample-simulator-deck.json';
     // jsonUrl = '0';
     $.getJSON(jsonUrl, function (data) {
@@ -2831,6 +2851,7 @@ $(document).ready(function () {
         console.log(board);
 
     })
+    */
 
     var playBoard = $('#playtest');
     var logMessage = $('#log-message');
