@@ -104,7 +104,7 @@ Importing a state restores the playlog, so combos can be shared and replayed fro
 | Hook | Call site | Purpose |
 |------|-----------|---------|
 | `window.comboGraphOnReplayStart()` | `replay()` (after `isRePlaying = true`) | rebuild the graph so node indices match the steps about to play |
-| `window.comboGraphOnStep(pointer - 1)` | `playStep()` (after a valid step is dequeued) | highlight the node for the step now playing |
+| `window.comboGraphOnStep(pointer - 1)` | `playStep()` (after a valid step is dequeued) | highlight the node for the step now playing (scrolled into view inside the graph container only — never scrolls the page) |
 | `window.comboGraphOnReplayEnd()` | `stopReplay()` | clear the highlight |
 
 Separately, `window.comboGraphRefresh()` (re)builds the graph from `board.exportState()` and is called on **Stop Record**, in **`importState()`**, and after the **initial board load** — so the graph is always current without a manual button.

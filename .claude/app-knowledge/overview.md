@@ -43,6 +43,12 @@ jQuery → jQuery UI → Touch Punch → card_menu.js → simulator.js → main.
 
 > **Cache-bust gotcha:** scripts/styles are versioned with `?v=N` query strings. When you edit a JS/CSS file, **bump its `?v=` in `index.html`** or the browser may serve a stale cached copy (the `Last-Modified` heuristic can skip revalidation).
 
+## Startup Data Load
+
+On `$(document).ready` (bottom of `simulator.js`), the app loads a **saved board state from the local `board.json`** (a full `board.exportState()` export — `items` + `playLogData`) and restores it with `board.importState(state)`. That also brings back the recorded combo and builds the combo graph.
+
+The original "fetch the sample deck from the live API" loader (`$.getJSON('…/sample-simulator-deck.json')` → `parseDataFromOther` → `new Board`) is **kept but commented out** in `simulator.js`, with a note on how to switch back (comment out the `board.json` loader, un-comment the API block). Note the two paths differ: the API path is a *deck* (`parseDataFromOther`, fresh board); `board.json` is a *full state* (`importState`).
+
 ## Local Preview
 
 No build step. Open `index.html`, or serve the folder — `.claude/launch.json` defines a `static` server (`python -m http.server 8123`) used for previewing/verifying changes.

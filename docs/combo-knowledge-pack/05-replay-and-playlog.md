@@ -146,10 +146,10 @@ The same `steps[]` that replay consumes also drive the **combo graph** — a rea
 | Hook | Call site | Purpose |
 |------|-----------|---------|
 | `window.comboGraphOnReplayStart()` | `replay()` | rebuild the graph so node indices match the steps about to play |
-| `window.comboGraphOnStep(pointer - 1)` | `playStep()` (after a valid step is dequeued) | highlight the node for the step now playing |
+| `window.comboGraphOnStep(pointer - 1)` | `playStep()` (after a valid step is dequeued) | highlight the node for the step now playing, scrolling it into view **inside the graph container only** (never scrolls the page) |
 | `window.comboGraphOnReplayEnd()` | `stopReplay()` | clear the highlight |
 
-A separate `window.comboGraphRefresh()` rebuilds the graph from `board.exportState()` and is invoked on **Stop Record**, inside **`importState()`**, and after the **initial board load** — so the graph always reflects the current recording without a manual button.
+A separate `window.comboGraphRefresh()` rebuilds the graph from `board.exportState()` and is invoked on **Stop Record**, inside **`importState()`**, and after the **initial board load** — so the graph always reflects the current recording without a manual button. (At startup the app loads a saved state via `importState(board.json)`, so the saved combo's graph appears immediately.)
 
 ---
 

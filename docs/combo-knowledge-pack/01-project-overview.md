@@ -84,7 +84,7 @@ yugioh-simulator/
 | `js/Function.js` | Clipboard, `localStorage` helpers, toast notifications |
 | `js/combo_graph.js` | `ComboGraph` — read-only visual flow graph of a recorded combo |
 | `js/theme.js` | Runtime theme switching (writes CSS variables on `:root`) |
-| `js/example.js` | A large sample deck used to populate the board on first load |
+| `js/example.js` | A large sample deck data set (JSON). Not in the current script load order — see "Startup data load" below for what actually loads. |
 
 ## Script load order (this ordering is load-bearing)
 
@@ -106,6 +106,12 @@ yugioh-simulator/
 9. theme.js                   ← runtime theme switching
 10. removeBackDrop.js         ← small jQuery-UI dialog backdrop cleanup
 ```
+
+## Startup data load
+
+On `$(document).ready` (bottom of `simulator.js`), the app loads a **saved board state from a local `board.json`** (a full `board.exportState()` export — `items` + `playLogData`) and restores it with `board.importState(state)`. That re-creates the cards in their saved zones, restores phase/skill, and brings back the recorded combo (so it can be replayed and shown in the combo graph).
+
+The original loader — fetch the sample deck from the live API (`$.getJSON('…/sample-simulator-deck.json')` → `parseDataFromOther` → `new Board`) — is **kept but commented out**, with a note on how to switch back. Key difference: the API path is a *deck* (built fresh via `parseDataFromOther`), whereas `board.json` is a *full state* (restored via `importState`). See [05-replay-and-playlog.md](05-replay-and-playlog.md) for the export/import format.
 
 `card_menu.js` **must** load before `simulator.js` because `Board` references `CardMenu` during construction. Reordering these breaks initialization.
 

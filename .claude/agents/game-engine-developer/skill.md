@@ -202,6 +202,8 @@ Action mapping:
 }
 ```
 
+**Startup load:** on `$(document).ready` (bottom of `simulator.js`) the app fetches the local **`board.json`** (a full export in the shape above) and restores it via `board.importState(state)` — not the deck path. The old sample-deck API loader (`$.getJSON('…/sample-simulator-deck.json')` → `parseDataFromOther` → `new Board`) is kept but commented out, with a note on how to re-enable it. So `board.json` must stay valid JSON in this exact shape, and any new `exportState`/`importState` field flows through it.
+
 ## Xyz Overlay Mechanics — Read Carefully
 
 1. Player hovers a face-up monster → clicks "Overlay" → `board.startDoOverlay(card)` → `selectOverlay()` marks each candidate summon slot with `waiting-overlay overlay-highlight` and stores `setWaitingOverlay({card, canBeOverlayCards})`

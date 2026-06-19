@@ -127,7 +127,7 @@ jQuery UI **Touch Punch** (`js/jquery.ui.touch-punch.min.js`) enables drag-drop 
 - **Input:** the export's `playLogData.initItems`/`items` (→ a `uuid → {name, imageURL}` lookup) and `playLogData.steps[]` (→ the ordered flow). See [05-replay-and-playlog.md](05-replay-and-playlog.md).
 - **Each step → a node:** a position-changing `update` → card image + action verb (Draw / Summon / Send to GY / Banish / …) + a destination zone chip; `overlay` → a material node, with consecutive overlays joined by a `+`; fold/switch-only updates and `target`/`declare`/`reveal` → small badges; `update-phase` → a divider; record markers / `chat` / `shuffle` are skipped (their step index is preserved so replay highlighting stays aligned).
 - **Rotatable:** container class `.horizontal` ⇄ `.vertical` via the `#rotate-graph` button. There is **no** manual "Generate" button — it auto-builds.
-- **Auto-build + live sync:** `window.comboGraphRefresh()` rebuilds from the current board on Stop Record, in `importState()`, and on initial load; during replay the engine calls guarded `comboGraphOnReplayStart` / `comboGraphOnStep` / `comboGraphOnReplayEnd` hooks to highlight the playing step. Detail in [05-replay-and-playlog.md](05-replay-and-playlog.md).
+- **Auto-build + live sync:** `window.comboGraphRefresh()` rebuilds from the current board on Stop Record, in `importState()`, and on initial load; during replay the engine calls guarded `comboGraphOnReplayStart` / `comboGraphOnStep` / `comboGraphOnReplayEnd` hooks to highlight the playing step. The highlight scrolls the active node into view **within the graph's own scroll box only** — it never scrolls the main page to the graph. Detail in [05-replay-and-playlog.md](05-replay-and-playlog.md).
 
 ---
 

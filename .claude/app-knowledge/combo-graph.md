@@ -58,7 +58,7 @@ The graph rebuilds itself via `window.comboGraphRefresh()` (= rebuild from the c
 
 1. **Stop Record** — the stop-record-button handler, after the `stopRecord` step.
 2. **`Board.importState()`** — after the playlog is restored (load a combo JSON → graph loads).
-3. **Initial board load** — after `new Board(...)` in `$(document).ready` (empty state for a fresh deck).
+3. **Initial board load** — on startup `simulator.js` fetches `board.json` and restores it with `importState()` (so point #2 fires and the saved combo's graph shows immediately). If the sample-deck API loader is re-enabled instead, the graph just starts empty for a fresh deck.
 
 ## Live replay sync
 
@@ -67,8 +67,10 @@ The graph rebuilds itself via `window.comboGraphRefresh()` (= rebuild from the c
 | Hook | Called from | Effect |
 |------|-------------|--------|
 | `window.comboGraphOnReplayStart()` | `PlayLog.replay()` | rebuild graph + clear highlight (indices match the steps about to play) |
-| `window.comboGraphOnStep(i)` | `PlayLog.playStep()` with `i = pointer - 1` | highlight the node for step `i` and scroll it into view |
+| `window.comboGraphOnStep(i)` | `PlayLog.playStep()` with `i = pointer - 1` | highlight the node for step `i` and scroll it into view **within the graph container only** |
 | `window.comboGraphOnReplayEnd()` | `PlayLog.stopReplay()` | clear highlight |
+
+> **Scroll behavior:** the active node is centered by adjusting only the graph container's own `scrollLeft`/`scrollTop` (`_scrollActiveIntoContainer`) — it deliberately does **not** use `node.scrollIntoView()`, which would scroll the whole page down to the graph. The user scrolls to the graph themselves; replay then keeps the active step visible inside it. (Direct scroll assignment, not `scrollTo({behavior:'smooth'})`, since programmatic smooth scroll is unreliable across environments.)
 
 ## Related
 

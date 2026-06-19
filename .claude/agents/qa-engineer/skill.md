@@ -145,7 +145,7 @@ The menu opens on **hover** and is appended *inside* the hovered card.
 - [ ] Graph nodes match the steps: card image, action verb, destination zone chip
 - [ ] Two stacked Xyz materials show a `+` connector
 - [ ] **Rotate** flips horizontal ⇄ vertical
-- [ ] Click **Play** → the active step highlights and scrolls into view as it plays
+- [ ] Click **Play** → the active step highlights and the **graph div** scrolls to keep it visible — the **main page does NOT scroll** to the graph (user scrolls to it manually)
 - [ ] Import a combo JSON → graph loads it; fresh deck load → graph shows empty state
 - [ ] Graph is read-only — generating/rotating never changes board state or the recording
 

@@ -97,7 +97,7 @@ A read-only visual flow of a recorded combo, rendered in `<section class="combo-
 - **Rotation:** the container carries `.horizontal` or `.vertical`; CSS flips `flex-direction` and the arrow. Driven by the `#rotate-graph` button (`setOrientation`). There is no manual "Generate" button — the graph auto-builds.
 - **Nodes:** `.cg-step` with `.cg-card` (image + `.cg-card-name`), `.cg-edge` (`.cg-arrow` + `.cg-action` verb + `.cg-from`), and a `.cg-zone` chip; `.cg-connector` between steps (`.cg-combine` shows a `+` for stacked Xyz materials); `.cg-phase` divider.
 - **Zone chip colors** (`.cg-zone-hand/-summon/-graveyard/…`) and the active highlight (`.cg-active`) must come from `theme.css` `--bs-*` variables — same rule as everywhere.
-- **Live replay:** during playback the current node gets `.cg-active` and scrolls into view.
+- **Live replay:** during playback the current node gets `.cg-active` and is scrolled into view **within the graph container only** (`_scrollActiveIntoContainer` adjusts the container's own `scrollLeft`/`scrollTop`) — it must **not** scroll the whole page to the graph. Don't reintroduce `node.scrollIntoView()` here.
 
 See `.claude/app-knowledge/combo-graph.md`.
 
