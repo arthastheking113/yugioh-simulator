@@ -305,6 +305,8 @@ class PlayLog {
         this.pointer = 0;
         this.isRePlaying = true;
         this.addOverlay();
+        // Combo graph: rebuild + reset highlight so it tracks this playback.
+        if (typeof window.comboGraphOnReplayStart === 'function') window.comboGraphOnReplayStart();
         // const waitTime = this.options.waitTime || 500;
         this.playStep();
     }
@@ -324,6 +326,8 @@ class PlayLog {
             this.stopReplay();
             return false;
         }
+        // Combo graph: highlight the node for the step now playing (pointer was post-incremented).
+        if (typeof window.comboGraphOnStep === 'function') window.comboGraphOnStep(this.pointer - 1);
         var waitTime = this.options.waitTime || 1500;
         var action = step.action || 'update';
         var data = step.data;
@@ -525,6 +529,8 @@ class PlayLog {
         playLog.elm.find('.resume-button').addClass('hidden');
         var board = this.getBoard();
         board.afterReplay();
+        // Combo graph: clear replay highlight.
+        if (typeof window.comboGraphOnReplayEnd === 'function') window.comboGraphOnReplayEnd();
     }
     pauseReplay() {
         if (this.isRePlaying) {

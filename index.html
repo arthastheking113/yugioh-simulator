@@ -55,6 +55,7 @@
     <link rel="stylesheet" href="css/tournamentStyle.css?v=1.4" integrity="" />
     <link rel="stylesheet" href="css/app.css" integrity="" />
     <link rel="stylesheet" href="css/simulator.css?v=1.1.1" integrity="" />
+    <link rel="stylesheet" href="css/combo_graph.css?v=1.0" integrity="" />
     <script src="js/jquery.min.js?v=3.2.1"></script>
     <script src="js/jquery-ui.min.js?v=1.12.1"></script>
     <script src="js/jquery.ui.touch-punch.min.js?v=0.2.3"></script>
@@ -333,34 +334,26 @@
         </div>
     </div>
 
-<div class="container mt-4">
+<section class="container mt-4 combo-graph-section">
         <div class="row justify-content-center">
-            <div class="col-md-9">
-                <h5>How to Capture record</h5>
-                <p>1. Set up your starting state</p>
-                <p>2. Click "Start Record" to start capturing your combo steps.</p>
-                <p>3. Click "Stop" to stop record.</p>
-                <p>4. Click "Play" to play your combo record.</p>
-                <p>5. (Optional) Click "Pause" in the middle of combo to pause the combo</p>
+            <div class="col-md-11">
+                <div class="combo-graph-toolbar">
+                    <h5>Combo Graph</h5>
+                    <button type="button" id="generate-graph">Generate Combo Graph</button>
+                    <button type="button" id="rotate-graph" class="cg-btn-secondary">Rotate</button>
+                </div>
+                <p class="text-muted">Record a combo, then generate a visual flow of every step. Hit "Play" above to watch the graph highlight each step live.</p>
+                <div id="combo-graph" class="combo-graph horizontal">
+                    <div class="cg-empty">No combo recorded yet. Use Start Record &rarr; play your combo &rarr; Stop, then click "Generate Combo Graph".</div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="container mt-4">
-        <div class="row justify-content-center">
-            <div class="col-md-9">
-                <h5>How to Capture record</h5>
-                <p>1. Set up your starting state</p>
-                <p>2. Click "Start Record" to start capturing your combo steps.</p>
-                <p>3. Click "Stop" to stop record.</p>
-                <p>4. Click "Play" to play your combo record.</p>
-                <p>5. (Optional) Click "Pause" in the middle of combo to pause the combo</p>
-            </div>
-        </div>
-    </div>
+    </section>
     <script src="js/card_menu.js?v=1.1.1" integrity=""></script>
     <script src="js/simulator.js?v=1.1.1" integrity=""></script>
     <script src="js/main.js?v=1.1.1" integrity=""></script>
     <script src="js/Function.js?v=1.6" integrity=""></script>
+    <script src="js/combo_graph.js?v=1.0" integrity=""></script>
 
     <!-- <script src="https://code.iconify.design/2/2.0.3/iconify.min.js" integrity=""></script> -->
     <!-- Main theme script-->
