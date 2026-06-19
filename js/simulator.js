@@ -2468,7 +2468,11 @@ class Board {
         var board = this;
         // this.waitingActions = data;
         if (!data) {
-            board.elm.find('.card-slot.overlay-highlight').removeClass('overlay-highlight');
+            // Fully tear down the overlay-select UI: remove the dashed highlight
+            // AND the waiting-overlay class (the overlay cursor + click target),
+            // so any non-overlay action cancels the whole overlay process.
+            board.elm.find('.card-slot.overlay-highlight, .card-slot.waiting-overlay')
+                .removeClass('overlay-highlight waiting-overlay');
         }
     }
     getWaitingOverlay() {
