@@ -139,6 +139,20 @@ Because import calls `emptyBoard()` first, importing is destructive to the curre
 
 ---
 
+## Combo graph hooks (optional, read-only)
+
+The same `steps[]` that replay consumes also drive the **combo graph** — a read-only visual flow shown below the board (see [08-ui-rendering-and-menus.md](08-ui-rendering-and-menus.md)). `PlayLog` exposes it through guarded global hooks so the engine never depends on `combo_graph.js` (each call site checks `typeof window.<hook> === 'function'`):
+
+| Hook | Call site | Purpose |
+|------|-----------|---------|
+| `window.comboGraphOnReplayStart()` | `replay()` | rebuild the graph so node indices match the steps about to play |
+| `window.comboGraphOnStep(pointer - 1)` | `playStep()` (after a valid step is dequeued) | highlight the node for the step now playing |
+| `window.comboGraphOnReplayEnd()` | `stopReplay()` | clear the highlight |
+
+A separate `window.comboGraphRefresh()` rebuilds the graph from `board.exportState()` and is invoked on **Stop Record**, inside **`importState()`**, and after the **initial board load** — so the graph always reflects the current recording without a manual button.
+
+---
+
 ## The single most important rule
 
 > **Every user-triggered action that changes game state must be logged** (via `board.writelog(...)`, while recording is active).

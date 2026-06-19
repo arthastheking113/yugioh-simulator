@@ -14,6 +14,26 @@ For design-level summaries, see:
 - `.claude/app-knowledge/context-menu-design.md` — hover-open menus, menu lifecycle, overlay-select cancel
 - `combo-movement-guide.md` — how combos work and every card movement transition in detail
 
+## Keep Documentation in Sync (two places)
+
+The project documents itself in **two** locations that must not drift:
+1. `.claude/app-knowledge/` — concise in-repo references for agents working *in* this repo.
+2. `docs/combo-knowledge-pack/` — a **portable** pack for an agent in a *different* repo (no source access), used to reason about and score combos.
+
+**Whenever you change engine behavior or update an app-knowledge file, update the matching combo-knowledge-pack file in the same change.** Mapping:
+
+| Topic | `.claude/app-knowledge/` | `docs/combo-knowledge-pack/` |
+|-------|--------------------------|------------------------------|
+| Classes / architecture | `core-classes.md` | `02-architecture-and-core-classes.md` |
+| Card model | `card-model.md` | `03-card-model.md` |
+| Combos / `moveTo` | `combo-movement-guide.md` | `04-combo-and-card-movement.md` |
+| Replay / PlayLog / export | `replay-design.md` | `05-replay-and-playlog.md` |
+| Game mechanics | `game-mechanics.md` | `06-game-mechanics.md` |
+| Xyz overlay | — | `07-xyz-overlay-deep-dive.md` |
+| UI / menus / combo graph | `ui-layout.md`, `context-menu-design.md`, `combo-graph.md` | `08-ui-rendering-and-menus.md` |
+
+When a change corrects a doc-vs-code mismatch, also add it to the pack's `README.md` "high-value corrections" list.
+
 ## Your Primary File: `js/simulator.js` (2,854 lines)
 
 The file contains four classes defined in this order:

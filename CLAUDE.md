@@ -70,6 +70,8 @@ Focused design reference files live in `.claude/app-knowledge/`:
 | `context-menu-design.md` | Hover-open menus, lifecycle/detach, data-target format, overlay-select cancel |
 | `combo-graph.md` | Combo graph: data source, `ComboGraph` API, step→visual mapping, auto-refresh + replay sync |
 
+> **Two doc homes — keep them in sync.** There is also a *portable* knowledge pack in [`docs/combo-knowledge-pack/`](docs/combo-knowledge-pack/) (written for an agent in a different repo). When you update an `.claude/app-knowledge/` file, update the matching pack file too. The mapping lives in [`.claude/agents/game-engine-developer/skill.md`](.claude/agents/game-engine-developer/skill.md).
+
 ## Common Tasks
 
 **Add a new card action:**

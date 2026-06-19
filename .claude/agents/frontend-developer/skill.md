@@ -28,6 +28,8 @@ For app layout design, see `.claude/app-knowledge/ui-layout.md`.
 For card model details, see `.claude/app-knowledge/card-model.md`.
 For the combo graph, see `.claude/app-knowledge/combo-graph.md`.
 
+> **Keep docs in sync:** when you update a UI doc in `.claude/app-knowledge/` (`ui-layout.md`, `context-menu-design.md`, `combo-graph.md`), also update the matching portable pack file `docs/combo-knowledge-pack/08-ui-rendering-and-menus.md` so the two never drift. Full file mapping in `.claude/agents/game-engine-developer/skill.md`.
+
 ## DOM Structure You Must Know
 
 ```html

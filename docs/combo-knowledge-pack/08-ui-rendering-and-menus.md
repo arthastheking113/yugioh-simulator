@@ -33,8 +33,10 @@ body
     │         .replay-button .pause-button .resume-button ; #log-message ; .chat-input/.chat-btn
     ├── aside.play-board-side.lcard-informations   ← hovered-card info panel (image + .lcard-descriptons)
     ├── #deckmenu / #extradeckmenu / #graveyardmenu / #banishmenu  ← .collection-menu dialogs
-    ├── #cardMenu.card-menu.menu-dialog                            ← right-click card menu
+    ├── #cardMenu.card-menu.menu-dialog                            ← per-card menu (opens on hover)
     └── #collectionMenu.collection-menu.menu-dialog
+section.combo-graph-section                                        ← below the board (see "Combo graph")
+    └── .combo-graph-toolbar (#rotate-graph) + #combo-graph.combo-graph.horizontal
 ```
 
 Key facts:
@@ -118,17 +120,30 @@ jQuery UI **Touch Punch** (`js/jquery.ui.touch-punch.min.js`) enables drag-drop 
 
 ---
 
+## Combo graph (read-only visualization)
+
+`js/combo_graph.js` (`ComboGraph`) renders a **visual flow of a recorded combo** into `<section class="combo-graph-section"><div id="combo-graph">` below the board, styled by `css/combo_graph.css`. It is **read-only**: it consumes `board.exportState()` and never mutates state, adds no card property, and changes nothing in export/import.
+
+- **Input:** the export's `playLogData.initItems`/`items` (→ a `uuid → {name, imageURL}` lookup) and `playLogData.steps[]` (→ the ordered flow). See [05-replay-and-playlog.md](05-replay-and-playlog.md).
+- **Each step → a node:** a position-changing `update` → card image + action verb (Draw / Summon / Send to GY / Banish / …) + a destination zone chip; `overlay` → a material node, with consecutive overlays joined by a `+`; fold/switch-only updates and `target`/`declare`/`reveal` → small badges; `update-phase` → a divider; record markers / `chat` / `shuffle` are skipped (their step index is preserved so replay highlighting stays aligned).
+- **Rotatable:** container class `.horizontal` ⇄ `.vertical` via the `#rotate-graph` button. There is **no** manual "Generate" button — it auto-builds.
+- **Auto-build + live sync:** `window.comboGraphRefresh()` rebuilds from the current board on Stop Record, in `importState()`, and on initial load; during replay the engine calls guarded `comboGraphOnReplayStart` / `comboGraphOnStep` / `comboGraphOnReplayEnd` hooks to highlight the playing step. Detail in [05-replay-and-playlog.md](05-replay-and-playlog.md).
+
+---
+
 ## Context menu system
 
 **File:** `js/card_menu.js` — three classes: `MenuBase`, `CardMenu`, `CollectionMenu`. The menu containers in the DOM are `#cardMenu.card-menu.menu-dialog` (per-card) and `#collectionMenu.collection-menu.menu-dialog`, plus the four browsable zone dialogs `#deckmenu` / `#extradeckmenu` / `#graveyardmenu` / `#banishmenu`.
 
-Hovering/right-clicking (or long-press on mobile) a card calls `CardMenu.renderMenu(card)`, which builds list items into `#cardMenu .menu-list`. Contents depend on `card.position` and `card.foldState`. Each item encodes its action in a `data-target` attribute:
+The per-card menu opens **on hover** (the card's jQuery `mouseenter` calls `cardMenu.setCard(card).show()`; `mouseleave` hides it). Its items are static HTML built once in `CardMenu.drawHtml`; `updateMenu()` shows only the ids listed in `menuList[card.position]` (or `menuList['overlap']` for a material), filtered by `card.foldState` and per-item `condition`. Each item encodes its action in a `data-target` attribute:
 
 ```html
 <a data-target="summon,attack,normal">SS ATK</a>
 ```
 
 Parsed as `[destination_position, switchState, foldState]`. The click handler splits it and calls `card.moveTo(destination, …)` with the decoded values (plus any `attack()`/`defense()`/`fold()` the item implies). Non-move actions use a custom action key instead of a position triple.
+
+**Menu lifecycle (important):** while open, the shared `#cardMenu` dialog is appended **inside** the hovered card (so it positions relative to it) and is moved back to `<body>` on mouse-leave. Because a menu click does **not** fire mouse-leave, the action handler **first detaches the dialog to `<body>`** (and clears any pending overlay/slot selection) before running the action — otherwise a move (e.g. to the graveyard) would drag the menu along with the card, and it would keep reappearing on that card.
 
 ### Actions available per position
 
@@ -178,6 +193,12 @@ Clicking a stacked zone opens a browsable list of all its cards; each row has it
 
 When a move needs a target slot, the board highlights eligible empty slots (`highlightSS_STCardHolders` / `highlightSSExCardHolders` add `.highlight` to free `.summon-slot, .summonex-slot, .st-slot, .fz-slot`). A field-zone slot is only offered when the card `isSpell`. The chosen slot's `data-order` token becomes the card's `collection_order`.
 
+### Overlay selection & cancellation
+
+**Overlay** on a face-up monster calls `board.startDoOverlay(card)` → `selectOverlay()`, which marks each candidate summon slot with `overlay-highlight` (the animated dashed border) **and** `waiting-overlay` (the overlay cursor + the click target — `selectOverlayEvent` listens on `.waiting-overlay`), and stores the pending pick via `setWaitingOverlay({card, canBeOverlayCards})`. Clicking a highlighted slot runs `board.overlayCard(uuid, slotToken)`.
+
+The menu action handler clears `setWaitingActions(null)` **and** `setWaitingOverlay(null)` up front, so **any non-overlay action cancels a pending overlay.** `setWaitingOverlay(null)` must strip **both** classes — leaving `waiting-overlay` would keep the slot armed (cursor + clickable). (The board-wide click-to-cancel `removeOverlayHighlight` ignores clicks inside a `.ui-dialog`, so the menu's explicit clear is what cancels for menu clicks.)
+
 ### Condition system
 
 Menu items can carry a `condition` field checked against card state; if `card[condition]` is falsy the item is hidden — context-sensitive menus without per-card branching.
@@ -188,7 +209,7 @@ A material card (`isOverlap === true`) has a separate, minimal menu — it canno
 
 ### Adding a new menu item (recipe)
 
-1. Add the item to the relevant position's array in `CardMenu.renderMenu()`.
+1. Add the `<a data-target id>` to the static menu HTML in `CardMenu.drawHtml`, and register its id in the relevant `menuList[position]` array.
 2. Set `data-target` to `"position,switchState,foldState"` (move) or a custom action key (non-move).
 3. Handle the action key in the click-handler switch.
 4. Call the appropriate `card.*` / `board.*` method.

@@ -37,7 +37,7 @@ Read top to bottom for a full mental model; jump to a file to answer a specific 
 | 05 | [05-replay-and-playlog.md](05-replay-and-playlog.md) | How recording/replay works, step shape, export/import format |
 | 06 | [06-game-mechanics.md](06-game-mechanics.md) | Phases, card actions (flip/switch/target/declare/reveal), draw, shuffle |
 | 07 | [07-xyz-overlay-deep-dive.md](07-xyz-overlay-deep-dive.md) | The most complex mechanic — Xyz materials, with corrected flag semantics |
-| 08 | [08-ui-rendering-and-menus.md](08-ui-rendering-and-menus.md) | DOM structure, CSS layers, animations, themes, context menus |
+| 08 | [08-ui-rendering-and-menus.md](08-ui-rendering-and-menus.md) | DOM structure, CSS layers, animations, themes, context menus, the read-only combo graph |
 | 09 | [09-glossary.md](09-glossary.md) | YuGi-Oh! terms + simulator-internal terms for a reader with no domain knowledge |
 | 10 | [10-ai-agent-playbook.md](10-ai-agent-playbook.md) | Task recipes, debugging guides, how to answer questions about the codebase |
 | 11 | [11-combo-power-analysis.md](11-combo-power-analysis.md) | **How to score "how powerful" a combo is from its exported JSON** |
@@ -75,6 +75,12 @@ These are points where intuition — or the project's own older prose — is mis
 9. **`collection_order` is a slot *token* in individual zones, not `1`–`5`.** For `summon`/`st`/`fz` it holds the slot's `data-order` string: `ss1`–`ss5`, `exss1`/`exss2` (extra monster zones), `st1`–`st5`, `fz1`. It is only numeric in the collection zones (deck/exdeck/graveyard/banish), where new tops get `previousTop + 2`.
 
 > **Provenance note:** items 8–9 were found by reconciling this pack against the actual `index.html`/`css`/`js`. The existing **code is correct and unchanged** — only the documentation was corrected to match it.
+
+10. **The per-card menu opens on *hover* (not right-click) and is appended *inside* the hovered card.** Because a menu click doesn't fire mouse-leave, the action handler **detaches the `#cardMenu` dialog back to `<body>` before running the action** — otherwise sending the card to the graveyard drags the menu along and it keeps reappearing on that card. (Recent fix; see [08-ui-rendering-and-menus.md](08-ui-rendering-and-menus.md).)
+
+11. **Cancelling a pending Xyz-overlay selection must clear *both* `overlay-highlight` and `waiting-overlay`.** `setWaitingOverlay(null)` removes both, and any non-overlay menu action cancels the overlay-select UI; clearing only the dashed `overlay-highlight` used to leave the slot armed (cursor + clickable). (Recent fix.)
+
+> Items 10–11 reflect **code fixes** made after the pack's first version (in `card_menu.js` and `simulator.js`), not just doc corrections.
 
 ## The three invariants (the project's non-negotiable rules)
 

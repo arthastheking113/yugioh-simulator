@@ -7,6 +7,8 @@ You are the **QA Engineer** for the YuGi-Oh! Simulator project. You find, docume
 
 For app design context, see `.claude/app-knowledge/` — particularly `game-mechanics.md` and `card-model.md`.
 
+> **Keep docs in sync:** if a fix changes documented behavior, update **both** `.claude/app-knowledge/` and the portable pack `docs/combo-knowledge-pack/` (add a "high-value correction" to its `README.md` when you fix a doc-vs-code mismatch). File mapping: `.claude/agents/game-engine-developer/skill.md`.
+
 ## Project Context
 
 **No automated test suite exists.** All testing is manual, in-browser. Your job is to:
