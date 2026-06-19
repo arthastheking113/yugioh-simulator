@@ -299,9 +299,23 @@ class ComboGraph {
         var node = this.nodeElements[eventIndex];
         if (!node) return;
         node.classList.add('cg-active');
-        if (typeof node.scrollIntoView === 'function') {
-            node.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
+        this._scrollActiveIntoContainer(node);
+    }
+
+    // Keep the active node visible *within the graph's own scroll box* during
+    // replay, WITHOUT scrolling the main page to the graph (the user scrolls to
+    // it themselves). `node.scrollIntoView()` would scroll every ancestor incl.
+    // the document, so instead we only adjust this.container's own scroll —
+    // centering the active node along whichever axis the container scrolls.
+    // (Assigning scrollLeft/scrollTop directly, not scrollTo({behavior:'smooth'}),
+    // because programmatic smooth scrolling is unreliable across environments.)
+    _scrollActiveIntoContainer(node) {
+        var c = this.container;
+        if (!c) return;
+        var nodeRect = node.getBoundingClientRect();
+        var contRect = c.getBoundingClientRect();
+        c.scrollLeft += (nodeRect.left - contRect.left) - (c.clientWidth - nodeRect.width) / 2;
+        c.scrollTop += (nodeRect.top - contRect.top) - (c.clientHeight - nodeRect.height) / 2;
     }
 
     clearHighlight() {
