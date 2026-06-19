@@ -335,9 +335,7 @@ class ComboGraph {
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        var generateBtn = document.getElementById('generate-graph');
         var rotateBtn = document.getElementById('rotate-graph');
-        if (generateBtn) generateBtn.addEventListener('click', generate);
         if (rotateBtn) {
             rotateBtn.addEventListener('click', function () {
                 var g = getGraph();
