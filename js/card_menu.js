@@ -678,8 +678,16 @@ class CardMenu extends MenuBase {
             var card = menu.getCard();
             var board = card.getBoard();
             var target = $(this).data('target');
-            
-            // Clear waiting actions 
+
+            // Detach the shared card menu from the card and return it to <body>
+            // before running the action. On hover the menu is appended INSIDE the
+            // card element; if the action then moves the card (e.g. to the
+            // graveyard) the menu travels with it and keeps re-appearing.
+            menu.element.dialog('close');
+            menu.element.dialog('widget').appendTo('body');
+            menu.element.dialog('option', 'appendTo', 'body');
+
+            // Clear waiting actions
             board.setWaitingActions(null);
             board.setWaitingOverlay(null);
             if (target == 'this,view') {

@@ -18,12 +18,17 @@ You are the **Frontend Developer** for the YuGi-Oh! Simulator project. You own t
 |------|-------------|
 | `index.html` | Board slot structure, z-index layers, data attributes |
 | `css/simulator.css` | Card sizing, slot layout, zone positioning |
+| `css/combo_graph.css` | Combo graph nodes, arrows, zone chips, rotation, active highlight |
 | `css/theme.css` | Color variables, theme switching |
 | `js/simulator.js` | `Card.drawHtml()`, `Card.updateHtml()`, `Card.appendToBoard()` |
+| `js/combo_graph.js` | `ComboGraph` — builds/renders the combo flow graph DOM |
 | `js/theme.js` | Runtime theme logic (1,754 lines) |
 
 For app layout design, see `.claude/app-knowledge/ui-layout.md`.
 For card model details, see `.claude/app-knowledge/card-model.md`.
+For the combo graph, see `.claude/app-knowledge/combo-graph.md`.
+
+> **Keep docs in sync:** when you update a UI doc in `.claude/app-knowledge/` (`ui-layout.md`, `context-menu-design.md`, `combo-graph.md`), also update the matching portable pack file `docs/combo-knowledge-pack/08-ui-rendering-and-menus.md` so the two never drift. Full file mapping in `.claude/agents/game-engine-developer/skill.md`.
 
 ## DOM Structure You Must Know
 
@@ -85,9 +90,24 @@ Defense position cards rotate 90°. This is handled by the `.defense` CSS class.
 
 Cards load images from `imageURL` property. Fallback path: `asset/card/{cardId}.jpeg`. External CDN: `ygovietnamcdn.azureedge.net`.
 
+## Combo Graph (`combo_graph.css` / `combo_graph.js`)
+
+A read-only visual flow of a recorded combo, rendered in `<section class="combo-graph-section">` below the board (`#combo-graph`). Built as plain DOM (no jQuery) by `ComboGraph`.
+
+- **Rotation:** the container carries `.horizontal` or `.vertical`; CSS flips `flex-direction` and the arrow. Driven by the `#rotate-graph` button (`setOrientation`). There is no manual "Generate" button — the graph auto-builds.
+- **Nodes:** `.cg-step` with `.cg-card` (image + `.cg-card-name`), `.cg-edge` (`.cg-arrow` + `.cg-action` verb + `.cg-from`), and a `.cg-zone` chip; `.cg-connector` between steps (`.cg-combine` shows a `+` for stacked Xyz materials); `.cg-phase` divider.
+- **Zone chip colors** (`.cg-zone-hand/-summon/-graveyard/…`) and the active highlight (`.cg-active`) must come from `theme.css` `--bs-*` variables — same rule as everywhere.
+- **Live replay:** during playback the current node gets `.cg-active` and is scrolled into view **within the graph container only** (`_scrollActiveIntoContainer` adjusts the container's own `scrollLeft`/`scrollTop`) — it must **not** scroll the whole page to the graph. Don't reintroduce `node.scrollIntoView()` here.
+
+See `.claude/app-knowledge/combo-graph.md`.
+
 ## Theme System
 
 `js/theme.js` handles runtime theme switching. CSS variables in `:root` drive color changes. Never hardcode colors in component CSS — always use CSS variables from `theme.css`.
+
+## Cache-Busting Edited Assets
+
+CSS/JS are loaded with `?v=N` query strings in `index.html`. **When you edit a versioned file, bump its `?v=`** (e.g. `simulator.css?v=1.1.1` → `1.1.2`) — otherwise the browser may serve a stale cached copy and your change won't appear.
 
 ## Mobile Considerations
 

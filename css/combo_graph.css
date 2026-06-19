@@ -1,0 +1,243 @@
+/* Combo Graph — visual flow of a recorded combo (issue #34). */
+
+.combo-graph-section {
+    margin-bottom: 3rem;
+}
+
+.combo-graph-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.combo-graph-toolbar h5 {
+    margin: 0 0.75rem 0 0;
+}
+
+.combo-graph-toolbar button {
+    border: 0;
+    border-radius: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: var(--bs-primary, #fe696a);
+}
+
+.combo-graph-toolbar button.cg-btn-secondary {
+    background: var(--bs-gray, #7d879c);
+}
+
+.combo-graph-toolbar button:hover {
+    filter: brightness(0.95);
+}
+
+/* Graph container ------------------------------------------------------- */
+
+.combo-graph {
+    display: flex;
+    gap: 0.25rem;
+    align-items: stretch;
+    padding: 1rem;
+    border: 1px solid #e3e6ee;
+    border-radius: 0.6rem;
+    background: var(--bs-secondary, #f3f5f9);
+    overflow: auto;
+}
+
+.combo-graph.horizontal {
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.combo-graph.vertical {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.cg-empty {
+    color: var(--bs-gray, #7d879c);
+    font-style: italic;
+    padding: 1.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+/* A single step --------------------------------------------------------- */
+
+.cg-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+    padding: 0.6rem;
+    border-radius: 0.5rem;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    position: relative;
+    min-width: 110px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.combo-graph.vertical .cg-step {
+    flex-direction: row;
+    justify-content: center;
+    min-width: 240px;
+}
+
+.cg-step-num {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--bs-dark, #373f50);
+    z-index: 1;
+}
+
+/* Card node */
+.cg-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 84px;
+}
+
+.cg-card-img {
+    width: 84px;
+    height: 122px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+    background: #d9dce5;
+}
+
+.cg-card-name {
+    font-size: 0.7rem;
+    line-height: 1.1;
+    text-align: center;
+    max-width: 90px;
+    color: var(--bs-dark, #373f50);
+    word-break: break-word;
+}
+
+/* Action edge (arrow + verb + from→to) */
+.cg-edge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.cg-arrow {
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--bs-primary, #fe696a);
+}
+
+.combo-graph.vertical .cg-arrow {
+    transform: rotate(90deg);
+}
+
+.cg-action {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--bs-dark, #373f50);
+    text-align: center;
+}
+
+.cg-from {
+    font-size: 0.66rem;
+    color: var(--bs-gray, #7d879c);
+    text-align: center;
+}
+
+/* Zone chip */
+.cg-zone {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 1rem;
+    color: #fff;
+    white-space: nowrap;
+    background: var(--bs-gray, #7d879c);
+}
+
+.cg-zone-hand { background: var(--bs-info, #69b3fe); }
+.cg-zone-deck { background: var(--bs-gray-dark, #373f50); }
+.cg-zone-exdeck { background: var(--bs-purple, #6f42c1); }
+.cg-zone-summon { background: var(--bs-danger, #f34770); }
+.cg-zone-st { background: var(--bs-green, #198754); }
+.cg-zone-fz { background: var(--bs-teal, #20c997); }
+.cg-zone-graveyard { background: var(--bs-gray, #7d879c); }
+.cg-zone-banish { background: var(--bs-orange, #fd7e14); }
+
+/* Badges for non-move actions */
+.cg-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    color: var(--bs-dark, #373f50);
+    background: #eef0f6;
+    text-align: center;
+}
+
+.cg-badge-overlay {
+    color: #fff;
+    background: var(--bs-accent, #4e54c8);
+}
+
+/* Phase divider */
+.cg-phase {
+    background: transparent;
+    box-shadow: none;
+    justify-content: center;
+}
+
+.cg-phase-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    color: #fff;
+    background: var(--bs-warning, #fea569);
+}
+
+/* Connector between steps */
+.cg-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 18px;
+    color: var(--bs-gray, #7d879c);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.cg-connector.cg-combine {
+    color: var(--bs-accent, #4e54c8);
+    font-size: 1.8rem;
+}
+
+/* Active step during replay */
+.cg-step.cg-active {
+    box-shadow: 0 0 0 3px var(--bs-primary, #fe696a), 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.combo-graph.vertical .cg-step.cg-active {
+    transform: translateX(2px);
+}

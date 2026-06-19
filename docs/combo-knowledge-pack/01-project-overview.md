@@ -60,10 +60,12 @@ yugioh-simulator/
 │   ├── card_menu.js        ← Context menus: MenuBase, CardMenu, CollectionMenu (~930 lines)
 │   ├── main.js             ← DOM-ready + Board initialization (~65 lines)
 │   ├── Function.js         ← Utilities: clipboard, localStorage, SweetAlert toasts (~449 lines)
+│   ├── combo_graph.js      ← ComboGraph: read-only visual flow graph of a recorded combo
 │   ├── theme.js            ← Runtime theme switching (~1,754 lines)
 │   └── example.js          ← Sample deck data as JSON (~30,644 lines — generated, never hand-edited)
 ├── css/
 │   ├── simulator.css       ← Game board + card layout
+│   ├── combo_graph.css     ← Combo graph nodes, arrows, zone chips
 │   ├── theme.css           ← CSS custom properties (all colors live here)
 │   ├── app.css             ← Application chrome
 │   └── tournamentStyle.css ← Tournament overlay styles
@@ -77,11 +79,12 @@ yugioh-simulator/
 |------|----------------|
 | `index.html` | The board's DOM skeleton and the script load order |
 | `js/simulator.js` | **The engine.** Four classes — `PlayLog`, `Card`, `Collection`, `Board` |
-| `js/card_menu.js` | Right-click/long-press menus and the per-position action lists |
+| `js/card_menu.js` | Hover-open per-card menus and the per-position action lists |
 | `js/main.js` | Instantiates the singleton `Board`, wires DOM events |
 | `js/Function.js` | Clipboard, `localStorage` helpers, toast notifications |
+| `js/combo_graph.js` | `ComboGraph` — read-only visual flow graph of a recorded combo |
 | `js/theme.js` | Runtime theme switching (writes CSS variables on `:root`) |
-| `js/example.js` | A large sample deck used to populate the board on first load |
+| `js/example.js` | A large sample deck data set (JSON). Not in the current script load order — see "Startup data load" below for what actually loads. |
 
 ## Script load order (this ordering is load-bearing)
 
@@ -99,9 +102,16 @@ yugioh-simulator/
 5. simulator.js               ← defines PlayLog, Card, Collection, Board
 6. main.js                    ← instantiates Board, wires events
 7. Function.js                ← clipboard / localStorage / toasts
-8. theme.js                   ← runtime theme switching
-9. removeBackDrop.js          ← small jQuery-UI dialog backdrop cleanup
+8. combo_graph.js             ← ComboGraph: builds the combo flow graph (reads global `board` lazily)
+9. theme.js                   ← runtime theme switching
+10. removeBackDrop.js         ← small jQuery-UI dialog backdrop cleanup
 ```
+
+## Startup data load
+
+On `$(document).ready` (bottom of `simulator.js`), the app loads a **saved board state from a local `board.json`** (a full `board.exportState()` export — `items` + `playLogData`) and restores it with `board.importState(state)`. That re-creates the cards in their saved zones, restores phase/skill, and brings back the recorded combo (so it can be replayed and shown in the combo graph).
+
+The original loader — fetch the sample deck from the live API (`$.getJSON('…/sample-simulator-deck.json')` → `parseDataFromOther` → `new Board`) — is **kept but commented out**, with a note on how to switch back. Key difference: the API path is a *deck* (built fresh via `parseDataFromOther`), whereas `board.json` is a *full state* (restored via `importState`). See [05-replay-and-playlog.md](05-replay-and-playlog.md) for the export/import format.
 
 `card_menu.js` **must** load before `simulator.js` because `Board` references `CardMenu` during construction. Reordering these breaks initialization.
 

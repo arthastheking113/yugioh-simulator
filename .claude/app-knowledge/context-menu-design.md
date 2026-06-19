@@ -6,7 +6,14 @@
 
 ## How Menus Work
 
-Right-clicking (or long-press on mobile) a card calls `CardMenu.renderMenu(card)`. It generates an HTML dropdown based on `card.position` and `card.foldState`. The menu is appended to the DOM and positioned near the card.
+The card menu opens on **hover**, not right-click. Each card's jQuery `hover` handler (`Card.cardEvents`, `simulator.js`) does, on `mouseenter`:
+
+```javascript
+_board.cardMenu.setCard(_card);   // updateMenu(): show/hide items by position + foldState + condition
+_board.cardMenu.show();           // open the shared #cardMenu dialog
+```
+
+There is a single shared `#cardMenu` jQuery UI dialog. Its menu items are static HTML (built once in `CardMenu.drawHtml`); `updateMenu()` shows only the ids listed in `menuList[card.position]` (or `menuList['overlap']` for Xyz materials) and applies per-item `condition`/state filters. On `mouseleave` the dialog hides.
 
 Each menu item has a `data-target` attribute encoding the action:
 
@@ -69,12 +76,35 @@ Menu items have a `condition` field checked against card state. If `card[conditi
 
 ## Xyz Material Menu
 
-Overlay (material) cards have a **separate** context menu — they cannot be moved independently once attached. Their only action is Detach.
+Overlay (material) cards have a **separate** context menu (`menuList['overlap']`) — they cannot be moved independently once attached. Their only action is Detach.
+
+## Menu Lifecycle & Positioning (important)
+
+On `show()`, the shared dialog is **appended *inside* the hovered card** (`appendTo: '#card-<uuid>'`) so it positions relative to that card. On `mouseleave` the dialog resets `appendTo` back to `body` and hides.
+
+**Gotcha (fixed):** clicking a menu action closes the dialog but does **not** trigger `mouseleave`. If the action then moves the card to a collection (graveyard/banish/deck…), the menu — still parented to the card — travels with it and keeps reappearing. The action click handler therefore **detaches the menu back to `<body>` first thing**, before running the action:
+
+```javascript
+menu.element.dialog('close');
+menu.element.dialog('widget').appendTo('body');     // physically move it out of the card
+menu.element.dialog('option', 'appendTo', 'body');
+```
+
+## Overlay Selection & Cancellation
+
+Clicking **Overlay** on a face-up monster calls `board.startDoOverlay(card)` → `selectOverlay()`, which marks each candidate summon slot with two classes:
+
+- `.overlay-highlight` — the animated dashed border (visible "pick me" state)
+- `.waiting-overlay` — the overlay cursor **and** the click target (`selectOverlayEvent` listens on `.waiting-overlay`)
+
+`setWaitingOverlay({card, canBeOverlayCards})` stores the pending selection. To complete, the user clicks a highlighted slot; `board.overlayCard(uuid, order)` runs and the highlights clear.
+
+**Cancellation:** the action click handler clears `setWaitingActions(null)` **and** `setWaitingOverlay(null)` at the top, so **any non-overlay menu action cancels a pending overlay**. `setWaitingOverlay(null)` must remove **both** classes (`overlay-highlight` *and* `waiting-overlay`) — removing only the highlight leaves the slot armed (cursor + clickable). Note: the board-wide click-to-cancel (`removeOverlayHighlight`) ignores clicks inside a `.ui-dialog`, so the menu handler's explicit clear is what cancels for menu clicks.
 
 ## Adding a New Menu Item
 
-1. Add the item object to the relevant position's array in `CardMenu.renderMenu()`
-2. Set `data-target` to `"position,switchState,foldState"` for a move, or a custom action key for non-moves
-3. Add the action key to the click handler switch statement
-4. Call the appropriate `card.*` or `board.*` method
-5. Ensure `playlog.writelog()` is called inside the action handler
+1. Add the `<a data-target="…" id="…">` to the static menu HTML in `CardMenu.drawHtml`
+2. Register its id in the relevant position array in `menuList` (so `updateMenu` shows it for that position)
+3. Set `data-target` to `"position,switchState,foldState"` for a move, or a custom action key for non-moves
+4. Handle the action key in the click handler switch (or let the generic move path handle it)
+5. Call the appropriate `card.*` or `board.*` method, and ensure `playlog.writelog()` runs (directly or via `card.moveTo`/`updateCardbyAction`)

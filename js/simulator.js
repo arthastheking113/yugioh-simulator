@@ -76,6 +76,9 @@ class PlayLog {
             playLog.elm.find('.start-record-button').removeClass('hidden');
             playLog.elm.find('.stop-record-button').addClass('hidden');
 
+            // Combo graph: auto-generate from the just-recorded combo.
+            if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
+
         });
 
         playLog.elm.find('.pause-button').off('click').on('click', function () {
@@ -305,6 +308,8 @@ class PlayLog {
         this.pointer = 0;
         this.isRePlaying = true;
         this.addOverlay();
+        // Combo graph: rebuild + reset highlight so it tracks this playback.
+        if (typeof window.comboGraphOnReplayStart === 'function') window.comboGraphOnReplayStart();
         // const waitTime = this.options.waitTime || 500;
         this.playStep();
     }
@@ -324,6 +329,8 @@ class PlayLog {
             this.stopReplay();
             return false;
         }
+        // Combo graph: highlight the node for the step now playing (pointer was post-incremented).
+        if (typeof window.comboGraphOnStep === 'function') window.comboGraphOnStep(this.pointer - 1);
         var waitTime = this.options.waitTime || 1500;
         var action = step.action || 'update';
         var data = step.data;
@@ -525,6 +532,8 @@ class PlayLog {
         playLog.elm.find('.resume-button').addClass('hidden');
         var board = this.getBoard();
         board.afterReplay();
+        // Combo graph: clear replay highlight.
+        if (typeof window.comboGraphOnReplayEnd === 'function') window.comboGraphOnReplayEnd();
     }
     pauseReplay() {
         if (this.isRePlaying) {
@@ -2459,7 +2468,11 @@ class Board {
         var board = this;
         // this.waitingActions = data;
         if (!data) {
-            board.elm.find('.card-slot.overlay-highlight').removeClass('overlay-highlight');
+            // Fully tear down the overlay-select UI: remove the dashed highlight
+            // AND the waiting-overlay class (the overlay cursor + click target),
+            // so any non-overlay action cancels the whole overlay process.
+            board.elm.find('.card-slot.overlay-highlight, .card-slot.waiting-overlay')
+                .removeClass('overlay-highlight waiting-overlay');
         }
     }
     getWaitingOverlay() {
@@ -2621,6 +2634,8 @@ class Board {
                 playLog[key] = value;
             }
         }
+        // Combo graph: load the graph for the imported combo.
+        if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
     }
 
     // Check if inpput state is JSON or string of JSON data
@@ -2793,6 +2808,26 @@ function wv_showError(msg) {
 $(document).ready(function () {
     const isDebug = urlParams.get('debug');
 
+    // --- Load a saved board state from the local board.json file ---------------
+    // board.json is a full board export (items + playLogData) produced by
+    // board.exportState(). We restore it with importState(), which also brings
+    // back the recorded combo (so it can be replayed and shown in the combo
+    // graph). importState() itself triggers the combo-graph refresh.
+    $.getJSON('board.json', function (state) {
+        board = new Board($('#playtest'), state.items, {
+            isDebug: isDebug,
+            skill: (state.skill && state.skill.name) || "",
+        });
+        board.importState(state);
+    }).fail(function () {
+        wv_showError('Get board.json data failed');
+    });
+
+    // --- Original: load the sample deck from the live API ----------------------
+    // Kept on purpose. If you'd rather fetch the deck from the API than load the
+    // local board.json above, comment out the board.json loader and un-comment
+    // this block instead.
+    /*
     var jsonUrl = 'https://ygovietnamcdn.azureedge.net/storage/Assets/sample-simulator-deck.json';
     // jsonUrl = '0';
     $.getJSON(jsonUrl, function (data) {
@@ -2807,6 +2842,8 @@ $(document).ready(function () {
             isDebug: isDebug,
             skill: json.skill || "",
         });
+        // Combo graph: load the graph alongside the board JSON.
+        if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
     }).fail(function () {
         wv_showError('Get JSON data failed');
 
@@ -2814,6 +2851,7 @@ $(document).ready(function () {
         console.log(board);
 
     })
+    */
 
     var playBoard = $('#playtest');
     var logMessage = $('#log-message');

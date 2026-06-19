@@ -10,7 +10,29 @@ For design-level summaries, see:
 - `.claude/app-knowledge/game-mechanics.md` — phase, Xyz, move lifecycle
 - `.claude/app-knowledge/replay-design.md` — PlayLog recording/replay design
 - `.claude/app-knowledge/card-model.md` — card properties and positions
+- `.claude/app-knowledge/combo-graph.md` — read-only visual graph of a recorded combo + its replay hooks
+- `.claude/app-knowledge/context-menu-design.md` — hover-open menus, menu lifecycle, overlay-select cancel
 - `combo-movement-guide.md` — how combos work and every card movement transition in detail
+
+## Keep Documentation in Sync (two places)
+
+The project documents itself in **two** locations that must not drift:
+1. `.claude/app-knowledge/` — concise in-repo references for agents working *in* this repo.
+2. `docs/combo-knowledge-pack/` — a **portable** pack for an agent in a *different* repo (no source access), used to reason about and score combos.
+
+**Whenever you change engine behavior or update an app-knowledge file, update the matching combo-knowledge-pack file in the same change.** Mapping:
+
+| Topic | `.claude/app-knowledge/` | `docs/combo-knowledge-pack/` |
+|-------|--------------------------|------------------------------|
+| Classes / architecture | `core-classes.md` | `02-architecture-and-core-classes.md` |
+| Card model | `card-model.md` | `03-card-model.md` |
+| Combos / `moveTo` | `combo-movement-guide.md` | `04-combo-and-card-movement.md` |
+| Replay / PlayLog / export | `replay-design.md` | `05-replay-and-playlog.md` |
+| Game mechanics | `game-mechanics.md` | `06-game-mechanics.md` |
+| Xyz overlay | — | `07-xyz-overlay-deep-dive.md` |
+| UI / menus / combo graph | `ui-layout.md`, `context-menu-design.md`, `combo-graph.md` | `08-ui-rendering-and-menus.md` |
+
+When a change corrects a doc-vs-code mismatch, also add it to the pack's `README.md` "high-value corrections" list.
 
 ## Your Primary File: `js/simulator.js` (2,854 lines)
 
@@ -44,6 +66,8 @@ playlog = {
 ```
 
 **Replay algorithm:** empty board → load `initItems` → iterate `steps[]` with 1500ms pause between each → apply state via `playStep(step)`.
+
+**Combo graph hooks (read-only consumer):** `replay()`, `playStep()`, and `stopReplay()` each fire a guarded global hook (`window.comboGraphOnReplayStart` / `comboGraphOnStep(pointer-1)` / `comboGraphOnReplayEnd`); `window.comboGraphRefresh()` is also called on Stop Record, in `importState()`, and after initial board load. All are `typeof === 'function'` checks, so the engine never depends on `combo_graph.js`. Don't remove these call sites when refactoring replay. See `combo-graph.md`.
 
 ### 2. `Card` (Line ~560)
 Represents a single card.
@@ -139,10 +163,12 @@ board.emptyBoard()                    // remove all cards from DOM and items[]
 
 Contains `MenuBase`, `CardMenu`, `CollectionMenu` classes.
 
-`CardMenu` renders a context menu per card based on `card.position` and `card.foldState`. Menu items carry `data-target` attributes parsed as:
+`CardMenu` shows a per-card menu **on hover** (not right-click), filtered by `card.position` and `card.foldState` via `menuList`. Menu items carry `data-target` attributes parsed as:
 ```
 "position,switchState,foldState"   → card.moveTo call
 ```
+
+The action click handler first **detaches the shared `#cardMenu` dialog back to `<body>`** (it is appended inside the hovered card on open) and clears any pending overlay/order selection, then runs the action. See `context-menu-design.md`.
 
 Action mapping:
 | Menu Item | What it calls |
@@ -176,10 +202,13 @@ Action mapping:
 }
 ```
 
+**Startup load:** on `$(document).ready` (bottom of `simulator.js`) the app fetches the local **`board.json`** (a full export in the shape above) and restores it via `board.importState(state)` — not the deck path. The old sample-deck API loader (`$.getJSON('…/sample-simulator-deck.json')` → `parseDataFromOther` → `new Board`) is kept but commented out, with a note on how to re-enable it. So `board.json` must stay valid JSON in this exact shape, and any new `exportState`/`importState` field flows through it.
+
 ## Xyz Overlay Mechanics — Read Carefully
 
-1. Player right-clicks a card → selects "Overlay"
-2. System prompts to pick the `collection_order` slot
+1. Player hovers a face-up monster → clicks "Overlay" → `board.startDoOverlay(card)` → `selectOverlay()` marks each candidate summon slot with `waiting-overlay overlay-highlight` and stores `setWaitingOverlay({card, canBeOverlayCards})`
+   - `.overlay-highlight` = animated dashed border; `.waiting-overlay` = overlay cursor **and** the click target (`selectOverlayEvent` listens on `.waiting-overlay`)
+2. Player clicks a highlighted slot → completes the overlay
 3. `board.overlayCard(uuid, new_order)` fires:
    - Finds all cards at old `collection_order` on `summon`
    - Reassigns them to `new_order`
@@ -192,6 +221,8 @@ Action mapping:
    - Moves material to graveyard
    - Decrements remaining material `overlap_order` values
    - If no materials left, clears Xyz card's `isOverlay` flag
+
+**Cancelling a pending overlay:** the menu action handler clears `setWaitingActions(null)` and `setWaitingOverlay(null)` at the top, so **any non-overlay menu action cancels** a pending overlay. `setWaitingOverlay(null)` must remove **both** `overlay-highlight` *and* `waiting-overlay` — clearing only the highlight leaves the slot armed (cursor + clickable).
 
 ## UUID Generation
 
@@ -215,3 +246,6 @@ function ygoUUID() {
 - Replay desync: action logged but `initItems` not capturing the card → check `board.exportState()` is called at record start
 - Overlay after import: `isOverlap`/`isOverlay` booleans not restored → check `importState` restores all boolean fields
 - Collection count wrong after move: `afterMove()` calls `collection.drawOnBoard()` — if skipped (e.g., `fireEvent=false`), count stays stale
+- Menu travels with a moved card: `#cardMenu` is appended *inside* the hovered card; a menu action that moves the card (e.g. to graveyard) drags the menu along unless it is detached to `<body>` first. The action handler does this up front — keep it. (See `context-menu-design.md`.)
+- Overlay UI not cancelled: clearing a pending overlay must remove **both** `overlay-highlight` and `waiting-overlay` classes (in `setWaitingOverlay(null)`); leaving `waiting-overlay` keeps the slot armed.
+- Stale JS after an edit: scripts use `?v=N` cache-bust query strings — bump the version in `index.html` when you change a file, or the browser may run the old code.
