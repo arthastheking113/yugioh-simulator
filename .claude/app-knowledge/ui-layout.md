@@ -20,7 +20,11 @@ body
     ├── aside.play-board-side > .log-message-container   ← replay/record controls, #log-message, chat
     ├── aside.play-board-side.lcard-informations         ← card info panel (shown on hover)
     └── #cardMenu / #collectionMenu / #deckmenu / #extradeckmenu / #graveyardmenu / #banishmenu
+section.combo-graph-section                              ← below the board (see combo-graph.md)
+    └── .combo-graph-toolbar (#rotate-graph) + #combo-graph.combo-graph.horizontal
 ```
+
+> `#cardMenu` is a jQuery UI dialog that, while open, is appended **inside** the hovered `.simulator-card` and moved back to `<body>` on mouse-leave / on any menu action — see `context-menu-design.md`.
 
 > Every slot is a `.holder-slot.card-slot`; individual zones add `.summon-slot`/`.summonex-slot`/`.st-slot`/`.fz-slot` + a `data-order` token; collection zones add `.card-collection-slot` with a `.collection-count` badge. There is **no** `.game-container`/`.top-row`/`.field-row`/`#field-zone`/`#deck-zone` — those never existed.
 
@@ -33,6 +37,7 @@ Each card is a `<div class="simulator-card card-id-{uuid}" ...>` (NOT `.card-ite
 | File | Owns |
 |------|------|
 | `css/simulator.css` | Card sizing, slot layout, zone positioning, overlay stacking |
+| `css/combo_graph.css` | Combo graph nodes/arrows/zone chips; `.horizontal`/`.vertical` rotation, `.cg-active` highlight (colors from `theme.css` vars) |
 | `css/theme.css` | CSS custom properties (colors, backgrounds) — all theming |
 | `css/app.css` | Application chrome, header, controls |
 | `css/tournamentStyle.css` | Tournament overlay mode styles |

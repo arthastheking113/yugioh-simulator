@@ -14,9 +14,11 @@ A standalone, browser-based YuGi-Oh! card game simulator. No build step — open
 | `js/card_menu.js` | Context menus and card actions (930 lines) |
 | `js/main.js` | Initializes Board, wires DOM events (65 lines) |
 | `js/Function.js` | Utility functions: clipboard, localStorage, SweetAlert toasts |
+| `js/combo_graph.js` | `ComboGraph` — read-only visual flow graph of a recorded combo |
 | `js/theme.js` | Runtime theme switching (1,754 lines) |
 | `js/example.js` | Sample deck JSON (30,644 lines — do not edit manually) |
 | `css/simulator.css` | Game board and card layout |
+| `css/combo_graph.css` | Combo graph nodes, arrows, zone chips |
 | `css/theme.css` | CSS color variables — all colors go here |
 | `index.html` | Board layout and script load order |
 
@@ -63,9 +65,10 @@ Focused design reference files live in `.claude/app-knowledge/`:
 | `core-classes.md` | PlayLog / Card / Collection / Board responsibilities |
 | `card-model.md` | Card properties, positions, CSS classes, image loading |
 | `game-mechanics.md` | Phase system, move lifecycle, Xyz overlay, shuffle |
-| `replay-design.md` | PlayLog recording/replay algorithm and step types |
+| `replay-design.md` | PlayLog recording/replay algorithm, step types, combo-graph hooks |
 | `ui-layout.md` | DOM structure, CSS files, animation system, theme |
-| `context-menu-design.md` | Menu system per position, data-target format, conditions |
+| `context-menu-design.md` | Hover-open menus, lifecycle/detach, data-target format, overlay-select cancel |
+| `combo-graph.md` | Combo graph: data source, `ComboGraph` API, step→visual mapping, auto-refresh + replay sync |
 
 ## Common Tasks
 
@@ -95,9 +98,11 @@ Focused design reference files live in `.claude/app-knowledge/`:
 ## Script Load Order (matters!)
 
 ```
-jQuery → jQuery UI → Touch Punch → card_menu.js → simulator.js → main.js → Function.js
+jQuery → jQuery UI → Touch Punch → card_menu.js → simulator.js → main.js → Function.js → combo_graph.js
 ```
 
 ## No Build Step
 
 Edit files, reload browser. That's it. No npm, no webpack, no transpilation.
+
+**Cache-bust gotcha:** assets are loaded with `?v=N` query strings. When you edit a JS/CSS file, bump its `?v=` in `index.html` or the browser may serve a stale cached copy.

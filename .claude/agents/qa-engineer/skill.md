@@ -17,9 +17,11 @@ For app design context, see `.claude/app-knowledge/` — particularly `game-mech
 
 ## How to Test
 
-The simulator runs directly in a browser — open `index.html`. No build step required.
+The simulator runs directly in a browser — open `index.html`. No build step required. For a server, `.claude/launch.json` defines a `static` server (`python -m http.server 8123`).
 
 **Quick start state:** The board loads with 5 sample cards in hand from `js/example.js`. Use these to test interactions.
+
+> **After a JS/CSS fix, hard-reload (or bump the file's `?v=` in `index.html`).** Assets are cache-busted by `?v=N`; a normal reload can serve a stale copy and make a real fix look like it didn't work.
 
 ## Bug Report Format
 
@@ -122,6 +124,28 @@ For each position, verify only valid actions appear:
 - **ST:** Declare, Move, Flip, Activate, Detach
 - **Extra Deck (via dialog):** To Summon, To Banish, Reveal
 - **Graveyard (via dialog):** To Hand, To Summon, To Banish, Declare, Target
+
+### 9. Context Menu Lifecycle (regression-prone)
+The menu opens on **hover** and is appended *inside* the hovered card.
+- [ ] Hover a field monster → menu appears; mouse-leave → menu disappears
+- [ ] **Send a field card to graveyard → the menu does NOT stick / reappear on that card** (it must detach to `<body>` before the move)
+- [ ] Same check for To Banish / To Hand / To Deck (any move to a collection)
+- [ ] After any move, hovering the card in its new zone opens a fresh, correct menu
+
+### 10. Overlay Selection Cancel
+- [ ] Click **Overlay** on a monster (with another monster on field) → candidate slots highlight
+- [ ] Click a highlighted slot → overlay completes, highlights clear
+- [ ] Click **Overlay**, then instead pick a **different** menu action (To GY, To Banish, ATK/DEF…) → **the overlay highlight AND the overlay cursor both clear** (no slot stays armed)
+- [ ] Click **Overlay**, then click empty board space → highlights clear
+
+### 11. Combo Graph (`combo-graph.md`)
+- [ ] Record a combo → click **Stop** → graph auto-generates (no manual button)
+- [ ] Graph nodes match the steps: card image, action verb, destination zone chip
+- [ ] Two stacked Xyz materials show a `+` connector
+- [ ] **Rotate** flips horizontal ⇄ vertical
+- [ ] Click **Play** → the active step highlights and scrolls into view as it plays
+- [ ] Import a combo JSON → graph loads it; fresh deck load → graph shows empty state
+- [ ] Graph is read-only — generating/rotating never changes board state or the recording
 
 ## Known Edge Cases
 
