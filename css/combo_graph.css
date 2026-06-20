@@ -30,6 +30,10 @@
     background: var(--bs-gray, #7d879c);
 }
 
+.combo-graph-toolbar button.cg-btn-export {
+    background: var(--bs-accent, #4e54c8);
+}
+
 .combo-graph-toolbar button:hover {
     filter: brightness(0.95);
 }

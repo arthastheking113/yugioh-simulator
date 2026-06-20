@@ -10,7 +10,7 @@ A visual flow graph of a recorded combo, shown in a section **below** the play b
 |------|------|
 | `js/combo_graph.js` | `ComboGraph` class + singleton wiring (Rotate button, replay hooks) |
 | `css/combo_graph.css` | Node/arrow/zone-chip/`+`-connector styling, `.horizontal`/`.vertical`, `.cg-active` |
-| `index.html` | `<section class="combo-graph-section">` with `#combo-graph` + `#rotate-graph` button |
+| `index.html` | `<section class="combo-graph-section">` with `#combo-graph` + `#rotate-graph` + `#export-graph` buttons |
 
 Loaded **after** `simulator.js`/`main.js` (it reads the global `board` lazily, at click/hook time).
 
@@ -31,6 +31,7 @@ g.build(board.exportState())   // walk steps[] → graph events; build stepToNod
 g.setOrientation('vertical');  // or 'horizontal'; toggleOrientation() flips
 g.highlightStep(i);            // mark the node for original step index i (replay sync)
 g.clearHighlight();
+g.exportImage('horizontal');   // or 'vertical'; Promise<filename> — renders a PNG and downloads it
 ```
 
 `build()` keeps `stepToNode` (original step index → rendered-event index). Skipped steps (record markers, chat, shuffle) keep their index slot so live-replay highlighting stays aligned with `PlayLog.pointer`.
@@ -52,9 +53,21 @@ g.clearHighlight();
 
 **Card image:** `card.imageURL` → else `asset/card/<name>.jpeg` → `asset/back_card.png` on load error (mirrors `Card.drawHtml`). Zone chips are color-coded from `theme.css` `--bs-*` variables.
 
-## Auto-generate (no manual button)
+## Image export (PNG)
 
-The graph rebuilds itself via `window.comboGraphRefresh()` (= rebuild from the current `board.exportState()`); there is **no** "Generate" button, only **Rotate**. `comboGraphRefresh` is called from three load points in `simulator.js`:
+The **Export Image** button (`#export-graph`) saves the combo as a PNG. It opens a SweetAlert with two layout choices — **Horizontal** (`isConfirmed`) / **Vertical** (`isDenied`) — plus Cancel, then calls `g.exportImage(layout)`.
+
+`exportImage` does **not** screenshot the DOM. It draws from the structured `this.events` model onto an offscreen `<canvas>` with the Canvas 2D API (no third-party library), so the output is fully controllable and works for either orientation regardless of what's on screen. Pipeline:
+
+1. `_preloadExportImages` — collect unique card-image URLs, then `_loadExportImage` each with `crossOrigin='anonymous'` **and a cache-busting query** (`?_cgexp=<ts>`). The cache-buster forces a fresh CORS fetch (the art CDN sends an unconditional `access-control-allow-origin: *`), guaranteeing an **untainted** canvas so `toBlob()` can succeed even if the same art was cached earlier from a non-CORS request. Failed/timed-out (10 s) images fall back to the local back image, else a gray placeholder.
+2. `_drawExportCanvas` — measures/word-wraps card names (`_wrapText`, ≤2 lines + ellipsis), computes a uniform tile height, lays tiles + `+`/`→`/`↓` connectors in a row (horizontal) or column (vertical), and renders at 2× for crispness. The scale is **capped** so neither dimension exceeds 16384 px (long combos scale down instead of failing). Colors come from `EXPORT_PALETTE` (mirrors the default-theme `combo_graph.css` fallbacks). Includes a small `Combo Graph — N steps` header and a footer credit.
+3. `_downloadCanvas` — `canvas.toBlob()` → object-URL → click a temp `<a download>` → revoke. Filename: `combo-graph-<layout>-<N>steps.png`.
+
+All of this is still **read-only** w.r.t. board state (it only reads `this.events`, which `build()` populates from `exportState()`).
+
+## Auto-generate (no Generate button)
+
+The graph rebuilds itself via `window.comboGraphRefresh()` (= rebuild from the current `board.exportState()`); there is **no** "Generate" button (only **Rotate** and **Export Image**). `comboGraphRefresh` is called from three load points in `simulator.js`:
 
 1. **Stop Record** — the stop-record-button handler, after the `stopRecord` step.
 2. **`Board.importState()`** — after the playlog is restored (load a combo JSON → graph loads).
