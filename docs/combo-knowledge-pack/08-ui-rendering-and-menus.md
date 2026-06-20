@@ -36,7 +36,7 @@ body
     ├── #cardMenu.card-menu.menu-dialog                            ← per-card menu (opens on hover)
     └── #collectionMenu.collection-menu.menu-dialog
 section.combo-graph-section                                        ← below the board (see "Combo graph")
-    └── .combo-graph-toolbar (#rotate-graph) + #combo-graph.combo-graph.horizontal
+    └── .combo-graph-toolbar (#rotate-graph, #export-graph) + #combo-graph.combo-graph.horizontal
 ```
 
 Key facts:
@@ -127,6 +127,7 @@ jQuery UI **Touch Punch** (`js/jquery.ui.touch-punch.min.js`) enables drag-drop 
 - **Input:** the export's `playLogData.initItems`/`items` (→ a `uuid → {name, imageURL}` lookup) and `playLogData.steps[]` (→ the ordered flow). See [05-replay-and-playlog.md](05-replay-and-playlog.md).
 - **Each step → a node:** a position-changing `update` → card image + action verb (Draw / Summon / Send to GY / Banish / …) + a destination zone chip; `overlay` → a material node, with consecutive overlays joined by a `+`; fold/switch-only updates and `target`/`declare`/`reveal` → small badges; `update-phase` → a divider; record markers / `chat` / `shuffle` are skipped (their step index is preserved so replay highlighting stays aligned).
 - **Rotatable:** container class `.horizontal` ⇄ `.vertical` via the `#rotate-graph` button. There is **no** manual "Generate" button — it auto-builds.
+- **Export to PNG:** the `#export-graph` ("Export Image") button asks for a layout (Horizontal / Vertical via SweetAlert), then `ComboGraph.exportImage(layout)` draws the combo onto an offscreen `<canvas>` (Canvas 2D, no library — drawn from the structured event model, not a DOM screenshot) and downloads a PNG. Card art is (re)loaded `crossOrigin='anonymous'` with a cache-busting query so the canvas stays untainted (the art CDN sends `access-control-allow-origin: *`); the 2× render scale is capped so long combos never exceed the 16384 px canvas limit. Still read-only.
 - **Auto-build + live sync:** `window.comboGraphRefresh()` rebuilds from the current board on Stop Record, in `importState()`, and on initial load; during replay the engine calls guarded `comboGraphOnReplayStart` / `comboGraphOnStep` / `comboGraphOnReplayEnd` hooks to highlight the playing step. The highlight scrolls the active node into view **within the graph's own scroll box only** — it never scrolls the main page to the graph. Detail in [05-replay-and-playlog.md](05-replay-and-playlog.md).
 
 ---
