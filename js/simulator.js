@@ -613,8 +613,9 @@ class Card {
         }, function (e) {
             var _board = _card.getBoard();
             var cardMenu = _board.cardMenu;
-            cardMenu.element.dialog('option', 'appendTo', 'body');
             cardMenu.hide();
+            cardMenu.element.dialog('widget').appendTo('body');
+            cardMenu.element.dialog('option', 'appendTo', 'body');
             // cardMenu.hideCardInformations();
         });
     }
