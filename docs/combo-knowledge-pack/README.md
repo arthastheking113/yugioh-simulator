@@ -80,7 +80,9 @@ These are points where intuition — or the project's own older prose — is mis
 
 11. **Cancelling a pending Xyz-overlay selection must clear *both* `overlay-highlight` and `waiting-overlay`.** `setWaitingOverlay(null)` removes both, and any non-overlay menu action cancels the overlay-select UI; clearing only the dashed `overlay-highlight` used to leave the slot armed (cursor + clickable). (Recent fix.)
 
-> Items 10–11 reflect **code fixes** made after the pack's first version (in `card_menu.js` and `simulator.js`), not just doc corrections.
+12. **`moveTo` runs `appendToBoard()` twice (once synchronously, once in its ~405ms deferred animation finish), and startup builds the board twice (`new Board(state.items)` then `importState`).** The constructor's opening-hand `deckToHand(5)` schedules deferred `appendToBoard()` calls that fire *after* `importState` rebuilds the board, re-injecting phantom hand cards that resolve to the rebuilt **deck** card on hover (wrong context menu). Fixed by guarding `appendToBoard()` with `if (board.getItemById(card.uuid) !== card) return false;` so a stale card from a discarded build can't mutate the live DOM. (Recent fix.)
+
+> Items 10–12 reflect **code fixes** made after the pack's first version (in `card_menu.js` and `simulator.js`), not just doc corrections.
 
 ## The three invariants (the project's non-negotiable rules)
 

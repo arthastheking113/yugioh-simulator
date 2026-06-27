@@ -178,7 +178,15 @@ Represents a single card. Each card manages its own DOM element and animations.
 5. moveAnimation()        ← animate clone from old → new coords (400ms)
 6. appendToBoard()        ← insert DOM element into new slot
 7. afterMove()            ← writelog() + redraw source collection
+8. setTimeout(~405ms)     ← finish animation; calls appendToBoard() AGAIN
 ```
+
+`appendToBoard()` runs once synchronously (step 6) and once in the deferred
+animation-finish callback (step 8). It guards against stale cards —
+`if (board.getItemById(card.uuid) !== card) return false;` — so a `Card` from a
+discarded board build (e.g. the constructor's opening-hand draw, torn down by a
+following `importState()`) cannot re-insert orphan DOM when its deferred callback
+fires after the rebuild. See [Context Menu System](#context-menu-system).
 
 #### Card Action Methods
 
@@ -475,6 +483,8 @@ board.importState(jsonStringOrObject)
 ### Hover Events (Delegated)
 
 Card hover menus use **event delegation** on the board element (`Board.cardHoverEvents()` in `simulator.js`). A single `mouseenter`/`mouseleave` listener on `board.elm` matches `.simulator-card` descendants and looks up the `Card` instance by `data-id`. This ensures every card gets a hover menu regardless of how it entered the DOM (initial load, `importState`, replay, `deckToHand`, context-menu moves).
+
+Because the menu list is chosen from the resolved card's `position`, any **stale** `.simulator-card` left in the DOM (whose `data-id` resolves to a *different* live card) shows the wrong menu. This happened on startup: `new Board(state.items)` draws an opening hand (`deckToHand(5)`) whose `moveTo` animations finish on a `setTimeout`; those deferred `appendToBoard()` calls fired *after* `importState()` rebuilt the board, leaving phantom hand cards that resolved to the rebuilt **deck** card (deck menu). The fix: `appendToBoard()` bails when `board.getItemById(card.uuid) !== card`, so a discarded build's leftover cards can't re-inject DOM. See the import flow below and `core-classes.md`.
 
 For hand cards, the dialog width is constrained to match the card width (preventing the menu from overlapping adjacent overlapping cards). For other zones the dialog uses the full ST-slot width.
 

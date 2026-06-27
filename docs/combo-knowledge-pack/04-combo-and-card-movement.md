@@ -84,11 +84,14 @@ Execution order:
  9. Redraw the SOURCE collection (count badge updates)
 10. if (fireEvent)  afterMove(newPosition)
        └─ writelog('update', uuid, {position, collection_order}, {old position, old collection_order})
-11. setTimeout 5ms → moveAnimation(clone) → 400ms → endBoardAnimation()
-       └─ visually animate the clone from old to new coordinates, then drop the clone
+11. setTimeout 5ms → moveAnimation(clone) → 400ms → endBoardAnimation() + appendToBoard() again
+       └─ visually animate the clone from old to new coordinates, drop the clone,
+          and re-insert the card's DOM to finish the move
 ```
 
 **Things that surprise people (all verified):**
+
+- **`appendToBoard()` runs twice — once synchronously (step 8) and once in the ~405ms deferred callback (step 11).** That deferred call can fire after the board is rebuilt (startup builds the board twice — see [02-architecture-and-core-classes.md](02-architecture-and-core-classes.md)). To stop a discarded build's leftover cards from re-injecting phantom DOM, `appendToBoard()` returns early when the card is no longer the board's registered instance for its uuid: `if (board.getItemById(card.uuid) !== card) return false;`.
 
 - **Occupied individual slot ⇒ the move fails silently** (a `console.warn('No Space to move card')` and `return false`). The card stays put. There is no auto-pick-next-slot.
 - **`+2` ordering on collection tops** leaves gaps in `collection_order` on purpose, so a future card can be slotted "between" without renumbering.

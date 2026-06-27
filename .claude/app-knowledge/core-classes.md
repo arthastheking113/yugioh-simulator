@@ -39,6 +39,15 @@ Board (singleton)
 - Phase change → `Board.setPhase()` (owns this directly, involves logging + animation)
 - Xyz overlay → `Board.overlayCard()` (owns this; too complex to delegate)
 
+## Board Lifecycle (startup & import)
+
+Startup (in `index.html`'s `$.getJSON('board.json')` callback) builds the board **twice**:
+
+1. `new Board($('#playtest'), state.items, …)` — the constructor builds items, shuffles, and draws an opening hand via `deckToHand(5)`.
+2. `board.importState(state)` — calls `emptyBoard()` (clears `items[]` + DOM) then `setItems(state.items)` to rebuild fresh `Card` objects at their **saved** positions.
+
+So step 1's opening-hand draw is always discarded by step 2. The catch: `moveTo` finishes its animation on a `setTimeout`, so the opening-hand draws schedule deferred `appendToBoard()` calls that fire *after* the rebuild. Those stale `Card` objects would re-inject DOM (phantom hand cards that resolve to the rebuilt **deck** card on hover → wrong context menu). `appendToBoard()` guards against this: it returns early when `board.getItemById(card.uuid) !== card` (the card is no longer registered). See [game-mechanics.md](game-mechanics.md) move lifecycle.
+
 ## Collection vs. Individual Zone
 
 | Zone type | Positions | Display |
