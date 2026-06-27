@@ -39,6 +39,8 @@ card.moveTo(newPosition, isTop, order, fireEvent)
 
 **fireEvent = false** skips `afterMove()` logging and collection redraw — use only during replay playback.
 
+**Deferred animation finish:** `moveTo` runs `appendToBoard()` synchronously, then schedules a `setTimeout` (~405ms) that ends the animation and calls `appendToBoard()` **again**. That deferred callback can fire *after* the board has been torn down and rebuilt (the startup flow builds the board twice — see [core-classes.md](core-classes.md)). To stop a discarded build's leftover cards from re-inserting orphan DOM (e.g. phantom cards in the hand that hover the **wrong** context menu), `appendToBoard()` bails out when the card is no longer the board's registered card for its uuid: `if (board.getItemById(card.uuid) !== card) return false;`.
+
 ## Card Actions (non-move)
 
 | Action | Method | Log entry | Visual |

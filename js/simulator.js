@@ -1012,6 +1012,15 @@ class Card {
     appendToBoard() {
         var _card = this;
         var _board = _card.getBoard();
+        // Guard against stale cards. The startup flow builds the board twice:
+        // `new Board(state.items)` (whose constructor draws an opening hand via
+        // deckToHand) and then importState(), which calls emptyBoard() and
+        // rebuilds fresh Card objects from the saved positions. The opening-hand
+        // draw finishes its move animation on a setTimeout, so those deferred
+        // callbacks fire AFTER the rebuild and would re-insert orphan card html
+        // into the hand. A stale card is no longer the board's registered card
+        // for its uuid (importState replaced it), so skip the DOM insertion.
+        if (_board.getItemById(_card.uuid) !== _card) return false;
         var hand = _board.getHandElm();
         var position = _card.get('position');
         switch (position) {

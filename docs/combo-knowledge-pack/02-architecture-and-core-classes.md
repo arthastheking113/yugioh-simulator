@@ -180,6 +180,10 @@ board.importState(state)                        // clear + restore from object o
 
 `board.getItemsByCollectionOrder(order)` is how Xyz materials and their monster are grouped: **all cards sharing a `collection_order` in the `summon` zone are visually stacked in the same slot.**
 
+### Startup builds the board twice
+
+Loading a shared combo (`board.json`) runs `new Board(state.items, …)` **then** `board.importState(state)`. The constructor draws an opening hand (`deckToHand(5)`); `importState` immediately discards it via `emptyBoard()` and rebuilds fresh `Card` objects at their saved positions. Because `moveTo` finishes its animation on a `setTimeout`, the discarded opening-hand draws schedule deferred `appendToBoard()` calls that fire **after** the rebuild — and would re-inject phantom cards into the hand (which then resolve to the rebuilt *deck* card on hover, showing the wrong menu). `appendToBoard()` guards this by bailing when `board.getItemById(card.uuid) !== card`, i.e. the card is no longer the board's registered instance for its uuid.
+
 ---
 
 ## The three invariants (do not break these)
