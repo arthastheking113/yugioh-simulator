@@ -308,7 +308,11 @@ class CardMenu extends MenuBase {
         var cardElm = card.html;
         var _board = card.getBoard();
 
-        this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+        if (card.position === 'hand') {
+            this.element.dialog('option', 'appendTo', 'body');
+        } else {
+            this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+        }
 
         this.element.dialog('option', 'position', {
             my: "center bottom",
