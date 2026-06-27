@@ -6,14 +6,17 @@
 
 ## How Menus Work
 
-The card menu opens on **hover**, not right-click. Each card's jQuery `hover` handler (`Card.cardEvents`, `simulator.js`) does, on `mouseenter`:
+The card menu opens on **hover**, not right-click. A single **delegated** event listener on the board element (`Board.cardHoverEvents`, `simulator.js`) handles all cards. On `mouseenter .simulator-card` it looks up the card by `data-id` and opens the shared dialog:
 
 ```javascript
-_board.cardMenu.setCard(_card);   // updateMenu(): show/hide items by position + foldState + condition
-_board.cardMenu.show();           // open the shared #cardMenu dialog
+var card = board.getItemById($(this).data('id'));
+board.cardMenu.setCard(card);     // updateMenu(): show/hide items by position + foldState + condition
+board.cardMenu.show();            // open the shared #cardMenu dialog
 ```
 
 There is a single shared `#cardMenu` jQuery UI dialog. Its menu items are static HTML (built once in `CardMenu.drawHtml`); `updateMenu()` shows only the ids listed in `menuList[card.position]` (or `menuList['overlap']` for Xyz materials) and applies per-item `condition`/state filters. On `mouseleave` the dialog hides.
+
+**Why delegation?** Previously, hover was bound per-card in `Card.cardEvents()` during construction. Cards that entered the DOM through certain paths (importState, replay startRecord) could end up without events. Delegation on the board element ensures every `.simulator-card` gets hover behavior regardless of how or when it was created.
 
 Each menu item has a `data-target` attribute encoding the action:
 

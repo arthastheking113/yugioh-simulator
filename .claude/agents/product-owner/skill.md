@@ -66,3 +66,7 @@ When reviewing a feature request, ask:
 1. Which persona benefits?
 2. Is this already possible via a workaround?
 3. Does it break existing replay compatibility?
+
+## Documentation
+
+Ensure every completed feature or bug fix includes documentation updates. The project maintains docs in `docs/ARCHITECTURE.md`, `.claude/app-knowledge/`, and `docs/combo-knowledge-pack/` — all three must stay in sync.

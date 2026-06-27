@@ -472,6 +472,12 @@ board.importState(jsonStringOrObject)
 
 **File:** `js/card_menu.js` — Three classes: `MenuBase`, `CardMenu`, `CollectionMenu`
 
+### Hover Events (Delegated)
+
+Card hover menus use **event delegation** on the board element (`Board.cardHoverEvents()` in `simulator.js`). A single `mouseenter`/`mouseleave` listener on `board.elm` matches `.simulator-card` descendants and looks up the `Card` instance by `data-id`. This ensures every card gets a hover menu regardless of how it entered the DOM (initial load, `importState`, replay, `deckToHand`, context-menu moves).
+
+For hand cards, the dialog width is constrained to match the card width (preventing the menu from overlapping adjacent overlapping cards). For other zones the dialog uses the full ST-slot width.
+
 `CardMenu.renderMenu(card)` generates HTML based on `card.position` and `card.foldState`. Each menu item has a `data-target` attribute:
 
 ```html

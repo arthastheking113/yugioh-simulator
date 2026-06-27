@@ -240,6 +240,8 @@ function ygoUUID() {
 3. `canMoveTo()` / `canFlip()` / `canSwitch()` must be checked before any state change
 4. `emptyBoard()` must clear both `board.items[]` and the DOM — never just one
 5. `collection_order` for summon/ST/FZ zones must be the slot's `data-order` token (`ss1`–`ss5`, `exss1`/`exss2`, `st1`–`st5`, `fz1`), never `0`
+6. Card hover events use **delegation** on the board element (`Board.cardHoverEvents()`), not per-card binding — never add per-card hover handlers in `Card.init()` or `Card.cardEvents()`
+7. **Update documentation after every bug fix or feature change.** Update `docs/ARCHITECTURE.md`, the matching `.claude/app-knowledge/` file(s), and the corresponding `docs/combo-knowledge-pack/` file(s) per the mapping table above. Documentation that drifts from the code is worse than no documentation.
 
 ## Common Bugs to Watch
 

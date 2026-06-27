@@ -99,6 +99,12 @@ Focused design reference files live in `.claude/app-knowledge/`:
 - Check `PlayLog.playStep()` handles that action's type
 - Check `board.exportState()` captures the relevant card state in `initItems`
 
+**After every bug fix or feature:**
+1. Update `docs/ARCHITECTURE.md` if the change affects architecture or event flow
+2. Update the relevant `.claude/app-knowledge/` file(s)
+3. Update the matching `docs/combo-knowledge-pack/` file(s) (see mapping in `.claude/agents/game-engine-developer/skill.md`)
+4. Bump the `?v=N` cache-bust in `index.html` for any changed JS/CSS file
+
 ## Script Load Order (matters!)
 
 ```

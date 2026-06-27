@@ -120,3 +120,7 @@ Common blockers in this project:
 - Two valid approaches with different UX implications
 - Feature conflicts with existing player workflow
 - Risk of breaking replay compatibility requires conscious trade-off decision
+
+## Documentation Requirement
+
+Every task's definition of done includes documentation updates. After a bug fix or feature is implemented, the developer must update `docs/ARCHITECTURE.md`, the relevant `.claude/app-knowledge/` file(s), and the matching `docs/combo-knowledge-pack/` file(s). Include this as a checklist item in sprint tasks.

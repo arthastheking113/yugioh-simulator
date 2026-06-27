@@ -85,4 +85,4 @@ jQuery UI Touch Punch enables drag-drop on touch devices. Phase announcement and
 
 ## Card Info Panel
 
-`.lcard-informations` shows the hovered card's name, image, and description text. Populated on `mouseenter` by the card's jQuery event handler.
+`.lcard-informations` shows the hovered card's name, image, and description text. Populated on `mouseenter` by the board's delegated hover handler (`Board.cardHoverEvents()`).
