@@ -42,50 +42,50 @@ class PlayLog {
     }
     events() {
         playLog = this;
-        playLog.elm.find('.start-record-button').removeClass('hidden');
+        $('.start-record-button').removeClass('hidden');
 
-        playLog.elm.find('.replay-button').off('click').on('click', function () {
+        $('.replay-button').off('click').on('click', function () {
 
             // Switch button
-            // playLog.elm.find('.replay-button').addClass('hidden');
-            // playLog.elm.find('.start-record-button').addClass('hidden');
-            // playLog.elm.find('.stop-record-button').addClass('hidden');
+            // $('.replay-button').addClass('hidden');
+            // $('.start-record-button').addClass('hidden');
+            // $('.stop-record-button').addClass('hidden');
 
             playLog.replay();
-            // playLog.elm.find('.start-record-button').removeClass('hidden');
+            // $('.start-record-button').removeClass('hidden');
         });
 
-        playLog.elm.find('.start-record-button').off('click').on('click', function () {
+        $('.start-record-button').off('click').on('click', function () {
             var data = playLog.getBoard().getItems();
             playLog.addStep('startRecord', undefined, { ...data }, {});
 
             // Switch button
-            playLog.elm.find('.replay-button').addClass('hidden');
-            playLog.elm.find('.start-record-button').addClass('hidden');
-            playLog.elm.find('.stop-record-button').removeClass('hidden');
+            $('.replay-button').addClass('hidden');
+            $('.start-record-button').addClass('hidden');
+            $('.stop-record-button').removeClass('hidden');
 
 
         });
 
-        playLog.elm.find('.stop-record-button').off('click').on('click', function () {
+        $('.stop-record-button').off('click').on('click', function () {
             var data = playLog.getBoard().getItems();
             playLog.addStep('stopRecord', undefined, { ...data }, {});
 
             // Switch button
-            playLog.elm.find('.replay-button').removeClass('hidden');
-            playLog.elm.find('.start-record-button').removeClass('hidden');
-            playLog.elm.find('.stop-record-button').addClass('hidden');
+            $('.replay-button').removeClass('hidden');
+            $('.start-record-button').removeClass('hidden');
+            $('.stop-record-button').addClass('hidden');
 
             // Combo graph: auto-generate from the just-recorded combo.
             if (typeof window.comboGraphRefresh === 'function') window.comboGraphRefresh();
 
         });
 
-        playLog.elm.find('.pause-button').off('click').on('click', function () {
+        $('.pause-button').off('click').on('click', function () {
             playLog.pauseReplay();
         });
 
-        playLog.elm.find('.resume-button').off('click').on('click', function () {
+        $('.resume-button').off('click').on('click', function () {
             playLog.resumeReplay();
         });
         playLog.chatEvents();
@@ -298,12 +298,12 @@ class PlayLog {
             return false;
         }
 
-        playLog.elm.find('.start-record-button').addClass('hidden');
-        playLog.elm.find('.stop-record-button').addClass('hidden');
-        playLog.elm.find('.replay-button').addClass('hidden');
+        $('.start-record-button').addClass('hidden');
+        $('.stop-record-button').addClass('hidden');
+        $('.replay-button').addClass('hidden');
 
-        playLog.elm.find('.pause-button').removeClass('hidden');
-        playLog.elm.find('.resume-button').removeClass('hidden');
+        $('.pause-button').removeClass('hidden');
+        $('.resume-button').removeClass('hidden');
 
         this.pointer = 0;
         this.isRePlaying = true;
@@ -524,12 +524,12 @@ class PlayLog {
         this.removeOverlay();
 
 
-        playLog.elm.find('.start-record-button').removeClass('hidden');
-        //playLog.elm.find('.stop-record-button').removeClass('hidden');
-        playLog.elm.find('.replay-button').removeClass('hidden');
+        $('.start-record-button').removeClass('hidden');
+        //$('.stop-record-button').removeClass('hidden');
+        $('.replay-button').removeClass('hidden');
 
-        playLog.elm.find('.pause-button').addClass('hidden');
-        playLog.elm.find('.resume-button').addClass('hidden');
+        $('.pause-button').addClass('hidden');
+        $('.resume-button').addClass('hidden');
         var board = this.getBoard();
         board.afterReplay();
         // Combo graph: clear replay highlight.

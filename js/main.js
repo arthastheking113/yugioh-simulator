@@ -44,6 +44,16 @@ function boardModeEvent() {
 
     var mobileQuery = window.matchMedia('(max-width: 1199px)');
 
+    // The record/replay controls live in the log header (Advanced) but the
+    // log is hidden in Basic mode, so relocate them to the top bar there.
+    var $controls = $('.start-record-button, .stop-record-button, .replay-button, .pause-button, .resume-button');
+    var $topHome = $('#board-top-controls');
+    var $logHome = $('.log-message-header');
+
+    function placeControls(basic) {
+        (basic ? $topHome : $logHome).append($controls);
+    }
+
     function isMobile() {
         return mobileQuery.matches;
     }
@@ -63,6 +73,7 @@ function boardModeEvent() {
 
     function apply(basic, persist) {
         $container.toggleClass('basic-mode', basic);
+        placeControls(basic);
         if (persist) {
             localStorage.setItem('BoardViewMode', basic ? 'basic' : 'advanced');
         }

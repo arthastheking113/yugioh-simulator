@@ -58,7 +58,34 @@
     flex-basis: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
     margin-bottom: 5px;
+}
+/* Record/replay controls relocated to the top bar in Basic mode */
+.board-top-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+}
+.board-top-controls:empty {
+    display: none;
+}
+.board-top-controls .start-record-button,
+.board-top-controls .stop-record-button,
+.board-top-controls .pause-button,
+.board-top-controls .resume-button {
+    color: #fe696a;
+}
+.board-top-controls .replay-button {
+    color: greenyellow;
+}
+.board-top-controls a {
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
 }
 .board-mode-toggle {
     display: inline-flex;
