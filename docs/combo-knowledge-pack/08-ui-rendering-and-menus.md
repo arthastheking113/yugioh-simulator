@@ -6,7 +6,9 @@ How the board is drawn, animated, themed, and how players trigger actions. **Eve
 
 ```html
 body
-└── .play-board-container
+└── .play-board-container                  ← gains `.basic-mode` in the Basic view
+    ├── .board-mode-bar                     ← top bar: #board-top-controls (holds the record/replay
+    │       buttons while in Basic) + #board-mode-toggle (Basic/Advanced pill)
     ├── #playtest.play-board
     │   └── #game-board.game-board
     │       ├── .game-resource.hidden          ← hidden <audio> sound effects:
@@ -45,6 +47,7 @@ Key facts:
 - **Collection zones** are `.holder-slot.card-slot.card-collection-slot` with stable IDs `#deck-slot`, `#extra-deck-slot`, `#graveyard-slot`, `#banish-slot`, each containing a `.collection-count` badge and an `<em class="ddescription">` label.
 - **Phase buttons** are `<input class="phase-btn …">` whose **`value`** holds the phase key (`dp`/`sp`/`m1`/`bp`/`m2`/`ep`) — there is no `data-phase` attribute.
 - The two `.summonex-slot` cells (`exss1`/`exss2`) are the **Extra Monster Zones** where extra-deck monsters typically land.
+- **Basic / Advanced view.** The board opens in **Basic** (always, not persisted): `.play-board-container.basic-mode` hides both `aside.play-board-side` columns and scales the board up via a `--slot-size` CSS var on `.holder-slot` (desktop only). The five record/replay buttons relocate from `.log-message-container`'s header into `#board-top-controls`; their `simulator.js` lookups use global `$('.x-button')` selectors so they survive the move. Driven by `js/main.js > boardModeEvent()`. The `.lcard-informations` panel also pre-fills with a random visible card on load and follows declares in Advanced (`Board.showRandomCardInfo()` / `showCardInfo()`).
 
 ## The card element (verified)
 
