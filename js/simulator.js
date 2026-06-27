@@ -599,25 +599,6 @@ class Card {
     }
     init() {
         this.drawHtml(this.options);
-        this.cardEvents();
-    }
-    cardEvents() {
-        var _card = this;
-
-        this.html.hover(function (e) {
-            var _board = _card.getBoard();
-            var cardMenu = _board.cardMenu.setCard(_card);
-
-            cardMenu.sideCardInformations();
-            cardMenu.show();
-        }, function (e) {
-            var _board = _card.getBoard();
-            var cardMenu = _board.cardMenu;
-            cardMenu.hide();
-            cardMenu.element.dialog('widget').appendTo('body');
-            cardMenu.element.dialog('option', 'appendTo', 'body');
-            // cardMenu.hideCardInformations();
-        });
     }
     // validate
     canMoveTo(newPosition) {
@@ -1663,6 +1644,7 @@ class Board {
 
     // START Events
     events() {
+        this.cardHoverEvents();
         this.removeOverlayHighlight();
         this.selectOverlayEvent();
         this.removeHighlight();
@@ -1670,6 +1652,23 @@ class Board {
         this.selectPhases();
         this.skillEvents();
         return true;
+    }
+    cardHoverEvents() {
+        var board = this;
+        this.elm.on('mouseenter', '.simulator-card', function () {
+            var uuid = $(this).data('id');
+            var card = board.getItemById(uuid);
+            if (!card) return;
+            var cardMenu = board.cardMenu.setCard(card);
+            cardMenu.sideCardInformations();
+            cardMenu.show();
+        });
+        this.elm.on('mouseleave', '.simulator-card', function () {
+            var cardMenu = board.cardMenu;
+            cardMenu.hide();
+            cardMenu.element.dialog('widget').appendTo('body');
+            cardMenu.element.dialog('option', 'appendTo', 'body');
+        });
     }
     removeOverlayHighlight() {
         var board = this;
