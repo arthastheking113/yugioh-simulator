@@ -34,6 +34,68 @@ function toolsEvent() {
 
 }
 
+// Basic / Advanced view toggle: hide or show the side columns
+// (card overview on the left, log on the right). On mobile the left
+// column is already hidden, so the toggle only affects the log.
+function boardModeEvent() {
+    var $container = $('.play-board-container');
+    var $btn = $('#board-mode-toggle');
+    if (!$btn.length) return;
+
+    var mobileQuery = window.matchMedia('(max-width: 1199px)');
+
+    // The record/replay controls live in the log header (Advanced) but the
+    // log is hidden in Basic mode, so relocate them to the top bar there.
+    var $controls = $('.start-record-button, .stop-record-button, .replay-button, .pause-button, .resume-button');
+    var $topHome = $('#board-top-controls');
+    var $logHome = $('.log-message-header');
+
+    function placeControls(basic) {
+        (basic ? $topHome : $logHome).append($controls);
+    }
+
+    function isMobile() {
+        return mobileQuery.matches;
+    }
+
+    function render() {
+        var basic = $container.hasClass('basic-mode');
+        var label = isMobile()
+            ? (basic ? 'Show Logs' : 'Hide Logs')
+            : (basic ? 'Basic' : 'Advanced');
+        $btn.find('.board-mode-label').text(label);
+        $btn.find('i')
+            .toggleClass('fa-eye', !basic)
+            .toggleClass('fa-eye-slash', basic);
+        $btn.toggleClass('is-basic', basic);
+        $btn.attr('aria-pressed', basic ? 'true' : 'false');
+    }
+
+    function apply(basic) {
+        $container.toggleClass('basic-mode', basic);
+        placeControls(basic);
+        render();
+    }
+
+    // Always open in Basic (columns hidden, board expanded). The toggle
+    // switches the view for the session but the choice is not persisted —
+    // every load starts in Basic.
+    apply(true);
+
+    $btn.click(function () {
+        apply(!$container.hasClass('basic-mode'));
+    });
+
+    // Re-render the label when crossing the mobile breakpoint
+    // (Basic/Advanced on desktop vs Hide Logs/Show Logs on mobile).
+    if (mobileQuery.addEventListener) {
+        mobileQuery.addEventListener('change', render);
+    } else if (mobileQuery.addListener) {
+        mobileQuery.addListener(render); // older Safari
+    }
+    $(window).resize(render);
+}
+
 const urlParams = new URLSearchParams(window.location.search);
 const isDebug = urlParams.get('debug');
 if (isDebug) {
@@ -41,6 +103,7 @@ if (isDebug) {
 }
 $(document).ready(function () {
     toolsEvent();
+    boardModeEvent();
     // setCardSize();
     $('html').scrollTop( $('#playtest').offset().top - 20 );
 

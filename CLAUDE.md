@@ -24,6 +24,8 @@ A standalone, browser-based YuGi-Oh! card game simulator. No build step — open
 
 Full architecture: see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
+Feature docs: [`docs/BASIC-ADVANCED-VIEW.md`](docs/BASIC-ADVANCED-VIEW.md) (Basic/Advanced board view + relocated controls + card-info panel) · [`docs/IMPLEMENTING-COMBO-GRAPH.md`](docs/IMPLEMENTING-COMBO-GRAPH.md) · [`docs/MIGRATION.md`](docs/MIGRATION.md) (upgrading a build to the latest version)
+
 ## The Four Core Classes (in simulator.js)
 
 ```

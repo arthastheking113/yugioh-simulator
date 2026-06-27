@@ -54,7 +54,7 @@
     <link rel="stylesheet" href="css/theme.css?v=1.5" integrity="" />
     <link rel="stylesheet" href="css/tournamentStyle.css?v=1.4" integrity="" />
     <link rel="stylesheet" href="css/app.css" integrity="" />
-    <link rel="stylesheet" href="css/simulator.css?v=1.1.1" integrity="" />
+    <link rel="stylesheet" href="css/simulator.css?v=1.1.4" integrity="" />
     <link rel="stylesheet" href="css/combo_graph.css?v=1.1" integrity="" />
     <script src="js/jquery.min.js?v=3.2.1"></script>
     <script src="js/jquery-ui.min.js?v=1.12.1"></script>
@@ -93,6 +93,14 @@
 
 
     <div class="play-board-container">
+        <div class="board-mode-bar">
+            <!-- Record/replay controls relocate here in Basic mode (see boardModeEvent) -->
+            <div id="board-top-controls" class="board-top-controls"></div>
+            <button type="button" id="board-mode-toggle" class="board-mode-toggle" aria-pressed="false">
+                <i class="fas fa-eye" aria-hidden="true"></i>
+                <span class="board-mode-label">Basic</span>
+            </button>
+        </div>
         <!-- <a style='margin: 1rem 0;' id="play" class='btn btn-success' role='button'><i class='fa fa-play-circle'
                 aria-hidden='true'></i> Play Test Deck</a> -->
         <div id="playtest" class="play-board" x-title="Play test Alpha">
@@ -350,8 +358,8 @@
         </div>
     </section>
     <script src="js/card_menu.js?v=1.1.2" integrity=""></script>
-    <script src="js/simulator.js?v=1.1.3" integrity=""></script>
-    <script src="js/main.js?v=1.1.1" integrity=""></script>
+    <script src="js/simulator.js?v=1.1.5" integrity=""></script>
+    <script src="js/main.js?v=1.1.5" integrity=""></script>
     <script src="js/Function.js?v=1.6" integrity=""></script>
     <script src="js/combo_graph.js?v=1.3" integrity=""></script>
 

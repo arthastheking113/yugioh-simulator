@@ -55,6 +55,84 @@ $white-color: #efefef;
     .play-board {
         max-width: calc( 100% - 20px );
     }
+
+    // Basic / Advanced view toggle bar
+    .board-mode-bar {
+        order: 0;
+        flex-basis: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-bottom: 5px;
+
+        // Record/replay controls relocated here in Basic mode
+        .board-top-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 18px;
+
+            &:empty {
+                display: none;
+            }
+
+            .start-record-button,
+            .stop-record-button,
+            .pause-button,
+            .resume-button {
+                color: #fe696a;
+            }
+
+            .replay-button {
+                color: greenyellow;
+            }
+
+            a {
+                font-size: 14px;
+                font-weight: 600;
+                text-decoration: none;
+                white-space: nowrap;
+            }
+        }
+
+        .board-mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1;
+            color: #efefef;
+            background: #011d38;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+
+            &:hover {
+                background: #023159;
+                border-color: rgba(255, 255, 255, 0.6);
+            }
+
+            &.is-basic {
+                background: #0a4d2c;
+                border-color: rgba(120, 255, 180, 0.5);
+            }
+        }
+    }
+
+    // Basic mode: hide the side columns and reclaim their space
+    &.basic-mode {
+        .play-board-side {
+            display: none;
+        }
+        .play-board {
+            max-width: calc( 100% - 20px );
+        }
+    }
+
     @media( min-width: 1200px ) { // check card_menu.js > breakpoint
         .play-board-side {
             order: 9;
@@ -68,6 +146,16 @@ $white-color: #efefef;
         .play-board {
             order: 5;
             max-width: calc(  60% - 30px );
+        }
+
+        &.basic-mode .play-board {
+            max-width: min( calc( 100% - 20px ), 1500px );
+        }
+
+        // Grow the board's slots to fill the space freed by the columns.
+        // Fluid + viewport-bounded so it never overflows on smaller desktops.
+        &.basic-mode #playtest .game-board {
+            --slot-size: clamp( 102px, calc( ( min( 100vw, 1500px ) - 160px ) / 7 ), 150px );
         }
 
         .lcard-informations {
@@ -294,7 +382,7 @@ $white-color: #efefef;
 }
 .holder-slot {
     // height: 102px;
-    width: 102px;
+    width: var(--slot-size, 102px);
     display: block;
     border: 1px solid #ccc;
     border-radius: 4px;

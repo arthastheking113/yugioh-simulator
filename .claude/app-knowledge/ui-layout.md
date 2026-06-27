@@ -4,7 +4,8 @@
 
 ```html
 body
-└── .play-board-container
+└── .play-board-container          ← gets `.basic-mode` when the Basic view is active
+    ├── .board-mode-bar            ← top bar: #board-top-controls (record/replay buttons in Basic) + #board-mode-toggle
     ├── #playtest.play-board > #game-board.game-board
     │   ├── .game-resource.hidden        ← <audio> sound effects (declare/reveal/target/phase)
     │   ├── .row.actions                 ← #new button, coin/dice tools
@@ -27,6 +28,8 @@ section.combo-graph-section                              ← below the board (se
 > `#cardMenu` is a jQuery UI dialog that, while open, is appended **inside** the hovered `.simulator-card` and moved back to `<body>` on mouse-leave / on any menu action — see `context-menu-design.md`.
 
 > Every slot is a `.holder-slot.card-slot`; individual zones add `.summon-slot`/`.summonex-slot`/`.st-slot`/`.fz-slot` + a `data-order` token; collection zones add `.card-collection-slot` with a `.collection-count` badge. There is **no** `.game-container`/`.top-row`/`.field-row`/`#field-zone`/`#deck-zone` — those never existed.
+
+> **Basic / Advanced view.** The board opens in **Basic** (always — not persisted): `.play-board-container.basic-mode` hides both `.play-board-side` columns and scales the board up via `--slot-size` on `.holder-slot` (desktop only). The record/replay buttons move from `.log-message-header` into `#board-top-controls`. `js/main.js > boardModeEvent()` drives it. Full reference: [`docs/BASIC-ADVANCED-VIEW.md`](../../docs/BASIC-ADVANCED-VIEW.md).
 
 ## Card DOM Element
 
