@@ -71,22 +71,19 @@ function boardModeEvent() {
         $btn.attr('aria-pressed', basic ? 'true' : 'false');
     }
 
-    function apply(basic, persist) {
+    function apply(basic) {
         $container.toggleClass('basic-mode', basic);
         placeControls(basic);
-        if (persist) {
-            localStorage.setItem('BoardViewMode', basic ? 'basic' : 'advanced');
-        }
         render();
     }
 
-    // Basic is the default view (columns hidden, board expanded);
-    // only switch to Advanced if the user explicitly chose it before.
-    var stored = localStorage.getItem('BoardViewMode');
-    apply(stored ? stored === 'basic' : true, false);
+    // Always open in Basic (columns hidden, board expanded). The toggle
+    // switches the view for the session but the choice is not persisted —
+    // every load starts in Basic.
+    apply(true);
 
     $btn.click(function () {
-        apply(!$container.hasClass('basic-mode'), true);
+        apply(!$container.hasClass('basic-mode'));
     });
 
     // Re-render the label when crossing the mobile breakpoint
