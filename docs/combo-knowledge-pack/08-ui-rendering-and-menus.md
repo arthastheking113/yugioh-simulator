@@ -119,7 +119,7 @@ jQuery UI **Touch Punch** (`js/jquery.ui.touch-punch.min.js`) enables drag-drop 
 
 ## Card info panel
 
-`aside.lcard-informations` shows the hovered card's image and `description` (`.lcard-descriptons`). It is populated on `mouseenter` by the card's jQuery hover handler (which also shows the context menu via `cardMenu.sideCardInformations()`).
+`aside.lcard-informations` shows the hovered card's image and `description` (`.lcard-descriptons`). It is populated on `mouseenter` by the board's delegated hover handler (`Board.cardHoverEvents()`, which also shows the context menu via `cardMenu.sideCardInformations()`).
 
 ---
 
@@ -139,7 +139,7 @@ jQuery UI **Touch Punch** (`js/jquery.ui.touch-punch.min.js`) enables drag-drop 
 
 **File:** `js/card_menu.js` — three classes: `MenuBase`, `CardMenu`, `CollectionMenu`. The menu containers in the DOM are `#cardMenu.card-menu.menu-dialog` (per-card) and `#collectionMenu.collection-menu.menu-dialog`, plus the four browsable zone dialogs `#deckmenu` / `#extradeckmenu` / `#graveyardmenu` / `#banishmenu`.
 
-The per-card menu opens **on hover** (the card's jQuery `mouseenter` calls `cardMenu.setCard(card).show()`; `mouseleave` hides it). Its items are static HTML built once in `CardMenu.drawHtml`; `updateMenu()` shows only the ids listed in `menuList[card.position]` (or `menuList['overlap']` for a material), filtered by `card.foldState` and per-item `condition`. Each item encodes its action in a `data-target` attribute:
+The per-card menu opens **on hover** via delegated `mouseenter`/`mouseleave` listeners on the board element (`Board.cardHoverEvents()` in `simulator.js`). On `mouseenter .simulator-card`, the handler looks up the `Card` by `data-id` and calls `cardMenu.setCard(card).show()`; on `mouseleave` it hides. Delegation ensures every card gets hover behavior regardless of how it entered the DOM. Menu items are static HTML built once in `CardMenu.drawHtml`; `updateMenu()` shows only the ids listed in `menuList[card.position]` (or `menuList['overlap']` for a material), filtered by `card.foldState` and per-item `condition`. Each item encodes its action in a `data-target` attribute:
 
 ```html
 <a data-target="summon,attack,normal">SS ATK</a>

@@ -4,6 +4,7 @@ class MenuBase {
         this.element = element;
         this.options = $.extend({}, options);
         this.dialog = {};
+        this._hideTimeout = null;
         this.init();
         this.infoPanel = $('.lcard-information-container');
         this.breakpoint = 1200;
@@ -68,9 +69,24 @@ class MenuBase {
         // This is an abstract function
     }
     hide() {
+        this.cancelHide();
         this.beforeHide();
         this.element.dialog('close');
         this.afterHide();
+    }
+    delayedHide(ms) {
+        var self = this;
+        this.cancelHide();
+        this._hideTimeout = setTimeout(function () {
+            self._hideTimeout = null;
+            self.hide();
+        }, ms || 80);
+    }
+    cancelHide() {
+        if (this._hideTimeout) {
+            clearTimeout(this._hideTimeout);
+            this._hideTimeout = null;
+        }
     }
     beforeHide() {
         // This is an abstract function
@@ -309,6 +325,16 @@ class CardMenu extends MenuBase {
         var _board = card.getBoard();
 
         this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+
+        if (card.position === 'hand') {
+            var cw = cardElm.outerWidth();
+            this.element.dialog('option', 'minWidth', cw);
+            this.element.dialog('option', 'width', cw);
+        } else {
+            var w = $('.st-slot').first().width();
+            this.element.dialog('option', 'minWidth', 100);
+            this.element.dialog('option', 'width', w || 148);
+        }
 
         this.element.dialog('option', 'position', {
             my: "center bottom",

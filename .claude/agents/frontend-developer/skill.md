@@ -128,3 +128,8 @@ jQuery UI Touch Punch (`js/jquery.ui.touch-punch.min.js`) enables drag-drop on t
 - Overlay cards sit at lower z-index than their parent Xyz card
 - Hand cards use flex layout; adding margin/padding shifts all cards
 - Phase announcement uses `position: fixed` — test it doesn't clip on small screens
+- Card hover events use **delegation** on the board element — don't add per-card event handlers
+
+## Documentation
+
+**Update documentation after every bug fix or feature change.** Update `docs/ARCHITECTURE.md`, the matching `.claude/app-knowledge/` file(s), and the corresponding `docs/combo-knowledge-pack/` file(s). See the mapping table in `.claude/agents/game-engine-developer/skill.md`.

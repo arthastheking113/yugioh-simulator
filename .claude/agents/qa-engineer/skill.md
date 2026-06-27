@@ -176,3 +176,9 @@ The menu opens on **hover** and is appended *inside* the hovered card.
 **For visual bugs:** Look at `Card.updateHtml()` and `Card.appendToBoard()` — check which CSS classes are being set
 
 **For state bugs:** Look at `Board.exportState()` / `Board.importState()` — check the serialized object includes the field
+
+**For hover/menu bugs:** Card hover events use **delegation** on the board element (`Board.cardHoverEvents()`), not per-card binding. Check that `board.elm.on('mouseenter', '.simulator-card', ...)` is active and the card has a valid `data-id`.
+
+## Documentation
+
+**Update documentation after every bug fix or feature verification.** When a fix changes documented behavior, update `docs/ARCHITECTURE.md`, the matching `.claude/app-knowledge/` file(s), and the corresponding `docs/combo-knowledge-pack/` file(s). See the mapping table in `.claude/agents/game-engine-developer/skill.md`.
