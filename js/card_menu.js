@@ -308,17 +308,22 @@ class CardMenu extends MenuBase {
         var cardElm = card.html;
         var _board = card.getBoard();
 
-        if (card.position === 'hand') {
-            this.element.dialog('option', 'appendTo', 'body');
-        } else {
-            this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
-        }
+        this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
 
         this.element.dialog('option', 'position', {
             my: "center bottom",
             at: "center top",
             of: '#' + cardElm.attr('id')
         });
+
+        var widget = this.element.dialog('widget');
+        if (card.position === 'hand') {
+            widget.css('pointer-events', 'none');
+            widget.find('ul').css('pointer-events', 'auto');
+        } else {
+            widget.css('pointer-events', '');
+            widget.find('ul').css('pointer-events', '');
+        }
 
         if (['deck', 'exdeck', 'graveyard', 'banish'].includes(card.position)) {
             var items = _board.getCollectionItems(card.position);
