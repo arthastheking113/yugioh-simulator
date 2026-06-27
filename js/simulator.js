@@ -606,22 +606,16 @@ class Card {
 
         this.html.hover(function (e) {
             var _board = _card.getBoard();
-            var cardMenu = _board.cardMenu;
-            cardMenu.cancelHide();
-            cardMenu.setCard(_card);
+            var cardMenu = _board.cardMenu.setCard(_card);
 
             cardMenu.sideCardInformations();
             cardMenu.show();
         }, function (e) {
             var _board = _card.getBoard();
             var cardMenu = _board.cardMenu;
-            if (_card.position === 'hand') {
-                cardMenu.delayedHide();
-            } else {
-                cardMenu.hide();
-                cardMenu.element.dialog('widget').appendTo('body');
-                cardMenu.element.dialog('option', 'appendTo', 'body');
-            }
+            cardMenu.hide();
+            cardMenu.element.dialog('widget').appendTo('body');
+            cardMenu.element.dialog('option', 'appendTo', 'body');
             // cardMenu.hideCardInformations();
         });
     }

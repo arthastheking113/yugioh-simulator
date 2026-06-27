@@ -324,10 +324,16 @@ class CardMenu extends MenuBase {
         var cardElm = card.html;
         var _board = card.getBoard();
 
+        this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+
         if (card.position === 'hand') {
-            this.element.dialog('option', 'appendTo', 'body');
+            var cw = cardElm.outerWidth();
+            this.element.dialog('option', 'minWidth', cw);
+            this.element.dialog('option', 'width', cw);
         } else {
-            this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+            var w = $('.st-slot').first().width();
+            this.element.dialog('option', 'minWidth', 100);
+            this.element.dialog('option', 'width', w || 148);
         }
 
         this.element.dialog('option', 'position', {
@@ -829,16 +835,6 @@ class CardMenu extends MenuBase {
             // console.log( card, newPosition, order, newState, isFD );
             return board.updateCardbyAction(card, newPosition, order, newState, isFD);
 
-        });
-
-        var widget = this.element.dialog('widget');
-        widget.on('mouseenter', function () {
-            menu.cancelHide();
-        });
-        widget.on('mouseleave', function () {
-            if (menu.card && menu.card.position === 'hand') {
-                menu.delayedHide();
-            }
         });
     }
 }
