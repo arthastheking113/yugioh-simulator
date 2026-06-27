@@ -51,6 +51,43 @@
 .play-board-container .play-board {
     max-width: calc(100% - 20px);
 }
+
+/* Basic / Advanced view toggle */
+.play-board-container .board-mode-bar {
+    order: 0;
+    flex-basis: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+.board-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #efefef;
+    background: #011d38;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.board-mode-toggle:hover {
+    background: #023159;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+.board-mode-toggle.is-basic {
+    background: #0a4d2c;
+    border-color: rgba(120, 255, 180, 0.5);
+}
+
+/* Basic mode: hide the side columns (card overview + log) */
+.play-board-container.basic-mode .play-board-side {
+    display: none;
+}
 @media (min-width: 1200px) {
     .play-board-container .play-board-side {
         order: 9;
