@@ -4,6 +4,7 @@ class MenuBase {
         this.element = element;
         this.options = $.extend({}, options);
         this.dialog = {};
+        this._hideTimeout = null;
         this.init();
         this.infoPanel = $('.lcard-information-container');
         this.breakpoint = 1200;
@@ -68,9 +69,24 @@ class MenuBase {
         // This is an abstract function
     }
     hide() {
+        this.cancelHide();
         this.beforeHide();
         this.element.dialog('close');
         this.afterHide();
+    }
+    delayedHide(ms) {
+        var self = this;
+        this.cancelHide();
+        this._hideTimeout = setTimeout(function () {
+            self._hideTimeout = null;
+            self.hide();
+        }, ms || 80);
+    }
+    cancelHide() {
+        if (this._hideTimeout) {
+            clearTimeout(this._hideTimeout);
+            this._hideTimeout = null;
+        }
     }
     beforeHide() {
         // This is an abstract function
@@ -308,22 +324,17 @@ class CardMenu extends MenuBase {
         var cardElm = card.html;
         var _board = card.getBoard();
 
-        this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+        if (card.position === 'hand') {
+            this.element.dialog('option', 'appendTo', 'body');
+        } else {
+            this.element.dialog('option', 'appendTo', '#' + cardElm.attr('id'));
+        }
 
         this.element.dialog('option', 'position', {
             my: "center bottom",
             at: "center top",
             of: '#' + cardElm.attr('id')
         });
-
-        var widget = this.element.dialog('widget');
-        if (card.position === 'hand') {
-            widget.css('pointer-events', 'none');
-            widget.find('ul').css('pointer-events', 'auto');
-        } else {
-            widget.css('pointer-events', '');
-            widget.find('ul').css('pointer-events', '');
-        }
 
         if (['deck', 'exdeck', 'graveyard', 'banish'].includes(card.position)) {
             var items = _board.getCollectionItems(card.position);
@@ -818,6 +829,16 @@ class CardMenu extends MenuBase {
             // console.log( card, newPosition, order, newState, isFD );
             return board.updateCardbyAction(card, newPosition, order, newState, isFD);
 
+        });
+
+        var widget = this.element.dialog('widget');
+        widget.on('mouseenter', function () {
+            menu.cancelHide();
+        });
+        widget.on('mouseleave', function () {
+            if (menu.card && menu.card.position === 'hand') {
+                menu.delayedHide();
+            }
         });
     }
 }
