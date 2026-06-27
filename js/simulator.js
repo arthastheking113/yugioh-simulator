@@ -916,6 +916,11 @@ class Card {
     declare() {
         this.doAnimation('declare');
         this.getBoard().writelog('declare', this.uuid, {});
+        // Surface the declaring card in the side info panel, but only in
+        // Advanced view (the panel is hidden in Basic mode / small screens).
+        if (!$('.play-board-container').hasClass('basic-mode')) {
+            this.getBoard().showCardInfo(this);
+        }
     }
     reveal() {
         this.getBoard().writelog('reveal', this.uuid, {});
@@ -2158,6 +2163,37 @@ class Board {
         });
     }
 
+    // Pick a random card the player can actually see: anything in hand, on the
+    // field (summon/st/fz), graveyard, extra deck or banish, plus the top card
+    // of the deck. Returns false when no such card exists.
+    getRandomVisibleCard() {
+        var pool = this.items.filter(function (item) {
+            return ['hand', 'summon', 'st', 'fz', 'graveyard', 'banish', 'exdeck'].includes(item.position);
+        });
+        var deck = this.getCollectionByPosition('deck');
+        var topDeck = deck && deck.getTopCard();
+        if (topDeck) {
+            pool.push(topDeck);
+        }
+        if (!pool.length) {
+            return false;
+        }
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    // Render a card in the left "card information" panel (no-op on small screens).
+    showCardInfo(card) {
+        if (card && this.cardMenu) {
+            this.cardMenu.setCard(card).sideCardInformations();
+        }
+    }
+
+    // On load, fill the info panel with a random visible card instead of
+    // leaving it blank until the user hovers a card.
+    showRandomCardInfo() {
+        this.showCardInfo(this.getRandomVisibleCard());
+    }
+
     // get the elements
     getHandElm() {
         return this.handElm;
@@ -2819,6 +2855,8 @@ $(document).ready(function () {
             skill: (state.skill && state.skill.name) || "",
         });
         board.importState(state);
+        // Show a random visible card in the info panel right away.
+        board.showRandomCardInfo();
     }).fail(function () {
         wv_showError('Get board.json data failed');
     });
