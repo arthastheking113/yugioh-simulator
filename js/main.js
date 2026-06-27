@@ -69,7 +69,10 @@ function boardModeEvent() {
         render();
     }
 
-    apply(localStorage.getItem('BoardViewMode') === 'basic', false);
+    // Basic is the default view (columns hidden, board expanded);
+    // only switch to Advanced if the user explicitly chose it before.
+    var stored = localStorage.getItem('BoardViewMode');
+    apply(stored ? stored === 'basic' : true, false);
 
     $btn.click(function () {
         apply(!$container.hasClass('basic-mode'), true);

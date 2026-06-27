@@ -88,6 +88,10 @@
 .play-board-container.basic-mode .play-board-side {
     display: none;
 }
+/* Basic mode reclaims the hidden columns' space for the board */
+.play-board-container.basic-mode .play-board {
+    max-width: calc(100% - 20px);
+}
 @media (min-width: 1200px) {
     .play-board-container .play-board-side {
         order: 9;
@@ -97,6 +101,14 @@
     .play-board-container .play-board {
         order: 5;
         max-width: calc(60% - 30px);
+    }
+    .play-board-container.basic-mode .play-board {
+        max-width: min(calc(100% - 20px), 1500px);
+    }
+    /* Grow the board's slots to fill the space freed by the columns.
+       Fluid + viewport-bounded so it never overflows on smaller desktops. */
+    .play-board-container.basic-mode #playtest .game-board {
+        --slot-size: clamp(102px, calc((min(100vw, 1500px) - 160px) / 7), 150px);
     }
     .play-board-container .lcard-informations {
         order: 1;
@@ -292,7 +304,7 @@
 }
 
 .holder-slot {
-    width: 102px;
+    width: var(--slot-size, 102px);
     display: block;
     border: 1px solid #ccc;
     border-radius: 4px;
