@@ -6,7 +6,7 @@
 
 ## How Menus Work
 
-The card menu opens on **hover**, not right-click. A single **delegated** event listener on the board element (`Board.cardHoverEvents`, `simulator.js`) handles all cards. On `mouseenter .simulator-card` it looks up the card by `data-id` and opens the shared dialog:
+The card menu opens on **hover**, not right-click. A **delegated** `mouseenter`/`mouseleave` listener (namespaced `.cardHover`, in `Board.cardHoverEvents`, `simulator.js`) handles all cards. On `mouseenter .simulator-card` it looks up the card by `data-id` and opens the shared dialog:
 
 ```javascript
 var card = board.getItemById($(this).data('id'));
@@ -16,7 +16,11 @@ board.cardMenu.show();            // open the shared #cardMenu dialog
 
 There is a single shared `#cardMenu` jQuery UI dialog. Its menu items are static HTML (built once in `CardMenu.drawHtml`); `updateMenu()` shows only the ids listed in `menuList[card.position]` (or `menuList['overlap']` for Xyz materials) and applies per-item `condition`/state filters. On `mouseleave` the dialog hides.
 
-**Why delegation?** Previously, hover was bound per-card in `Card.cardEvents()` during construction. Cards that entered the DOM through certain paths (importState, replay startRecord) could end up without events. Delegation on the board element ensures every `.simulator-card` gets hover behavior regardless of how or when it was created.
+**Why delegation?** Previously, hover was bound per-card in `Card.cardEvents()` during construction. Cards that entered the DOM through certain paths (importState, replay startRecord) could end up without events. Delegation ensures every `.simulator-card` gets hover behavior regardless of how or when it was created.
+
+**Delegation roots — board element AND the four collection "View" dialogs.** The listener is bound to `board.elm` **plus** `#deckmenu`, `#extradeckmenu`, `#graveyardmenu`, `#banishmenu` (`board.elm.add(board.deckMenuElm)…`). Reason: jQuery UI `.dialog()` defaults to `appendTo: 'body'`, so opening a collection "View" dialog relocates it — and the `.simulator-card`s inside its `.collection-container` — **under `<body>`, outside `board.elm`**. A board-only listener never sees those cards, so hovering a card in a View popup showed no menu (regressed when hover switched from per-card binding to board-only delegation). Binding the same delegation to each dialog element (which still holds its cards after the move) restores it. The handlers are `.off()`'d by the `.cardHover` namespace before re-binding, so re-constructing the `Board` (import/replay) rebinds cleanly instead of stacking duplicates.
+
+> **Known follow-up (pre-existing):** the delegated `mouseenter`/`mouseleave` handlers do **not** use `MenuBase.cancelHide()` / `delayedHide()` — those were wired to the old per-card hand-hover binding and became dead code when delegation landed. Overlapping/compressed **hand** cards can therefore still flicker or drop the menu as the cursor crosses onto the menu. Restoring it means calling `cancelHide()` in the show handler and branching the hide handler on `position === 'hand'` to `delayedHide()`. Not addressed by the deck-view fix.
 
 Each menu item has a `data-target` attribute encoding the action:
 
