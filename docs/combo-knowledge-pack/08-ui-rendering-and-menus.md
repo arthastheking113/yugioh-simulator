@@ -121,6 +121,8 @@ jQuery UI **Touch Punch** (`js/jquery.ui.touch-punch.min.js`) enables drag-drop 
 
 `aside.lcard-informations` shows the hovered card's image and `description` (`.lcard-descriptons`). It is populated on `mouseenter` by the board's delegated hover handler (`Board.cardHoverEvents()`, which also shows the context menu via `cardMenu.sideCardInformations()`).
 
+**Hover delegation roots.** `Board.cardHoverEvents()` binds the `.cardHover`-namespaced `mouseenter`/`mouseleave` delegation to `board.elm` **and** the four collection "View" dialogs (`#deckmenu`, `#extradeckmenu`, `#graveyardmenu`, `#banishmenu`). jQuery UI `.dialog()` defaults to `appendTo: 'body'`, so an open collection dialog (and the `.simulator-card`s inside it) lives **outside `board.elm`**; a board-only listener would never fire for cards in a View popup. Binding the same delegation to each dialog element restores per-card hover menus there. (Known pre-existing gap: the delegated handlers don't use `cancelHide()`/`delayedHide()`, so overlapping **hand** cards can still flicker the menu — unrelated to the collection-dialog fix.)
+
 ---
 
 ## Combo graph (read-only visualization)

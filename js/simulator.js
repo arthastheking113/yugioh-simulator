@@ -1664,20 +1664,39 @@ class Board {
     }
     cardHoverEvents() {
         var board = this;
-        this.elm.on('mouseenter', '.simulator-card', function () {
+        var showMenu = function () {
             var uuid = $(this).data('id');
             var card = board.getItemById(uuid);
             if (!card) return;
             var cardMenu = board.cardMenu.setCard(card);
             cardMenu.sideCardInformations();
             cardMenu.show();
-        });
-        this.elm.on('mouseleave', '.simulator-card', function () {
+        };
+        var hideMenu = function () {
             var cardMenu = board.cardMenu;
             cardMenu.hide();
             cardMenu.element.dialog('widget').appendTo('body');
             cardMenu.element.dialog('option', 'appendTo', 'body');
-        });
+        };
+
+        // Delegate hover to the board element AND to the four collection
+        // "View" dialogs (deck / extra deck / graveyard / banish). jQuery UI
+        // relocates each dialog under <body> (default appendTo: 'body'), so the
+        // cards shown inside a "View" popup are NOT descendants of board.elm —
+        // a board-only listener never sees them and their hover menu goes dead.
+        // Binding the same delegation to each dialog element (which still holds
+        // its cards after being moved) restores the hover menu there too.
+        // Namespaced + .off first so re-constructing the Board (importState /
+        // replay) rebinds cleanly instead of stacking duplicate handlers.
+        var hoverRoots = board.elm
+            .add(board.deckMenuElm)
+            .add(board.exDeckMenuElm)
+            .add(board.graveyardMenuElm)
+            .add(board.banishMenuElm);
+        hoverRoots
+            .off('mouseenter.cardHover mouseleave.cardHover', '.simulator-card')
+            .on('mouseenter.cardHover', '.simulator-card', showMenu)
+            .on('mouseleave.cardHover', '.simulator-card', hideMenu);
     }
     removeOverlayHighlight() {
         var board = this;
